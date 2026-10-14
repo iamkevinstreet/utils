@@ -1,0 +1,19 @@
+# Repository-level tool settings. Each utility folder has its own installable pyproject.
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "N", "W"]
+ignore = ["E501"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["kds"]
+
+# Tests run from the repository root so the five folders merge into one `kds` namespace on sys.path.
+[tool.pytest.ini_options]
+pythonpath = ["settings", "logs", "llm", "evals", "synthetic"]
+testpaths = ["settings/tests", "logs/tests", "llm/tests", "evals/tests", "synthetic/tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]

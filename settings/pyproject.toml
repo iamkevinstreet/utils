@@ -1,0 +1,28 @@
+[project]
+name = "kds-settings"
+version = "0.1.0"
+description = "Settings for the prototypes: provider, models, keys, budget, log options. Environment or .env."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
+dependencies = [
+  "pydantic>=2.8",
+  "pydantic-settings>=2.4"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["kds.settings"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]

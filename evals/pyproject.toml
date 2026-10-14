@@ -1,0 +1,28 @@
+[project]
+name = "kds-evals"
+version = "0.1.0"
+description = "Evaluation cases, metrics, a runner that writes a results table, a model judge with calibration, and run comparison."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
+dependencies = [
+  "kds-llm @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=llm",
+  "kds-logs @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=logs"
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6"]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["kds.evals"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+asyncio_mode = "auto"
+filterwarnings = ["ignore::DeprecationWarning"]
