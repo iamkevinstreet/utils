@@ -34,9 +34,12 @@ jobs:
           python -m pip install --upgrade pip ruff pytest pytest-asyncio
           pip install pydantic pydantic-settings anthropic openai httpx reportlab pypdf
 
+      # Third-party dependencies are installed above, so the folders install with --no-deps.
+      # Their kds-* dependencies point at this repository on GitHub, which would otherwise
+      # be resolved from the remote instead of the checkout under test.
       - name: Install check (each folder builds and installs as its own package)
         run: |
-          pip install ./settings ./logs ./llm ./evals ./synthetic
+          pip install --no-deps ./settings ./logs ./llm ./evals ./synthetic
           python -c "import kds.settings, kds.logs, kds.llm, kds.evals, kds.synthetic; print('all five import')"
 
       - name: Lint

@@ -17,8 +17,10 @@ dist/
 .ruff_cache/
 .mypy_cache/
 
-# generated data, logs and eval outputs (regenerate with the scripts; never commit real records)
-logs/
+# generated data, runtime logs and eval outputs (regenerate with the scripts; never commit real records).
+# Runtime log files are named by date (kds.logs writes <LOG_DIR>/YYYY-MM-DD.jsonl). The logs/ folder
+# at the root of this repository is a package, so it must not be ignored as a whole.
+????-??-??.jsonl
 */data/generated/
 */evals/results/
 *.sqlite
