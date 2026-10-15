@@ -1,5 +1,7 @@
 # utils
 
+[![ci](https://github.com/iamkevinstreet/utils/actions/workflows/ci.yml/badge.svg)](https://github.com/iamkevinstreet/utils/actions/workflows/ci.yml) [![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
 Small, separately installable utilities that my AI prototypes share. Each folder is its own package with its
 own README, tests and `pyproject.toml`; the repository is the tree they live in. Install only what a project
 needs.
