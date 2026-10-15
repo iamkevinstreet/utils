@@ -19,8 +19,8 @@ class Settings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
     llm_provider: Provider = "fake"
-    llm_model: str = "claude-sonnet-4-5"
-    llm_judge_model: str = "claude-sonnet-4-5"
+    llm_model: str = "claude-sonnet-5-5"
+    llm_judge_model: str = "claude-sonnet-5-5"
     llm_embedding_model: str = "text-embedding-3-small"
 
     anthropic_api_key: SecretStr | None = None

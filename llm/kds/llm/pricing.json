@@ -1,15 +1,50 @@
 {
-  "_comment": "USD per million tokens, list prices. Update `as_of` whenever a price changes; the eval report prints it.",
-  "as_of": "2026-10-13",
+  "_comment": "USD per million tokens, list prices for prompts within the standard context window. Update `as_of` whenever a price changes; the eval report prints it. Sources: the provider pricing pages, checked on the as_of date.",
+  "as_of": "2026-10-15",
   "models": {
-    "claude-sonnet-4-5": { "input": 3.0, "output": 15.0 },
-    "claude-haiku-4-5": { "input": 1.0, "output": 5.0 },
-    "claude-opus-4-1": { "input": 15.0, "output": 75.0 },
-    "gpt-4.1": { "input": 2.0, "output": 8.0 },
-    "gpt-4.1-mini": { "input": 0.4, "output": 1.6 },
-    "gpt-4o": { "input": 2.5, "output": 10.0 },
-    "gpt-4o-mini": { "input": 0.15, "output": 0.6 },
-    "text-embedding-3-small": { "input": 0.02, "output": 0.0 },
-    "fake-model": { "input": 0.0, "output": 0.0 }
+    "claude-sonnet-5-5": {
+      "input": 2.0,
+      "output": 10.0
+    },
+    "claude-haiku-5-5": {
+      "input": 0.1,
+      "output": 0.5
+    },
+    "claude-sonnet-4-5": {
+      "input": 3.0,
+      "output": 15.0
+    },
+    "claude-haiku-4-5": {
+      "input": 1.0,
+      "output": 5.0
+    },
+    "claude-opus-4-1": {
+      "input": 15.0,
+      "output": 75.0
+    },
+    "gpt-4.1": {
+      "input": 2.0,
+      "output": 8.0
+    },
+    "gpt-4.1-mini": {
+      "input": 0.4,
+      "output": 1.6
+    },
+    "gpt-4o": {
+      "input": 2.5,
+      "output": 10.0
+    },
+    "gpt-4o-mini": {
+      "input": 0.15,
+      "output": 0.6
+    },
+    "text-embedding-3-small": {
+      "input": 0.02,
+      "output": 0.0
+    },
+    "fake-model": {
+      "input": 0.0,
+      "output": 0.0
+    }
   }
 }
