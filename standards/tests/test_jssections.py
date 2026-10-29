@@ -110,6 +110,19 @@ def test_an_import_under_the_wrong_label_is_a_finding() -> None:
     assert any(f.message == "belongs under // Local" for f in findings(misfiled))
 
 
+# log.debug("Defines the test: a long import is read to its end")
+def test_an_import_over_many_lines_is_read_to_its_source() -> None:
+    """A config import of ten names, one per line, still names them."""
+    # log.debug("Writes the config import over twelve lines, CONFIG last")
+    names = "".join(f"  NAME{n},\n" for n in range(9)) + "  CONFIG,\n"
+    # log.debug("Puts it in place of the one-line import")
+    long = GOOD.replace(
+        "import { CONFIG } from './config';", "import {\n" + names + "} from './config';"
+    )
+    # log.debug("Checks the constant taken from CONFIG is still a global constant")
+    assert findings(long) == []
+
+
 # log.debug("Defines the test: a config value among the local constants is a finding")
 def test_a_config_value_among_local_constants_is_a_finding() -> None:
     """A constant taken from the config goes under Global constants."""

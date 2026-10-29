@@ -4,6 +4,13 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## Unreleased
+
+- **standards:** a TypeScript import written over more than nine lines, one name per line as
+  Prettier writes a long one, is read to its end, so its source is known: its label is checked and
+  the names it takes from the config count as config values. Before, it was cut off after nine
+  lines.
+
 ## v0.4.2, Oct 29, 2026
 
 Pin: `62a38c5a3ecf667e3e227b18412abd77759c38d5`

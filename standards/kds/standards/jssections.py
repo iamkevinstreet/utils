@@ -82,6 +82,8 @@ LOCAL_STARTS = (".", "/", "@/", "~/")
 LABEL_PREFIX = "// "
 # log.debug("Matches an @import rule in CSS")
 CSS_IMPORT_RE = re.compile(r"^@import\b")
+# log.debug("Sets how many more lines a statement other than an import may read")
+STATEMENT_LINES = 8
 # log.debug("Sets the message for a type above every banner")
 TYPE_MESSAGE = "a type goes with the constants or the logic"
 
@@ -140,14 +142,17 @@ def _statement_text(lines: list[str] | None = None, number: int = 1) -> str:
 
     Returns:
         The statement's lines joined by spaces, up to a line ending in ;
-        or at most the next eight lines.
+        for an import, however long; any other statement reads at most
+        the next eight lines.
     """
     # log.debug("Takes the lines, which the caller must give")
     lines = required(lines=lines)
     # log.debug("Starts with the statement's first line")
     parts = [lines[number - 1].strip()]
+    # log.debug("Reads an import to its end, and anything else at most eight more lines")
+    last = len(lines) if IMPORT_RE.match(parts[0]) else number + STATEMENT_LINES
     # log.debug("Adds lines until one ends the statement")
-    for line in lines[number : number + 8]:
+    for line in lines[number:last]:
         # log.debug("Stops once the statement has ended")
         if parts[-1].endswith(";") or not parts[-1].endswith(("{", ",")):
             # log.debug("Leaves the loop")
