@@ -1,12 +1,13 @@
 ########################################################################
 #                          docs/diagrams.toml                          #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The README diagrams as data. Redraw them with    #
-#                     make diagrams; never edit the SVGs by hand.      #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# The README diagrams as data. Redraw them with make diagrams; never
+# edit the SVGs by hand.
+#
 # Boxes are [left, top, width, height] in pixels; arrow points are [x, y].
 
 [[diagram]]
@@ -41,7 +42,7 @@ rule = "imported by a project's code"
 [[diagram.component]]
 box = [48, 312, 208, 96]
 name = "settings"
-details = ["settings.toml + .env", "typed, frozen", "secrets masked"]
+details = ["config.toml + .env", "typed, frozen", "secrets masked"]
 
 [[diagram.component]]
 box = [280, 312, 208, 96]
@@ -101,7 +102,7 @@ at = [226, 248]
 box = [28, 610, 944, 86]
 title = "Foundation"
 lines = [
-  "One kds namespace across folders · Python 3.12 · Apache 2.0",
+  "One kds namespace across folders · kds.args under every tool · Python 3.12 · Apache 2.0",
   "One code standard, enforced by kds-standards, ruff and mypy in pre-commit and CI",
 ]
 
@@ -126,7 +127,7 @@ details = ["from git at one commit, not PyPI", "locked with hashes"]
 [[diagram.component]]
 box = [700, 160, 272, 80]
 name = "3. Configure"
-details = ["settings.toml, then .env secrets", "validated once, then frozen"]
+details = ["config.toml, then .env secrets", "validated once, then frozen"]
 
 [[diagram.component]]
 box = [28, 300, 272, 80]

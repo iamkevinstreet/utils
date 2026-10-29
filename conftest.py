@@ -1,32 +1,53 @@
 ########################################################################
 #                             conftest.py                              #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Keeps every test offline and isolated: the fake  #
-#                     provider, a temporary log folder, no cache.      #
-########################################################################
-"""Test setup shared by every package: offline, isolated, uncached."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Keeps every test offline and isolated: the fake provider, a temporary
+log folder, no cache.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from collections.abc import Iterator
 from pathlib import Path
 
+# Third-party
 import pytest
 
+# Local
 from kds import settings as config
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
 
 
+########################################################################
+#                            Test isolation                            #
+########################################################################
 # log.debug("Defines the isolation every test in this folder gets")
 @pytest.fixture(autouse=True)
 def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
-    """Fake provider, temporary logs, no settings file, no cache."""
+    """Fake provider, temporary logs, no settings file, no cache.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+
+    Yields:
+        Nothing; the test runs while the fixture waits here.
+    """
     # log.debug("Forces the offline provider so no test calls a model")
     monkeypatch.setenv("LLM_PROVIDER", "fake")
     # log.debug("Sends any log file to the test's own folder")

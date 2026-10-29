@@ -1,35 +1,54 @@
 ########################################################################
 #                       tests/test_packaging.py                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests every package ships a py.typed marker, so  #
-#                     mypy checks callers, and that all share one      #
-#                     version.                                         #
-########################################################################
-"""Tests that every package ships what its users need."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests that every package ships a py.typed marker, so mypy checks its
+callers, and that all the packages share one version.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import tomllib
 from pathlib import Path
 
+# Third-party
 import pytest
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Points at the repository root, above this tests folder")
 ROOT = Path(__file__).resolve().parents[1]
 # log.debug("Lists every package folder in the repository")
-PACKAGES = ("settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams")
+PACKAGES = ("args", "settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams")
 
 
+########################################################################
+#                           Packaging tests                            #
+########################################################################
 # log.debug("Defines the test that each package is marked as typed")
 @pytest.mark.parametrize("name", PACKAGES)
 def test_package_ships_py_typed(name: str) -> None:
-    """Each package has py.typed (PEP 561) and packages it."""
+    """Each package has py.typed (PEP 561) and packages it.
+
+    Args:
+        name: The package's folder name; pytest runs the test once for
+            each name in PACKAGES.
+    """
     # log.debug("Checks the marker file exists in the package")
     assert (ROOT / name / "kds" / name / "py.typed").is_file()
     # log.debug("Reads the package's pyproject.toml")

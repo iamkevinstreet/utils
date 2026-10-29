@@ -1,7 +1,7 @@
 # kds.settings
 
-Typed, read-only settings for every project. Values come from `config/settings.toml`, secrets from
-`.env`, and an environment variable overrides either. Settings are validated once, frozen, and
+Typed, read-only settings for every project. Values come from `config/config.toml`, secrets from
+`config/.env`, and an environment variable overrides either. Settings are validated once, frozen, and
 secrets are `SecretStr`: never in a repr, an error message or a log line.
 
 ## Install
@@ -23,7 +23,7 @@ from kds.settings import Settings, describe
 
 
 class AppSettings(Settings):
-    answer_min_score: float = 0.35  # [answer] min_score in settings.toml
+    answer_min_score: float = 0.35  # [answer] min_score in config.toml
 
 
 @lru_cache(maxsize=1)
@@ -38,11 +38,12 @@ log_event(log, "settings.loaded", **describe(get_app_settings()))  # secrets sho
 
 - A TOML key's name is its section and key joined: `[log] level` is `log_level`, and `LOG_LEVEL`
   overrides it.
-- Priority, highest first: arguments, environment variables, `.env`, `config/settings.toml`, defaults.
-- A secret written into `settings.toml` stops startup, naming the key but never printing its value.
+- Priority, highest first: arguments, environment variables, `config/.env`, `config/config.toml`,
+  defaults.
+- A secret written into `config.toml` stops startup, naming the key but never printing its value.
 - `SETTINGS_FILE` points the loader at another file; tests point it at one that does not exist.
 
-Every shared setting and its default: [config/settings.toml](../config/settings.toml).
+Every shared setting and its default: [config/config.toml](../config/config.toml).
 
 ## Develop
 

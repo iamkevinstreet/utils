@@ -1,16 +1,16 @@
 ########################################################################
-#                         config/settings.toml                         #
+#                          config/config.toml                          #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Every shared setting at its default; projects    #
-#                     copy the sections they change. No secrets here.  #
-########################################################################
-# Each key's name is its section and key joined: [llm] model is llm_model,
-# and the environment variable LLM_MODEL overrides it. Secrets (API keys)
-# never go here; they go in .env. tests/test_settings.py keeps this file
-# equal to the defaults in settings/kds/settings/__init__.py.
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Every shared setting at its default; a project copies the sections it
+# changes into its own config/config.toml. Each key's name is its section
+# and key joined: [llm] model is llm_model, and the environment variable
+# LLM_MODEL overrides it. Secrets (API keys) never go here; they go in
+# config/.env. settings/tests/test_settings.py keeps this file equal to
+# the defaults in settings/kds/settings/__init__.py.
 
 [llm]
 provider = "fake"                         # anthropic | openai | azure | fake (offline)

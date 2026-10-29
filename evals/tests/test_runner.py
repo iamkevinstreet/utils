@@ -1,14 +1,19 @@
 ########################################################################
 #                      evals/tests/test_runner.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests a whole run offline: scores, a failing     #
-#                     case, the report, duplicate ids, comparison.     #
-########################################################################
-"""Tests for the runner, the report and run comparison."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Tests a whole run offline: scores, a failing case, the report, duplicate
+ids, comparison.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
@@ -16,8 +21,11 @@ import logging
 from pathlib import Path
 from typing import Any
 
+# Third-party
 import pytest
 
+# Local
+from kds.args import required
 from kds.evals.case import EvalCase, load_cases
 from kds.evals.metrics import field_accuracy
 from kds.evals.report import changelog_line, compare
@@ -25,15 +33,28 @@ from kds.evals.runner import run_eval
 from kds.llm.adapter import ModelAdapter
 from kds.llm.fake import FakeProvider
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the model name the price table lists at zero")
 FAKE_MODEL = "fake-model"
 
 
+########################################################################
+#                         Evaluation run tests                         #
+########################################################################
 # log.debug("Defines three cases, two of them tagged hard")
 def _cases() -> list[EvalCase]:
-    """Return one clean case and two hard ones."""
+    """Returns one clean case and two hard ones.
+
+    Returns:
+        The cases c1, c2 and c3, in that order.
+    """
     # log.debug("Returns the cases")
     return [
         EvalCase(id="c1", input={"doc": "A"}, expected={"name": "Acme LLC"}, tags=["clean"]),
@@ -44,15 +65,28 @@ def _cases() -> list[EvalCase]:
 
 # log.debug("Defines the test of a whole run")
 def test_run_eval_end_to_end(tmp_path: Path) -> None:
-    """One right, one wrong, one failure: scored, reported, logged."""
+    """One right, one wrong, one failure: scored, reported, logged.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Scripts a right answer, a wrong one and a failure")
     adapter = ModelAdapter(
         FakeProvider(['{"name": "Acme LLC"}', '{"name": "x"}', "boom"]), model=FAKE_MODEL
     )
 
     # log.debug("Defines the system: one call, parsed as JSON")
-    def system_fn(case: EvalCase) -> Any:
-        """Answer the case, failing on the scripted boom."""
+    def system_fn(case: EvalCase | None = None) -> Any:
+        """Answers the case, failing on the scripted boom.
+
+        Args:
+            case: The case to answer. Required.
+
+        Returns:
+            The model's scripted reply, parsed as JSON.
+        """
+        # log.debug("Takes the case, which the caller must give")
+        case = required(case=case)
         # log.debug("Calls the model with the case's document")
         text = adapter.complete(case.input["doc"]).text
         # log.debug("Fails the way a broken system would")
@@ -83,7 +117,11 @@ def test_run_eval_end_to_end(tmp_path: Path) -> None:
 
 # log.debug("Defines the test that outputs can be left out")
 def test_outputs_can_be_dropped(tmp_path: Path) -> None:
-    """keep_output=False keeps scores and drops the outputs."""
+    """keep_output=False keeps scores and drops the outputs.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Runs one case, dropping its output")
     run = run_eval(
         name="lean",
@@ -100,7 +138,11 @@ def test_outputs_can_be_dropped(tmp_path: Path) -> None:
 
 # log.debug("Defines the test that repeated ids are refused")
 def test_load_cases_rejects_duplicate_ids(tmp_path: Path) -> None:
-    """Two cases with one id stop the load."""
+    """Two cases with one id stop the load.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Writes a file with the same id twice")
     path = tmp_path / "cases.jsonl"
     # log.debug("Writes two cases sharing an id")
@@ -113,7 +155,11 @@ def test_load_cases_rejects_duplicate_ids(tmp_path: Path) -> None:
 
 # log.debug("Defines the test of the comparison table and changelog")
 def test_compare_and_changelog(tmp_path: Path) -> None:
-    """Two runs give a +1 change and a changelog line."""
+    """Two runs give a +1 change and a changelog line.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Builds an adapter both runs share")
     adapter = ModelAdapter(FakeProvider(), model=FAKE_MODEL)
     # log.debug("Runs a version that scores zero")

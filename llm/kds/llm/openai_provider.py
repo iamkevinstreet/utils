@@ -1,14 +1,19 @@
 ########################################################################
 #                    llm/kds/llm/openai_provider.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           OpenAI and Azure OpenAI chat completions behind  #
-#                     the Provider interface, plus embeddings.         #
-########################################################################
-"""The OpenAI and Azure OpenAI provider."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+OpenAI and Azure OpenAI chat completions behind the Provider interface,
+plus embeddings.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
@@ -16,20 +21,39 @@ import logging
 import time
 from typing import Any
 
+# Third-party
 import openai
 
+# Local
+from kds.args import required
+from kds.llm import config
 from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
-# log.debug("Sets the milliseconds in a second, for latency")
-MS = 1000
-# log.debug("Names the keys every chat message carries")
-ROLE, CONTENT = "role", "content"
+# log.debug("Takes the milliseconds in a second, for latency, from the config")
+MS = config.MS
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Names the key a tool's details sit under")
 FUNCTION = "function"
+
+
+########################################################################
+#                      OpenAI chat and embeddings                      #
+########################################################################
+# log.debug("Names the keys every chat message carries")
+ROLE, CONTENT = "role", "content"
+
+
 # log.debug("Names the keys for a part's type and a tool's name")
 TYPE, NAME = "type", "name"
+
+
 # log.debug("Names the tool and assistant roles")
 TOOL, ASSISTANT = "tool", "assistant"
 
@@ -44,13 +68,26 @@ class OpenAIProvider:
     # log.debug("Defines the constructor, which opens one client")
     def __init__(
         self,
-        api_key: str,
-        timeout_s: float,
+        api_key: str | None = None,
+        timeout_s: float | None = None,
         *,
         azure_endpoint: str | None = None,
         azure_api_version: str | None = None,
     ) -> None:
-        """Open an OpenAI client, or Azure's when given an endpoint."""
+        """Opens an OpenAI client, or Azure's when given an endpoint.
+
+        Args:
+            api_key: The OpenAI or Azure OpenAI API key. Required.
+            timeout_s: The most seconds one call may take. Required.
+            azure_endpoint: The Azure OpenAI resource's address; None
+                for OpenAI itself.
+            azure_api_version: The Azure OpenAI API version, used only
+                with an endpoint.
+        """
+        # log.debug("Takes the api key, which the caller must give")
+        api_key = required(api_key=api_key)
+        # log.debug("Takes the timeout s, which the caller must give")
+        timeout_s = required(timeout_s=timeout_s)
         # log.debug("Opens an Azure client when an endpoint is given")
         if azure_endpoint:
             # log.debug("Names the provider azure in logs and reports")
@@ -69,8 +106,20 @@ class OpenAIProvider:
 
     # log.debug("Defines how our messages become OpenAI's")
     @staticmethod
-    def _convert(messages: list[Message], system: str | None) -> list[dict[str, Any]]:
-        """Turn messages into OpenAI's shape, system prompt first."""
+    def _convert(
+        messages: list[Message] | None = None, system: str | None = None
+    ) -> list[dict[str, Any]]:
+        """Turns messages into OpenAI's shape, system prompt first.
+
+        Args:
+            messages: The provider-neutral conversation. Required.
+            system: The system prompt, sent as the first turn if given.
+
+        Returns:
+            The turns as chat completions takes them.
+        """
+        # log.debug("Takes the messages, which the caller must give")
+        messages = required(messages=messages)
         # log.debug("Starts with the system prompt, if any")
         out: list[dict[str, Any]] = [{ROLE: "system", CONTENT: system}] if system else []
         # log.debug("Converts each message in order")
@@ -101,15 +150,39 @@ class OpenAIProvider:
     def complete(
         self,
         *,
-        model: str,
-        messages: list[Message],
-        system: str | None,
-        tools: list[ToolSpec] | None,
-        max_tokens: int,
-        temperature: float,
-        json_mode: bool,
+        model: str | None = None,
+        messages: list[Message] | None = None,
+        system: str | None = None,
+        tools: list[ToolSpec] | None = None,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+        json_mode: bool | None = None,
     ) -> Completion:
-        """Send the conversation and return the completion."""
+        """Sends the conversation and returns the completion.
+
+        Args:
+            model: The model to call. Required.
+            messages: The conversation, in order. Required.
+            system: The system prompt, if any.
+            tools: Any tools the model may call, offered as functions.
+            max_tokens: The most tokens the answer may use. Required.
+            temperature: The sampling temperature. Required.
+            json_mode: True to ask for a JSON object through the
+                response format. Required.
+
+        Returns:
+            The answer as a provider-neutral completion.
+        """
+        # log.debug("Takes the model, which the caller must give")
+        model = required(model=model)
+        # log.debug("Takes the messages, which the caller must give")
+        messages = required(messages=messages)
+        # log.debug("Takes the max tokens, which the caller must give")
+        max_tokens = required(max_tokens=max_tokens)
+        # log.debug("Takes the temperature, which the caller must give")
+        temperature = required(temperature=temperature)
+        # log.debug("Takes the json mode, which the caller must give")
+        json_mode = required(json_mode=json_mode)
         # log.debug("Starts the request with the model, turns and limits")
         request: dict[str, Any] = {
             "model": model,
@@ -145,8 +218,19 @@ class OpenAIProvider:
         return self._completion(response, latency_ms)
 
     # log.debug("Defines how OpenAI's response becomes a completion")
-    def _completion(self, response: Any, latency_ms: int) -> Completion:
-        """Read the first choice's text and tool calls."""
+    def _completion(self, response: Any = None, latency_ms: int | None = None) -> Completion:
+        """Reads the first choice's text and tool calls.
+
+        Args:
+            response: The chat completions response.
+            latency_ms: How long the call took, in milliseconds.
+                Required.
+
+        Returns:
+            The provider-neutral completion, with usage and timing.
+        """
+        # log.debug("Takes the latency ms, which the caller must give")
+        latency_ms = required(latency_ms=latency_ms)
         # log.debug("Takes the first choice")
         choice = response.choices[0]
         # log.debug("Reads each tool call's arguments")
@@ -169,8 +253,22 @@ class OpenAIProvider:
         )
 
     # log.debug("Defines embeddings")
-    def embed(self, *, model: str, texts: list[str]) -> list[list[float]]:
-        """Return one embedding vector per text."""
+    def embed(
+        self, *, model: str | None = None, texts: list[str] | None = None
+    ) -> list[list[float]]:
+        """Returns one embedding vector per text.
+
+        Args:
+            model: The embedding model to call. Required.
+            texts: The texts to embed. Required.
+
+        Returns:
+            One vector per text, in the order given.
+        """
+        # log.debug("Takes the model, which the caller must give")
+        model = required(model=model)
+        # log.debug("Takes the texts, which the caller must give")
+        texts = required(texts=texts)
         # log.debug("Calls the embeddings endpoint")
         response = self._client.embeddings.create(model=model, input=texts)
         # log.debug("Returns the vectors in order")
@@ -178,8 +276,16 @@ class OpenAIProvider:
 
 
 # log.debug("Defines how a call's argument text becomes a dict")
-def _arguments(text: str | None) -> dict[str, Any]:
-    """Parse the arguments; keep text that is not JSON under _raw."""
+def _arguments(text: str | None = None) -> dict[str, Any]:
+    """Parses the arguments; keeps text that is not JSON under _raw.
+
+    Args:
+        text: The arguments as the model wrote them, as JSON; None or
+            empty reads as no arguments.
+
+    Returns:
+        The arguments as a dict; text that is not JSON sits under _raw.
+    """
     # log.debug("Tries to parse the arguments as JSON")
     try:
         # log.debug("Parses the arguments")

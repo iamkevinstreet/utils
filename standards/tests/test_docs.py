@@ -1,25 +1,37 @@
 ########################################################################
-#                    standards/tests/test_docs.py                      #
+#                     standards/tests/test_docs.py                     #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the published-docs rules: which Markdown   #
-#                     a repository may hold, and links that resolve.   #
-########################################################################
-"""Tests for the published-docs rules."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the published-docs rules: which Markdown a repository may hold,
+which links resolve and which break, and that code is never read as a
+link.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 from pathlib import Path
 
+# Local
 from kds.standards.docs import check_docs, check_links, published
 
-# Module constants
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the files a small repository holds")
 FILES = {"README.md", "LICENSE", "docs/flow.svg", "backend/README.md", "backend/app/main.py"}
 
 
+########################################################################
+#                            Published docs                            #
+########################################################################
 # log.debug("Defines the test of which Markdown is published")
 def test_only_readmes_changelog_security_and_data_are_published() -> None:
     """README.md anywhere, the two root docs, and data are allowed."""
@@ -74,7 +86,11 @@ def test_code_is_not_a_link() -> None:
 
 # log.debug("Defines the repository-level test")
 def test_check_docs_flags_unpublished_markdown_and_broken_links(tmp_path: Path) -> None:
-    """A stray doc is flagged, and a README link to a missing file."""
+    """A stray doc is flagged, and a README link to a missing file.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Writes a README linking a stray doc and a missing one")
     (tmp_path / "README.md").write_text(
         "[plan](docs/plan.md) [notes](docs/notes.md)\n", encoding="utf-8"

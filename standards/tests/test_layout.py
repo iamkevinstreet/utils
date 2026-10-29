@@ -1,24 +1,36 @@
 ########################################################################
 #                    standards/tests/test_layout.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the repository rules: depth, length and    #
-#                     the script rules' statement finder.              #
-########################################################################
-"""Tests for the layout rules and the script rules."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the repository rules: how deep a file may sit and how long a
+source file may run. It also tests the script rules' statement finder,
+which skips the lines inside an object.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 
+# Local
 from kds.standards import jsrules, layout
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
 
 
+########################################################################
+#                           Repository shape                           #
+########################################################################
 # log.debug("Defines the test for the folder-depth rule")
 def test_depth_allows_one_more_in_an_area() -> None:
     """Three folders anywhere, four under frontend/ or backend/."""

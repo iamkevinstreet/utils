@@ -1,26 +1,38 @@
 ########################################################################
 #                   synthetic/kds/synthetic/names.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Made-up people and companies from a seed, and    #
-#                     near-duplicate names for testing fuzzy matching. #
-########################################################################
-"""Repeatable made-up names, and the near duplicates intake produces.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
-Everything is seeded, so a test set regenerates identically. Nothing
-here is drawn from real records.
+Made-up people, companies and places, and the near-duplicate company
+names a careless intake produces, for testing fuzzy matching.
+Everything is seeded, so a test set regenerates identically, and
+nothing here is drawn from real records.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import random
 import re
 
-# Module constants
+# Local
+from kds.args import required
+
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists made-up first names")
 FIRST = (
     "Avery Jordan Morgan Riley Casey Quinn Taylor Reese Dakota Emerson Harper Rowan Sawyer "
@@ -68,25 +80,40 @@ MIN_DROP_LENGTH = 6
 DEFAULT_SEED = 7
 
 
+########################################################################
+#                            Made-up names                             #
+########################################################################
 # log.debug("Defines the seeded name generator")
 class NameGen:
     """Made-up people, companies and places from one seeded source."""
 
     # log.debug("Defines the constructor with its seed")
     def __init__(self, seed: int = DEFAULT_SEED) -> None:
-        """Seed the generator so the same seed gives the same names."""
+        """Seeds the generator so the same seed gives the same names.
+
+        Args:
+            seed: The seed for the random source behind every name.
+        """
         # log.debug("Creates the seeded generator; repeatable, not secret")
         self.rng = random.Random(seed)  # noqa: S311 - test data, not security
 
     # log.debug("Defines a made-up person")
     def person(self) -> str:
-        """Return a first and last name."""
+        """Returns a first and last name.
+
+        Returns:
+            The name, first then last, with a space between.
+        """
         # log.debug("Returns a random first and last name")
         return f"{self.rng.choice(FIRST)} {self.rng.choice(LAST)}"
 
     # log.debug("Defines a made-up company")
     def company(self) -> str:
-        """Return a word, a kind of business and maybe a suffix."""
+        """Returns a word, a kind of business and maybe a suffix.
+
+        Returns:
+            The company's name, such as "Acme Logistics LLC".
+        """
         # log.debug("Picks the three parts")
         parts = (
             self.rng.choice(COMPANY_WORDS),
@@ -98,18 +125,32 @@ class NameGen:
 
     # log.debug("Defines a made-up place")
     def city_state(self) -> str:
-        """Return a city and state."""
+        """Returns a city and state.
+
+        Returns:
+            The place, such as "Denver, CO".
+        """
         # log.debug("Returns a random place")
         return self.rng.choice(CITIES)
 
 
 # log.debug("Defines the near duplicates of a company name")
-def near_duplicates(name: str, rng: random.Random | None = None) -> list[str]:
-    """Return the variants a careless intake would produce.
+def near_duplicates(name: str | None = None, rng: random.Random | None = None) -> list[str]:
+    """Returns the variants a careless intake would produce.
 
     Suffix swaps, a dropped plural, capitals, lost or hyphenated
     spaces, and one dropped letter; never the name itself.
+
+    Args:
+        name: The company name to vary. Required.
+        rng: The random source for the choices; if None, one seeded
+            from the name, so a name's variants repeat.
+
+    Returns:
+        Each variant once, in the order made.
     """
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
     # log.debug("Seeds from the name, so a name's variants repeat")
     rng = rng or random.Random(name)  # noqa: S311 - test data, not security
     # log.debug("Strips the legal suffix to get the base name")

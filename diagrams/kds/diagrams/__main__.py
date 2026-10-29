@@ -1,29 +1,48 @@
 ########################################################################
 #                  diagrams/kds/diagrams/__main__.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The kds-diagrams command: draws every diagram in #
-#                     a spec file, such as docs/diagrams.toml.         #
-########################################################################
-"""Command line: `kds-diagrams docs/diagrams.toml`."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+The kds-diagrams command: draws every diagram in a spec file, such as
+docs/diagrams.toml.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import argparse
 import logging
 from pathlib import Path
 
+# Local
 from kds.diagrams.spec import render_file
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
 
 
+########################################################################
+#                             Command line                             #
+########################################################################
 # log.debug("Defines the command's entry point")
 def main(argv: list[str] | None = None) -> int:
-    """Draw each diagram in each spec file named on the command line."""
+    """Draws each diagram in each spec file named on the command line.
+
+    Args:
+        argv: The arguments after the command's name; None reads them
+            from the command line.
+
+    Returns:
+        The exit status: 0 once every diagram is written.
+    """
     # log.debug("Describes the command and its one argument")
     parser = argparse.ArgumentParser(prog="kds-diagrams", description="Draw README diagrams.")
     # log.debug("Takes one or more spec files")

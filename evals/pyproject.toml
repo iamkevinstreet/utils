@@ -1,23 +1,24 @@
 ########################################################################
 #                         evals/pyproject.toml                         #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Packages kds-evals: cases, metrics, a runner and #
-#                     reports, a judge.                                #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Packages kds-evals: cases, metrics, a runner and reports, a judge.
+
 [project]
 name = "kds-evals"
-version = "0.3.0"
+version = "0.4.0"
 description = "Evaluation cases, metrics, a runner that writes results tables, a model judge with calibration, and run comparison."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-llm>=0.3,<0.4",
-  "kds-logs>=0.3,<0.4",
+  "kds-args>=0.4,<0.5",
+  "kds-llm>=0.4,<0.5",
+  "kds-logs>=0.4,<0.5",
 ]
 
 [project.optional-dependencies]

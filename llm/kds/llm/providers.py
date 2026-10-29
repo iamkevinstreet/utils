@@ -1,43 +1,68 @@
 ########################################################################
 #                       llm/kds/llm/providers.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Builds the provider the settings name, and stops #
-#                     early with a clear message when a key is         #
-#                     missing.                                         #
-########################################################################
-"""The one place a concrete provider is chosen."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Builds the provider the settings name, and stops early with a clear
+message when a key is missing. This is the one place a concrete
+provider is chosen; everything else talks to the Provider interface.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 
+# Local
+from kds.args import required
 from kds.llm.anthropic_provider import AnthropicProvider
 from kds.llm.base import Provider
 from kds.llm.fake import FakeProvider
 from kds.llm.openai_provider import OpenAIProvider
 from kds.settings import Settings
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the advice every missing-key error ends with")
 FIX = "add it to .env (see .env.example)"
 
 
+########################################################################
+#                           Provider choice                            #
+########################################################################
 # log.debug("Defines the error for a provider chosen without its key")
 class MissingKeyError(RuntimeError):
     """The settings chose a provider whose key is not set."""
 
 
 # log.debug("Defines the factory that builds the configured provider")
-def build_provider(settings: Settings) -> Provider:
-    """Return the provider `settings.llm_provider` names.
+def build_provider(settings: Settings | None = None) -> Provider:
+    """Returns the provider `settings.llm_provider` names.
+
+    Args:
+        settings: The settings that name the provider and hold its
+            keys. Required.
+
+    Returns:
+        The provider the settings name; the offline fake for "fake".
 
     Raises:
         MissingKeyError: The chosen provider's key or endpoint is unset.
     """
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
     # log.debug("Reads which provider was chosen")
     choice = settings.llm_provider
     # log.debug("Builds Anthropic when chosen")

@@ -1,14 +1,19 @@
 ########################################################################
 #                       logs/tests/test_logs.py                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the JSON lines, request ids, one-time      #
-#                     setup and the HH:MM:SS trace format.             #
-########################################################################
-"""Tests for kds.logs setup, events and traces."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the JSON lines, request ids, one-time setup and the HH:MM:SS trace
+format.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
@@ -17,8 +22,10 @@ import re
 from collections.abc import Iterator
 from pathlib import Path
 
+# Third-party
 import pytest
 
+# Local
 from kds.logs import (
     HANDLER_NAME,
     TraceFormatter,
@@ -30,16 +37,29 @@ from kds.logs import (
 )
 from kds.settings import Settings
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the pattern every trace line must match")
 TRACE_LINE = re.compile(r"\d{2}:\d{2}:\d{2} - Splits the question")
 
 
+########################################################################
+#                            Logging tests                             #
+########################################################################
 # log.debug("Defines a fixture that removes this module's handlers")
 @pytest.fixture
 def clean_root() -> Iterator[logging.Logger]:
-    """Yield the root logger, then remove and close our handlers."""
+    """Yields the root logger, then removes and closes our handlers.
+
+    Yields:
+        The root logger, for the test to inspect.
+    """
     # log.debug("Finds the root logger")
     root = logging.getLogger()
     # log.debug("Hands it to the test")
@@ -70,7 +90,13 @@ def test_trace_line_format() -> None:
 
 # log.debug("Defines the test of an event written as JSON")
 def test_event_is_redacted_json(tmp_path: Path, clean_root: logging.Logger) -> None:
-    """An event becomes one JSON line with its request id, redacted."""
+    """An event becomes one JSON line with its request id, redacted.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        clean_root: The root logger, cleared of the setup's handlers
+            after the test.
+    """
     # log.debug("Sets up logging into the test's folder")
     path = setup_logging(Settings(_env_file=None, log_dir=tmp_path))
     # log.debug("Logs an event holding an email, inside a request")
@@ -87,7 +113,13 @@ def test_event_is_redacted_json(tmp_path: Path, clean_root: logging.Logger) -> N
 
 # log.debug("Defines the test that setup runs only once")
 def test_setup_is_idempotent(tmp_path: Path, clean_root: logging.Logger) -> None:
-    """A second setup adds no handlers and returns the same file."""
+    """A second setup adds no handlers and returns the same file.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        clean_root: The root logger, cleared of the setup's handlers
+            after the test.
+    """
     # log.debug("Builds settings that log into the test's folder")
     settings = Settings(_env_file=None, log_dir=tmp_path)
     # log.debug("Sets up logging the first time")

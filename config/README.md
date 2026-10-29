@@ -1,15 +1,15 @@
 # config
 
-`settings.toml` lists every setting the shared packages read, at its default. It is the reference a
-project copies from: a project's own `config/settings.toml` holds only the sections it changes, and its
-config module subclasses `kds.settings.Settings` to add its own.
+`config.toml` lists every setting the shared packages read, at its default. It is the reference a
+project copies from: a project's own `config/config.toml` holds only the sections it changes, and its
+config module subclasses `kds.settings.Settings` to add its own. Secrets go in `config/.env`, beside it.
 
 | Where a value comes from | Wins over |
 | --- | --- |
 | An argument in code (tests) | everything |
-| An environment variable, such as `LLM_MODEL` | `.env` and `settings.toml` |
-| `.env` (secrets only, never committed) | `settings.toml` |
-| `config/settings.toml` | the defaults in code |
+| An environment variable, such as `LLM_MODEL` | `config/.env` and `config.toml` |
+| `config/.env` (secrets only, never committed) | `config.toml` |
+| `config/config.toml` | the defaults in code |
 
 - A key's name is its section and key joined by an underscore: `[llm] model` is `llm_model`, and
   `LLM_MODEL` overrides it.

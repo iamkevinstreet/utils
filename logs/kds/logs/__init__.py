@@ -1,13 +1,13 @@
 ########################################################################
 #                      logs/kds/logs/__init__.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Structured logs: one JSON object per line, a     #
-#                     request id on each, redaction, trace lines.      #
-########################################################################
-"""kds.logs: JSON-lines logs with request ids, redaction and traces.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
+
+Structured logs: one JSON object per line, a request id on each,
+redaction, trace lines.
 
 Usage, once when a service starts:
     setup_logging(settings)
@@ -18,6 +18,10 @@ then in any module:
         log_event(log, "intake.start", email="person@example.com")
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import contextvars
@@ -31,12 +35,20 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+# Local
+from kds.args import required
 from kds.logs.redact import redact, redact_obj
 from kds.logs.trace import TraceFormatter, elapsed, trace_to_stderr
 from kds.settings import Settings, get_settings
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Holds the request id of whatever is running now")
 _REQUEST_ID: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
 # log.debug("Names the handlers this module adds, so it adds them once")
@@ -62,9 +74,17 @@ __all__ = [
 ]
 
 
+########################################################################
+#                          Structured logging                          #
+########################################################################
 # log.debug("Defines the lookup of the current request id")
 def current_request_id() -> str:
-    """Return the request id of the work running now, or "-"."""
+    """Returns the request id of the work running now, or "-".
+
+    Returns:
+        The id new_request_id set for this context, or "-" outside
+        any request.
+    """
     # log.debug("Returns the id from the context")
     return _REQUEST_ID.get()
 
@@ -72,11 +92,11 @@ def current_request_id() -> str:
 # log.debug("Defines the block that gives its work a request id")
 @contextmanager
 def new_request_id(value: str | None = None) -> Iterator[str]:
-    """Tag everything logged inside the block with one request id.
+    """Tags everything logged inside the block with one request id.
 
     Args:
-        value: The id to use, such as one from an incoming header; a
-            new random id when omitted.
+        value: The id to use, such as one from an incoming header; a new
+            random id when omitted.
 
     Yields:
         The id, so it can be returned to the caller or passed on.
@@ -96,11 +116,19 @@ def new_request_id(value: str | None = None) -> Iterator[str]:
 
 # log.debug("Defines the formatter that writes one JSON object per record")
 class JsonFormatter(logging.Formatter):
-    """Format a record as one line of JSON with its request id."""
+    """Formats each record as one line of JSON with its request id."""
 
     # log.debug("Defines how one record becomes one JSON line")
-    def format(self, record: logging.LogRecord) -> str:
-        """Return the record as a JSON object on a single line."""
+    def format(self, record: logging.LogRecord) -> str:  # fixed: logging.Formatter's signature
+        """Returns the record as a JSON object on a single line.
+
+        Args:
+            record: The record to format.
+
+        Returns:
+            One line of JSON: the time, level, logger, request id and
+            message, any event fields, and the traceback if logged.
+        """
         # log.debug("Collects the fields every line carries")
         payload: dict[str, Any] = {
             "ts": datetime.now(UTC).isoformat(timespec="milliseconds"),
@@ -121,7 +149,7 @@ class JsonFormatter(logging.Formatter):
 
 # log.debug("Defines the one-time setup of logging for a service")
 def setup_logging(settings: Settings | None = None) -> Path:
-    """Send JSON lines to today's file and stderr; add traces if on.
+    """Sends JSON lines to today's file and stderr; adds traces if on.
 
     Safe to call more than once: later calls change nothing.
 
@@ -171,22 +199,41 @@ def setup_logging(settings: Settings | None = None) -> Path:
 
 
 # log.debug("Defines the logger lookup services use")
-def get_logger(name: str) -> logging.Logger:
-    """Return the named logger; `setup_logging` sets where it goes."""
+def get_logger(name: str | None = None) -> logging.Logger:
+    """Returns the named logger; `setup_logging` sets where it goes.
+
+    Args:
+        name: The logger's name, usually the module's __name__.
+            Required.
+
+    Returns:
+        The standard library's logger of that name.
+    """
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
     # log.debug("Returns the standard library's logger for the name")
     return logging.getLogger(name)
 
 
 # log.debug("Defines how a structured event is logged")
-def log_event(logger: logging.Logger, kind: str, level: int = logging.INFO, **fields: Any) -> None:
-    """Log an event and its fields; fields are redacted unless off.
+def log_event(
+    logger: logging.Logger | None = None,
+    kind: str | None = None,
+    level: int = logging.INFO,
+    **fields: Any,
+) -> None:
+    """Logs an event and its fields; fields are redacted unless off.
 
     Args:
-        logger: The module's logger.
-        kind: A dotted event name, such as "llm.call".
+        logger: The module's logger. Required.
+        kind: A dotted event name, such as "llm.call". Required.
         level: The level to log at.
         **fields: The event's data; strings in it are redacted.
     """
+    # log.debug("Takes the logger, which the caller must give")
+    logger = required(logger=logger)
+    # log.debug("Takes the kind, which the caller must give")
+    kind = required(kind=kind)
     # log.debug("Puts the event's name first among its fields")
     data = {"kind": kind, **fields}
     # log.debug("Redacts personal data unless the settings turn it off")

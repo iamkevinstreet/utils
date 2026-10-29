@@ -1,22 +1,24 @@
 ########################################################################
 #                         logs/pyproject.toml                          #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Packages kds-logs: JSON-lines logs with request  #
-#                     ids, redaction and traces.                       #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Packages kds-logs: JSON-lines logs with request ids, redaction and
+# traces.
+
 [project]
 name = "kds-logs"
-version = "0.3.0"
+version = "0.4.0"
 description = "JSON-lines logging with request ids, redaction of personal data, and HH:MM:SS trace lines."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-settings>=0.3,<0.4",
+  "kds-args>=0.4,<0.5",
+  "kds-settings>=0.4,<0.5",
 ]
 
 [project.optional-dependencies]

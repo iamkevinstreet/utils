@@ -1,22 +1,36 @@
 ########################################################################
 #                     diagrams/kds/diagrams/svg.py                     #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Draws the at-a-glance diagram style as SVG:      #
-#                     zones, components, arrows and the foundation.    #
-########################################################################
-"""SVG drawing for the house diagram style, one element at a time."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Draws the at-a-glance diagram style as SVG: zones, components, arrows
+and the foundation.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from html import escape
 from typing import NamedTuple
 
-# Module constants
+# Local
+from kds.args import required
+
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the canvas colour")
 CANVAS = "#121212"
 # log.debug("Sets the fill of components, a step above the canvas")
@@ -80,6 +94,9 @@ ATTRIBUTES = {
 }
 
 
+########################################################################
+#                             SVG drawing                              #
+########################################################################
 # log.debug("Defines a rectangle on the canvas")
 class Box(NamedTuple):
     """A rectangle on the canvas, in pixels from the top left."""
@@ -95,20 +112,50 @@ class Box(NamedTuple):
 
 
 # log.debug("Defines the estimate of how wide a line of text runs")
-def width_of(value: str, size: float, bold: bool = False) -> float:
-    """Return the rough width of `value` in pixels at `size`.
+def width_of(value: str | None = None, size: float | None = None, bold: bool = False) -> float:
+    """Returns the rough width of `value` in pixels at `size`.
 
     SVG text never wraps, so a line that runs past its box overlaps
     whatever is next to it. The estimate is generous on purpose: a
     diagram that passes it fits in every common font.
+
+    Args:
+        value: The line of text. Required.
+        size: The font size in pixels. Required.
+        bold: True for bold text, which runs wider.
+
+    Returns:
+        The estimated width in pixels.
     """
+    # log.debug("Takes the value, which the caller must give")
+    value = required(value=value)
+    # log.debug("Takes the size, which the caller must give")
+    size = required(size=size)
     # log.debug("Returns the glyph count times the average glyph width")
     return len(value) * size * (BOLD_GLYPH if bold else GLYPH)
 
 
 # log.debug("Defines the guard that stops text overflowing its box")
-def ensure_fits(value: str, size: float, room: float, bold: bool = False) -> None:
-    """Raise ValueError when `value` would run past `room` pixels."""
+def ensure_fits(
+    value: str | None = None,
+    size: float | None = None,
+    room: float | None = None,
+    bold: bool = False,
+) -> None:
+    """Raises ValueError when `value` would run past `room` pixels.
+
+    Args:
+        value: The line of text. Required.
+        size: The font size in pixels. Required.
+        room: The width the line has, in pixels. Required.
+        bold: True for bold text, which runs wider.
+    """
+    # log.debug("Takes the value, which the caller must give")
+    value = required(value=value)
+    # log.debug("Takes the size, which the caller must give")
+    size = required(size=size)
+    # log.debug("Takes the room, which the caller must give")
+    room = required(room=room)
     # log.debug("Estimates the line's width")
     needed = width_of(value, size, bold)
     # log.debug("Stops with a fix-it message when it does not fit")
@@ -120,19 +167,27 @@ def ensure_fits(value: str, size: float, room: float, bold: bool = False) -> Non
 
 
 # log.debug("Defines how one text element is written")
-def text(x: float, y: float, value: str, **style: str | float) -> str:
-    """Return an SVG text element; keyword style becomes attributes.
+def text(
+    x: float | None = None, y: float | None = None, value: str | None = None, **style: str | float
+) -> str:
+    """Returns an SVG text element; keyword style becomes attributes.
 
     Args:
-        x: The left (or centre, with anchor) of the text.
-        y: The baseline.
-        value: The words, escaped for XML.
-        **style: fill, size, weight, family or anchor, and `note`:
-            muted words in brackets after the value.
+        x: The left (or centre, with anchor) of the text. Required.
+        y: The baseline. Required.
+        value: The words, escaped for XML. Required.
+        **style: fill, size, weight, family or anchor, and `note`: muted
+            words in brackets after the value.
 
     Returns:
         The element as a string.
     """
+    # log.debug("Takes the x, which the caller must give")
+    x = required(x=x)
+    # log.debug("Takes the y, which the caller must give")
+    y = required(y=y)
+    # log.debug("Takes the value, which the caller must give")
+    value = required(value=value)
     # log.debug("Takes the trailing note out of the style, if any")
     note = str(style.pop("note", ""))
     # log.debug("Lays the caller's style over the defaults")
@@ -150,8 +205,30 @@ def text(x: float, y: float, value: str, **style: str | float) -> str:
 
 
 # log.debug("Defines how a rounded box is written")
-def rect(at: Box, *, fill: str, stroke: str, dashed: bool = False) -> str:
-    """Return a rounded rectangle, solid or dashed."""
+def rect(
+    at: Box | None = None,
+    *,
+    fill: str | None = None,
+    stroke: str | None = None,
+    dashed: bool = False,
+) -> str:
+    """Returns a rounded rectangle, solid or dashed.
+
+    Args:
+        at: Where the rectangle goes. Required.
+        fill: The fill colour, or "none". Required.
+        stroke: The outline colour. Required.
+        dashed: True for a dashed outline, as zones have.
+
+    Returns:
+        The rect element as a string.
+    """
+    # log.debug("Takes the at, which the caller must give")
+    at = required(at=at)
+    # log.debug("Takes the fill, which the caller must give")
+    fill = required(fill=fill)
+    # log.debug("Takes the stroke, which the caller must give")
+    stroke = required(stroke=stroke)
     # log.debug("Adds a dash pattern for zones")
     dash = ' stroke-dasharray="5 4"' if dashed else ""
     # log.debug("Returns the rectangle element")
@@ -162,8 +239,23 @@ def rect(at: Box, *, fill: str, stroke: str, dashed: bool = False) -> str:
 
 
 # log.debug("Defines how a zone is drawn")
-def zone(at: Box, title: str, rule: str) -> str:
-    """Return a dashed zone with its title and its rule after a dot."""
+def zone(at: Box | None = None, title: str | None = None, rule: str | None = None) -> str:
+    """Returns a dashed zone with its title and its rule after a dot.
+
+    Args:
+        at: Where the zone goes. Required.
+        title: The zone's name. Required.
+        rule: Who may touch what runs there; empty for none. Required.
+
+    Returns:
+        The zone's dashed outline and its label as one string.
+    """
+    # log.debug("Takes the at, which the caller must give")
+    at = required(at=at)
+    # log.debug("Takes the title, which the caller must give")
+    title = required(title=title)
+    # log.debug("Takes the rule, which the caller must give")
+    rule = required(rule=rule)
     # log.debug("Joins the title and its rule with a middle dot")
     label = f"{title} · {rule}" if rule else title
     # log.debug("Stops if the label would run past the zone")
@@ -175,18 +267,29 @@ def zone(at: Box, title: str, rule: str) -> str:
 
 
 # log.debug("Defines how a component is drawn")
-def component(at: Box, name: str, details: list[str], note: str = "") -> str:
-    """Return a component: its box, its name, and up to three lines.
+def component(
+    at: Box | None = None,
+    name: str | None = None,
+    details: list[str] | None = None,
+    note: str = "",
+) -> str:
+    """Returns a component: its box, its name, and up to three lines.
 
     Args:
-        at: Where the box goes.
-        name: The component's name, bold and centred.
-        details: Up to three short lines of grey detail.
+        at: Where the box goes. Required.
+        name: The component's name, bold and centred. Required.
+        details: Up to three short lines of grey detail. Required.
         note: A muted marker after the name: "new" or "to build".
 
     Returns:
         The component's elements as one string.
     """
+    # log.debug("Takes the at, which the caller must give")
+    at = required(at=at)
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
+    # log.debug("Takes the details, which the caller must give")
+    details = required(details=details)
     # log.debug("Stops if the name and its note would overflow")
     ensure_fits(f"{name} ({note})" if note else name, NAME, at.w - 2 * PAD, bold=True)
     # log.debug("Draws the component's box")
@@ -224,19 +327,28 @@ def component(at: Box, name: str, details: list[str], note: str = "") -> str:
 
 # log.debug("Defines how an arrow is drawn")
 def arrow(
-    points: list[tuple[float, float]], label: str, at: tuple[float, float], accent: bool = False
+    points: list[tuple[float, float]] | None = None,
+    label: str | None = None,
+    at: tuple[float, float] | None = None,
+    accent: bool = False,
 ) -> str:
-    """Return a polyline arrow with its label.
+    """Returns a polyline arrow with its label.
 
     Args:
-        points: The corners of the path, start to end.
-        label: What crosses the arrow.
-        at: Where the label's left baseline goes.
+        points: The corners of the path, start to end. Required.
+        label: What crosses the arrow. Required.
+        at: Where the label's left baseline goes. Required.
         accent: True for a path that matters, drawn in the accent.
 
     Returns:
         The path, its arrowhead marker reference and its label.
     """
+    # log.debug("Takes the points, which the caller must give")
+    points = required(points=points)
+    # log.debug("Takes the label, which the caller must give")
+    label = required(label=label)
+    # log.debug("Takes the at, which the caller must give")
+    at = required(at=at)
     # log.debug("Picks the colour, weight and head for plain or accent")
     colour, width, head = (ACCENT, 2, ACCENT_HEAD) if accent else (MUTED, 1.2, PLAIN_HEAD)
     # log.debug("Joins the corners into a path")
@@ -257,8 +369,23 @@ def arrow(
 
 
 # log.debug("Defines how the foundation band is drawn")
-def band(at: Box, title: str, lines: list[str]) -> str:
-    """Return the foundation band: what every zone shares."""
+def band(at: Box | None = None, title: str | None = None, lines: list[str] | None = None) -> str:
+    """Returns the foundation band: what every zone shares.
+
+    Args:
+        at: Where the band goes. Required.
+        title: The band's heading. Required.
+        lines: What every zone shares, one line each. Required.
+
+    Returns:
+        The band's box, heading and lines as one string.
+    """
+    # log.debug("Takes the at, which the caller must give")
+    at = required(at=at)
+    # log.debug("Takes the title, which the caller must give")
+    title = required(title=title)
+    # log.debug("Takes the lines, which the caller must give")
+    lines = required(lines=lines)
     # log.debug("Stops if any of the band's lines would overflow")
     for line in lines:
         # log.debug("Checks one line against the band's width")
@@ -277,7 +404,11 @@ def band(at: Box, title: str, lines: list[str]) -> str:
 
 # log.debug("Defines the arrowhead markers every diagram uses")
 def markers() -> str:
-    """Return the defs for the plain and accent arrowheads."""
+    """Returns the defs for the plain and accent arrowheads.
+
+    Returns:
+        A defs element holding one marker per arrowhead.
+    """
     # log.debug("Writes one marker per arrow colour")
     heads = "".join(
         f'<marker id="{name}" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" '

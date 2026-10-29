@@ -1,0 +1,32 @@
+########################################################################
+#                         args/pyproject.toml                          #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Packages kds-args: required(), which takes an argument that defaults
+# to None but must be given.
+
+[project]
+name = "kds-args"
+version = "0.4.0"
+description = "Takes a function's arguments the code standard's way: required() for a None default that must be given."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.17"]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["kds.args"]
+
+[tool.setuptools.package-data]
+"kds.args" = ["py.typed"]

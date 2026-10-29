@@ -1,23 +1,28 @@
 ########################################################################
 #                      evals/kds/evals/runner.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Runs a system over cases, scoring, timing and    #
-#                     pricing each; writes JSON and Markdown results.  #
-########################################################################
-"""The evaluation runner.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
-It knows nothing about any project. A project supplies two functions:
+Runs a system over evaluation cases and writes the results as JSON and
+Markdown.
+
+The runner knows nothing about any project. A project supplies two
+functions:
 
     system_fn(case) -> output          # runs the system on one case
     scorer_fn(case, output) -> scores  # a flat dict of numbers, bools
 
-and the runner handles timing, cost (from the adapter's call record),
-failures, the summary and the report files.
+and the runner handles the rest: timing, cost (from the adapter's call
+record), failures, the summary and the report files.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
@@ -29,22 +34,32 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+# Third-party
 from pydantic import BaseModel, Field
 
+# Local
+from kds.args import missing, required
+from kds.evals import config
 from kds.evals.case import EvalCase
 from kds.evals.summary import summarise, to_markdown
 from kds.llm.adapter import ModelAdapter
 from kds.llm.pricing import prices_as_of
 from kds.logs import log_event, new_request_id
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the decimal places a case's cost is kept to, from the config")
+COST_PLACES = config.COST_PLACES
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the milliseconds in a second, for latency")
 MS = 1000
 # log.debug("Sets how much of a failing case's traceback is logged")
 TRACE_CHARS = 2000
-# log.debug("Sets the decimal places a case's cost is kept to")
-COST_PLACES = 6
 # log.debug("Sets the timestamp format in result file names")
 STAMP = "%Y%m%dT%H%M%SZ"
 # log.debug("Sets the encoding result files are written in")
@@ -53,6 +68,9 @@ ENCODING = "utf-8"
 TIMESPEC = "seconds"
 
 
+########################################################################
+#                           Evaluation runs                            #
+########################################################################
 # log.debug("Defines the result of one case")
 class CaseResult(BaseModel):
     """One case's outcome: its scores, output, time, cost and calls."""
@@ -105,12 +123,32 @@ class RunResult(BaseModel):
 
 # log.debug("Defines how one case is run")
 def run_case(
-    case: EvalCase,
-    adapter: ModelAdapter,
-    system_fn: Callable[[EvalCase], Any],
-    scorer_fn: Callable[[EvalCase, Any], dict[str, Any]],
+    case: EvalCase | None = None,
+    adapter: ModelAdapter | None = None,
+    system_fn: Callable[[EvalCase], Any] | None = None,
+    scorer_fn: Callable[[EvalCase, Any], dict[str, Any]] | None = None,
 ) -> CaseResult:
-    """Run and score one case; a failure is recorded, never raised."""
+    """Runs and scores one case; a failure is recorded, never raised.
+
+    Args:
+        case: The case to run. Required.
+        adapter: The model adapter the system calls; its call record
+            gives the case's calls and cost. Required.
+        system_fn: Runs the system on a case and returns its output.
+            Required.
+        scorer_fn: Scores a case's output as a flat dict. Required.
+
+    Returns:
+        The case's scores, output, error, time, cost and call count.
+    """
+    # log.debug("Takes the case, which the caller must give")
+    case = required(case=case)
+    # log.debug("Takes the adapter, which the caller must give")
+    adapter = required(adapter=adapter)
+    # log.debug("Takes the system fn, which the caller must give")
+    system_fn = required(system_fn=system_fn)
+    # log.debug("Takes the scorer fn, which the caller must give")
+    scorer_fn = required(scorer_fn=scorer_fn)
     # log.debug("Notes the call count before the case")
     calls_before = len(adapter.calls)
     # log.debug("Notes the spend before the case")
@@ -154,24 +192,51 @@ def run_case(
 # log.debug("Defines a whole evaluation run")
 def run_eval(
     *,
-    name: str,
-    cases: list[EvalCase],
-    adapter: ModelAdapter,
-    system_fn: Callable[[EvalCase], Any],
-    scorer_fn: Callable[[EvalCase, Any], dict[str, Any]],
-    out_dir: Path | str,
+    name: str | None = None,
+    cases: list[EvalCase] | None = None,
+    adapter: ModelAdapter | None = None,
+    system_fn: Callable[[EvalCase], Any] | None = None,
+    scorer_fn: Callable[[EvalCase, Any], dict[str, Any]] | None = None,
+    out_dir: Path | str | None = None,
     keep_output: bool = True,
 ) -> RunResult:
-    """Run every case, then write <name>-<time>.json and .md files.
+    """Runs every case, then writes <name>-<time>.json and .md files.
 
     Each case runs under its own request id, "<name>:<case id>", so
     its log lines can be found together. Pass keep_output=False when
     the system saves its outputs itself and the results file should
     hold only the scores.
 
+    Args:
+        name: The run's name, used in file names and request ids.
+            Required.
+        cases: The cases to run, in order. Required.
+        adapter: The model adapter the system calls; it gives the
+            run's model, provider and cost. Required.
+        system_fn: Runs the system on a case and returns its output.
+            Required.
+        scorer_fn: Scores a case's output as a flat dict of numbers
+            and booleans. Required.
+        out_dir: The folder the result files go in. Required.
+        keep_output: Whether the results keep each case's output.
+
     Returns:
         The run, also written to `out_dir` with a <name>-latest.md copy.
     """
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
+    # log.debug("Takes the cases, which the caller must give")
+    cases = required(cases=cases)
+    # log.debug("Takes the adapter, which the caller must give")
+    adapter = required(adapter=adapter)
+    # log.debug("Takes the system fn, which the caller must give")
+    system_fn = required(system_fn=system_fn)
+    # log.debug("Takes the scorer fn, which the caller must give")
+    scorer_fn = required(scorer_fn=scorer_fn)
+    # log.debug("Stops when the caller left out the out dir")
+    if out_dir is None:
+        # log.debug("Raises the missing-argument error")
+        raise missing(out_dir=out_dir)
     # log.debug("Notes when the run started")
     started = datetime.now(UTC)
     # log.debug("Starts the list of case results")
@@ -213,8 +278,24 @@ def run_eval(
 
 
 # log.debug("Defines how a run is saved")
-def write_run(run: RunResult, out_dir: Path, stamp: str) -> None:
-    """Write the run as JSON and Markdown; refresh the latest copy."""
+def write_run(
+    run: RunResult | None = None, out_dir: Path | None = None, stamp: str | None = None
+) -> None:
+    """Writes the run as JSON and Markdown; refreshes the latest copy.
+
+    Args:
+        run: The finished run. Required.
+        out_dir: The folder the files go in, created if needed.
+            Required.
+        stamp: The run's start time as the file names show it.
+            Required.
+    """
+    # log.debug("Takes the run, which the caller must give")
+    run = required(run=run)
+    # log.debug("Takes the out dir, which the caller must give")
+    out_dir = required(out_dir=out_dir)
+    # log.debug("Takes the stamp, which the caller must give")
+    stamp = required(stamp=stamp)
     # log.debug("Creates the results folder")
     out_dir.mkdir(parents=True, exist_ok=True)
     # log.debug("Renders the Markdown report once")
@@ -228,8 +309,16 @@ def write_run(run: RunResult, out_dir: Path, stamp: str) -> None:
 
 
 # log.debug("Defines how any output becomes JSON-safe")
-def _jsonable(value: Any) -> Any:
-    """Return a model as a dict, JSON as is, anything else as text."""
+def _jsonable(value: Any = None) -> Any:
+    """Returns a model as a dict, JSON as is, anything else as text.
+
+    Args:
+        value: What the system returned.
+
+    Returns:
+        A pydantic model's dict, a value JSON can hold as it is, or
+        anything else as its repr.
+    """
     # log.debug("Dumps a pydantic model to a dict")
     if isinstance(value, BaseModel):
         # log.debug("Returns the dict")

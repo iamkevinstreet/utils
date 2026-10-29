@@ -1,18 +1,23 @@
 ########################################################################
 #                     evals/tests/test_metrics.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests each metric against values worked out by   #
-#                     hand.                                            #
-########################################################################
-"""Tests for kds.evals.metrics."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Tests each metric against values worked out by hand.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 
+# Local
 from kds.evals.metrics import (
     exact_match,
     field_accuracy,
@@ -21,10 +26,15 @@ from kds.evals.metrics import (
     precision_recall,
 )
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
 
 
+########################################################################
+#                             Metric tests                             #
+########################################################################
 # log.debug("Defines the test that matching ignores case and spacing")
 def test_exact_match_normalises() -> None:
     """Case, spacing and list order do not matter; values do."""

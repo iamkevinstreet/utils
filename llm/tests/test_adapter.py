@@ -1,21 +1,29 @@
 ########################################################################
 #                      llm/tests/test_adapter.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the adapter offline: calls, JSON repair,   #
-#                     budget stop, retries and the price table.        #
-########################################################################
-"""Tests for kds.llm, all against the offline fake provider."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Tests the adapter offline: calls, JSON repair, budget stop, retries and
+the price table.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 
+# Third-party
 import pytest
 from pydantic import BaseModel
 
+# Local
+from kds.args import required
 from kds.llm.adapter import ModelAdapter
 from kds.llm.anthropic_provider import AnthropicProvider
 from kds.llm.errors import BudgetExceededError, StructuredOutputError, TransientError
@@ -23,14 +31,23 @@ from kds.llm.fake import FakeProvider
 from kds.llm.pricing import estimate_cost
 from kds.llm.types import Message, ToolCall, Usage
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the model name the offline price table lists at zero")
 FAKE_MODEL = "fake-model"
 # log.debug("Sets a prompt the tests send")
 PROMPT = "extract"
 
 
+########################################################################
+#                            Adapter tests                             #
+########################################################################
 # log.debug("Defines the schema the JSON tests ask for")
 class Record(BaseModel):
     """A record with one required and one optional field."""
@@ -46,8 +63,18 @@ class Flaky(FakeProvider):
     """Raises `error` for the first `failures` calls, then answers."""
 
     # log.debug("Defines the constructor with the failures to script")
-    def __init__(self, failures: int, error: Exception) -> None:
-        """Script `failures` failures, then the answer "ok"."""
+    def __init__(self, failures: int | None = None, error: Exception | None = None) -> None:
+        """Scripts `failures` failures, then the answer "ok".
+
+        Args:
+            failures: How many calls fail before one answers.
+                Required.
+            error: The error each failing call raises. Required.
+        """
+        # log.debug("Takes the failures, which the caller must give")
+        failures = required(failures=failures)
+        # log.debug("Takes the error, which the caller must give")
+        error = required(error=error)
         # log.debug("Queues the eventual answer")
         super().__init__(["ok"])
         # log.debug("Keeps how many failures are left")
@@ -57,7 +84,14 @@ class Flaky(FakeProvider):
 
     # log.debug("Defines a call that fails until the failures run out")
     def complete(self, **request: object) -> object:  # type: ignore[override]
-        """Raise while failures remain, then answer normally."""
+        """Raises while failures remain, then answers normally.
+
+        Args:
+            **request: The call's keyword arguments, passed on.
+
+        Returns:
+            The plain fake's completion, once the failures run out.
+        """
         # log.debug("Raises while there are failures left")
         if self.failures:
             # log.debug("Uses one failure up")
@@ -69,8 +103,20 @@ class Flaky(FakeProvider):
 
 
 # log.debug("Defines an adapter that never really sleeps")
-def _adapter(provider: FakeProvider, budget_usd: float | None = None) -> ModelAdapter:
-    """Return an adapter on `provider` whose retries do not wait."""
+def _adapter(
+    provider: FakeProvider | None = None, budget_usd: float | None = None
+) -> ModelAdapter:
+    """Returns an adapter on `provider` whose retries do not wait.
+
+    Args:
+        provider: The fake provider the adapter calls. Required.
+        budget_usd: The spending limit; the settings' budget if None.
+
+    Returns:
+        The adapter, on the fake model, with a sleep that does nothing.
+    """
+    # log.debug("Takes the provider, which the caller must give")
+    provider = required(provider=provider)
     # log.debug("Builds the adapter with a no-op sleep")
     return ModelAdapter(provider, model=FAKE_MODEL, budget_usd=budget_usd, sleep=lambda _: None)
 

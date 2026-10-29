@@ -1,36 +1,71 @@
 ########################################################################
 #                   settings/tests/test_settings.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the defaults, the settings.toml source,    #
-#                     source priority and that secrets never leak.     #
-########################################################################
-"""Tests for kds.settings."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Tests the defaults, the config.toml source, source priority and that
+secrets never leak.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import tomllib
 from pathlib import Path
 
+# Third-party
 import pytest
 
+# Local
+from kds.args import required
 from kds.settings import Settings, describe
 from kds.settings.toml import flatten
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets a key that looks real enough to catch a leak")
 FAKE_KEY = "sk-test-not-a-real-key"
 
 
+########################################################################
+#                            Test settings                             #
+########################################################################
 # log.debug("Defines a helper that writes a settings file")
-def _write(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, text: str) -> None:
-    """Write `text` as the settings file; point SETTINGS_FILE at it."""
+def _write(
+    tmp_path: Path | None = None,
+    monkeypatch: pytest.MonkeyPatch | None = None,
+    text: str | None = None,
+) -> None:
+    """Writes `text` as the settings file; point SETTINGS_FILE at it.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+            Required.
+        monkeypatch: pytest's helper for patching the environment and
+            objects. Required.
+        text: The TOML to write. Required.
+    """
+    # log.debug("Takes the tmp path, which the caller must give")
+    tmp_path = required(tmp_path=tmp_path)
+    # log.debug("Takes the monkeypatch, which the caller must give")
+    monkeypatch = required(monkeypatch=monkeypatch)
+    # log.debug("Takes the text, which the caller must give")
+    text = required(text=text)
     # log.debug("Names the file inside the test's folder")
-    path = tmp_path / "settings.toml"
+    path = tmp_path / "config.toml"
     # log.debug("Writes the TOML text")
     path.write_text(text, encoding="utf-8")
     # log.debug("Points the settings loader at it")
@@ -39,10 +74,15 @@ def _write(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, text: str) -> None:
 
 # log.debug("Defines the test that the defaults are the safe ones")
 def test_defaults_are_safe(monkeypatch: pytest.MonkeyPatch) -> None:
-    """With nothing set: offline provider, redaction on, a budget."""
+    """With nothing set: offline provider, redaction on, a budget.
+
+    Args:
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
     # log.debug("Removes the provider the test setup chose")
     monkeypatch.delenv("LLM_PROVIDER")
-    # log.debug("Builds settings without reading any .env file")
+    # log.debug("Builds settings without reading any config/.env file")
     s = Settings(_env_file=None)
     # log.debug("Checks the provider defaults to the offline one")
     assert s.llm_provider == "fake"
@@ -61,7 +101,13 @@ def test_flatten_joins_section_and_key() -> None:
 
 # log.debug("Defines the test that the file is read")
 def test_settings_file_is_read(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """Values in settings.toml reach the settings."""
+    """Values in config.toml reach the settings.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
     # log.debug("Writes a file that sets the model and the budget")
     _write(tmp_path, monkeypatch, '[llm]\nmodel = "from-file"\n[eval]\nbudget_usd = 1.5\n')
     # log.debug("Builds settings from it")
@@ -74,7 +120,13 @@ def test_settings_file_is_read(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) 
 
 # log.debug("Defines the test that the environment wins over the file")
 def test_environment_overrides_file(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """An environment variable beats the same setting in the file."""
+    """An environment variable beats the same setting in the file.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
     # log.debug("Writes a file that sets the model")
     _write(tmp_path, monkeypatch, '[llm]\nmodel = "from-file"\n')
     # log.debug("Sets the same setting in the environment")
@@ -85,11 +137,17 @@ def test_environment_overrides_file(tmp_path: Path, monkeypatch: pytest.MonkeyPa
 
 # log.debug("Defines the test that a secret in the file is refused")
 def test_secret_in_file_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """A key in settings.toml stops startup, without echoing the key."""
+    """A key in config.toml stops startup, without echoing the key.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
     # log.debug("Writes a file that wrongly holds a key")
     _write(tmp_path, monkeypatch, f'[anthropic]\napi_key = "{FAKE_KEY}"\n')
     # log.debug("Expects startup to stop")
-    with pytest.raises(ValueError, match=r"secrets go in \.env") as caught:
+    with pytest.raises(ValueError, match=r"secrets go in config/\.env") as caught:
         # log.debug("Builds the settings, which should fail")
         Settings(_env_file=None)
     # log.debug("Checks the error does not repeat the key")
@@ -98,7 +156,12 @@ def test_secret_in_file_is_refused(tmp_path: Path, monkeypatch: pytest.MonkeyPat
 
 # log.debug("Defines the test that secrets never show")
 def test_secrets_do_not_leak(monkeypatch: pytest.MonkeyPatch) -> None:
-    """A key is absent from the repr, masked in the startup summary."""
+    """A key is absent from the repr, masked in the startup summary.
+
+    Args:
+        monkeypatch: pytest's helper for patching the environment and
+            objects.
+    """
     # log.debug("Sets a key in the environment")
     monkeypatch.setenv("ANTHROPIC_API_KEY", FAKE_KEY)
     # log.debug("Builds settings that hold it")
@@ -126,9 +189,9 @@ def test_settings_are_frozen() -> None:
 
 # log.debug("Defines the test that the reference file matches the code")
 def test_reference_file_matches_defaults() -> None:
-    """config/settings.toml lists each shared setting at its default."""
+    """config/config.toml lists each shared setting at its default."""
     # log.debug("Finds the reference file at the repository root")
-    path = Path(__file__).resolve().parents[2] / "config" / "settings.toml"
+    path = Path(__file__).resolve().parents[2] / "config" / "config.toml"
     # log.debug("Reads it as flat setting names")
     listed = flatten(tomllib.loads(path.read_text(encoding="utf-8")))
     # log.debug("Reads each field's declared default from the class")

@@ -1,30 +1,41 @@
 ########################################################################
 #                   standards/tests/test_pyrules.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the Python rules: logger lines and their   #
-#                     exemptions, live lines, widths, literals.        #
-########################################################################
-"""Tests for the Python rules."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the logger-line rule: every statement has one directly above it,
+except the statements exempt from it, and none sits above a clause.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import textwrap
 
+# Local
 from kds.standards import pyrules
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets a file that follows every logger-line rule")
 GOOD = textwrap.dedent('''\
     """A module."""
 
     import os
 
-    # Module constants
     log = logging.getLogger(__name__)
     # log.debug("Sets the folder the module reads")
     ROOT = os.getcwd()
@@ -45,6 +56,9 @@ GOOD = textwrap.dedent('''\
     ''')
 
 
+########################################################################
+#                             Logger lines                             #
+########################################################################
 # log.debug("Defines the test that a correct file has no findings")
 def test_good_file_has_no_findings() -> None:
     """Imports, docstrings, clauses, stacked decorators are exempt."""
@@ -58,7 +72,7 @@ def test_statement_without_logger_line() -> None:
     # log.debug("Removes one logger line from the good file")
     bad = GOOD.replace('    # log.debug("Chooses the branch from the flag")\n', "")
     # log.debug("Checks exactly that statement is reported")
-    assert [f.line for f in pyrules.check_logger_lines("bad.py", bad)] == [16]
+    assert [f.line for f in pyrules.check_logger_lines("bad.py", bad)] == [15]
 
 
 # log.debug("Defines the test that a logger line above else is caught")
@@ -68,21 +82,3 @@ def test_logger_line_above_else_breaks_code() -> None:
     bad = GOOD.replace("    else:", '    # log.debug("Takes the other branch")\n    else:')
     # log.debug("Checks the finding names the clause rule")
     assert any("breaks the code" in f.message for f in pyrules.check_logger_lines("x.py", bad))
-
-
-# log.debug("Defines the test that a live logger line is caught")
-def test_live_logger_line() -> None:
-    """A logger line left on is a finding."""
-    # log.debug("Switches one logger line on")
-    live = GOOD.replace('# log.debug("Returns the yes branch")', 'log.debug("Returns yes")')
-    # log.debug("Checks the trace-off rule fires")
-    assert any(f.rule == "trace-off" for f in pyrules.check_lines("x.py", live))
-
-
-# log.debug("Defines the test that a repeated literal is caught")
-def test_repeated_literal() -> None:
-    """A string used twice inside functions is a finding."""
-    # log.debug("Builds a function that repeats a string")
-    source = 'def f():\n    a = "utf-8"\n    b = "utf-8"\n'
-    # log.debug("Checks the literal rule reports it once")
-    assert len(pyrules.check_literals("x.py", source)) == 1

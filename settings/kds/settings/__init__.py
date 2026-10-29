@@ -1,18 +1,18 @@
 ########################################################################
 #                  settings/kds/settings/__init__.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Typed, read-only settings: values from           #
-#                     config/settings.toml, secrets from .env.         #
-########################################################################
-"""kds.settings: one typed home for every setting a project reads.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
+
+Typed, read-only settings for every project: values from
+config/config.toml, secrets from config/.env.
 
 Values come from, highest priority first: arguments, environment
-variables, `.env`, `config/settings.toml`, then the defaults below.
-Secrets are `SecretStr`, are refused in settings.toml, and are masked
-in every log line, repr and error message.
+variables, `config/.env`, `config/config.toml`, then the defaults
+below. Secrets are `SecretStr`, are refused in config.toml, and are
+masked in every log line, repr and error message.
 
 Usage, in a project's one config module:
     class AppSettings(Settings):
@@ -23,6 +23,10 @@ Usage, in a project's one config module:
         return AppSettings()
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -30,13 +34,24 @@ from functools import lru_cache
 from pathlib import Path
 from typing import Literal
 
+# Third-party
 from pydantic import Field, SecretStr
 from pydantic_settings import BaseSettings, PydanticBaseSettingsSource, SettingsConfigDict
 
+# Local
+from kds.args import required
 from kds.settings.toml import TomlSource, is_secret
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
+# log.debug("Sets where the secrets file lives, from the working folder")
+ENV_FILE = "config/.env"
 # log.debug("Sets the model that does the work and grades it by default")
 DEFAULT_MODEL = "claude-sonnet-5-5"
 # log.debug("Sets the text a secret that is set is shown as")
@@ -51,6 +66,9 @@ Level = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 __all__ = ["Level", "Provider", "Settings", "describe", "get_settings"]
 
 
+########################################################################
+#                           Shared settings                            #
+########################################################################
 # log.debug("Defines the settings every project shares")
 class Settings(BaseSettings):
     """Shared settings. A project subclasses this to add its own.
@@ -59,9 +77,9 @@ class Settings(BaseSettings):
     underscore: `[llm] model` sets `llm_model`, as does `LLM_MODEL`.
     """
 
-    # log.debug("Reads .env, ignores unknown names, and freezes the result")
+    # log.debug("Reads config/.env, ignores unknown names, and freezes the result")
     model_config = SettingsConfigDict(
-        env_file=".env", env_file_encoding="utf-8", extra="ignore", frozen=True
+        env_file=ENV_FILE, env_file_encoding="utf-8", extra="ignore", frozen=True
     )
 
     # log.debug("Holds which provider the model adapter calls")
@@ -106,7 +124,7 @@ class Settings(BaseSettings):
 
     # log.debug("Defines the order the sources are read in")
     @classmethod
-    def settings_customise_sources(
+    def settings_customise_sources(  # fixed: pydantic-settings' signature
         cls,
         settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
@@ -114,7 +132,22 @@ class Settings(BaseSettings):
         dotenv_settings: PydanticBaseSettingsSource,
         file_secret_settings: PydanticBaseSettingsSource,
     ) -> tuple[PydanticBaseSettingsSource, ...]:
-        """Arguments, then the environment, .env, settings.toml."""
+        """Returns the sources in order: arguments, environment, files.
+
+        pydantic-settings calls this with its own sources; the TOML file
+        goes in after config/.env and before secret files.
+
+        Args:
+            settings_cls: The settings class being built.
+            init_settings: The values passed as arguments.
+            env_settings: The environment variables.
+            dotenv_settings: The values in config/.env.
+            file_secret_settings: Values from a secrets folder, if one
+                is set.
+
+        Returns:
+            The sources, highest priority first.
+        """
         # log.debug("Returns the sources, highest priority first")
         return (
             init_settings,
@@ -128,21 +161,34 @@ class Settings(BaseSettings):
 # log.debug("Defines the loader the shared libraries call")
 @lru_cache(maxsize=1)
 def get_settings() -> Settings:
-    """Return the shared settings, built and validated once.
+    """Returns the shared settings, built and validated once.
 
     Tests that change the environment call `get_settings.cache_clear()`.
+
+    Returns:
+        The settings, frozen.
     """
     # log.debug("Builds and validates the settings")
     return Settings()
 
 
 # log.debug("Defines the startup summary with secrets masked")
-def describe(settings: Settings) -> dict[str, str]:
-    """Return every setting as text, secrets only as set or unset.
+def describe(settings: Settings | None = None) -> dict[str, str]:
+    """Returns every setting as text, secrets only as set or unset.
 
     A service logs this once at startup, so the log shows exactly
     what it ran with and never what a key is.
+
+    Args:
+        settings: The settings to describe, the shared class or a
+            project's own. Required.
+
+    Returns:
+        Each field's name mapped to its value as text, with each secret
+        shown only as set or unset.
     """
+    # log.debug("Takes the settings, which the caller must give")
+    settings = required(settings=settings)
     # log.debug("Starts the summary")
     shown: dict[str, str] = {}
     # log.debug("Walks every field the settings class declares")

@@ -45,7 +45,7 @@ adapter = ModelAdapter(FakeProvider(['{"charge_number": "1", "respondent": null}
 ## How a call works
 
 1. **Settings.** The provider, model, retries, timeout and budget come from `kds.settings`; keys
-   come from `.env` only.
+   come from `config/.env` only.
 2. **Request id.** Every log line inside `kds.logs.new_request_id()` carries the same id; the
    evaluation runner opens one per case.
 3. **Budget.** The adapter refuses to call once the run's spend passes `eval_budget_usd`.
@@ -64,7 +64,7 @@ adapter = ModelAdapter(FakeProvider(['{"charge_number": "1", "respondent": null}
   eight seconds. The SDKs' own retries are off, so attempts never multiply.
 - `pricing.json` holds list prices per million tokens and an `as_of` date that every report prints;
   a dated model name is priced by its longest matching base name.
-- Keys live only in `.env`; everything else in [config/settings.toml](../config/settings.toml).
+- Keys live only in `config/.env`; everything else in [config/config.toml](../config/config.toml).
 
 ## Settings
 
@@ -80,7 +80,7 @@ adapter = ModelAdapter(FakeProvider(['{"charge_number": "1", "respondent": null}
 | `[llm] timeout_s` | `60.0` | how long one call may take |
 | `[azure_openai] endpoint`, `api_version` | unset, `2024-10-21` | the Azure OpenAI resource |
 | `[eval] budget_usd` | `5.0` | the spend at which a run stops calling |
-| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `AZURE_OPENAI_API_KEY` | in `.env` only | provider keys |
+| `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`, `AZURE_OPENAI_API_KEY` | in `config/.env` only | provider keys |
 
 ## Logs and cost
 

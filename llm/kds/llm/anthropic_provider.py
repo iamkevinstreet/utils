@@ -1,14 +1,19 @@
 ########################################################################
 #                  llm/kds/llm/anthropic_provider.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Anthropic's Messages API behind the Provider     #
-#                     interface: tools, JSON mode, usage, latency.     #
-########################################################################
-"""The Anthropic provider."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Anthropic's Messages API behind the Provider interface: tools, JSON
+mode, usage, latency.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import inspect
@@ -17,22 +22,39 @@ import logging
 import time
 from typing import Any
 
+# Third-party
 import anthropic
 
+# Local
+from kds.args import required
+from kds.llm import config
 from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the milliseconds in a second, for latency, from the config")
+MS = config.MS
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the instruction added to the system prompt in JSON mode")
 JSON_INSTRUCTION = "\n\nRespond with a single JSON object and nothing else."
-# log.debug("Sets the milliseconds in a second, for latency")
-MS = 1000
-# log.debug("Names the keys of a message and a content block")
-ROLE, CONTENT, TYPE, NAME, TEXT = "role", "content", "type", "name", "text"
-# log.debug("Names the two speakers and the tool-call block type")
-USER, ASSISTANT, TOOL_USE = "user", "assistant", "tool_use"
 # log.debug("Names the sampling setting not every SDK version takes")
 TEMPERATURE = "temperature"
+
+
+########################################################################
+#                        Anthropic Messages API                        #
+########################################################################
+# log.debug("Names the keys of a message and a content block")
+ROLE, CONTENT, TYPE, NAME, TEXT = "role", "content", "type", "name", "text"
+
+
+# log.debug("Names the two speakers and the tool-call block type")
+USER, ASSISTANT, TOOL_USE = "user", "assistant", "tool_use"
 
 
 # log.debug("Defines the Anthropic provider")
@@ -43,8 +65,17 @@ class AnthropicProvider:
     name = "anthropic"
 
     # log.debug("Defines the constructor, which opens one client")
-    def __init__(self, api_key: str, timeout_s: float) -> None:
-        """Open a client; the adapter, not the SDK, owns retries."""
+    def __init__(self, api_key: str | None = None, timeout_s: float | None = None) -> None:
+        """Opens a client; the adapter, not the SDK, owns retries.
+
+        Args:
+            api_key: The Anthropic API key. Required.
+            timeout_s: The most seconds one call may take. Required.
+        """
+        # log.debug("Takes the api key, which the caller must give")
+        api_key = required(api_key=api_key)
+        # log.debug("Takes the timeout s, which the caller must give")
+        timeout_s = required(timeout_s=timeout_s)
         # log.debug("Opens the client with a timeout and no SDK retries")
         self._client = anthropic.Anthropic(api_key=api_key, timeout=timeout_s, max_retries=0)
         # log.debug("Notes whether this SDK version takes a temperature")
@@ -54,8 +85,17 @@ class AnthropicProvider:
 
     # log.debug("Defines how our messages become Anthropic's")
     @staticmethod
-    def _convert(messages: list[Message]) -> list[dict[str, Any]]:
-        """Convert to Anthropic's shape; results share one user turn."""
+    def _convert(messages: list[Message] | None = None) -> list[dict[str, Any]]:
+        """Converts to Anthropic's shape; results share one user turn.
+
+        Args:
+            messages: The provider-neutral conversation. Required.
+
+        Returns:
+            The turns as Anthropic's Messages API takes them.
+        """
+        # log.debug("Takes the messages, which the caller must give")
+        messages = required(messages=messages)
         # log.debug("Starts the converted list")
         out: list[dict[str, Any]] = []
         # log.debug("Converts each message in order")
@@ -91,15 +131,40 @@ class AnthropicProvider:
     def complete(
         self,
         *,
-        model: str,
-        messages: list[Message],
-        system: str | None,
-        tools: list[ToolSpec] | None,
-        max_tokens: int,
-        temperature: float,
-        json_mode: bool,
+        model: str | None = None,
+        messages: list[Message] | None = None,
+        system: str | None = None,
+        tools: list[ToolSpec] | None = None,
+        max_tokens: int | None = None,
+        temperature: float | None = None,
+        json_mode: bool | None = None,
     ) -> Completion:
-        """Send the conversation and return the completion."""
+        """Sends the conversation and returns the completion.
+
+        Args:
+            model: The model to call. Required.
+            messages: The conversation, in order. Required.
+            system: The system prompt, if any.
+            tools: Any tools the model may call.
+            max_tokens: The most tokens the answer may use. Required.
+            temperature: The sampling temperature, sent only where the
+                SDK takes one. Required.
+            json_mode: True to ask for a single JSON object, through the
+                system prompt. Required.
+
+        Returns:
+            The answer as a provider-neutral completion.
+        """
+        # log.debug("Takes the model, which the caller must give")
+        model = required(model=model)
+        # log.debug("Takes the messages, which the caller must give")
+        messages = required(messages=messages)
+        # log.debug("Takes the max tokens, which the caller must give")
+        max_tokens = required(max_tokens=max_tokens)
+        # log.debug("Takes the temperature, which the caller must give")
+        temperature = required(temperature=temperature)
+        # log.debug("Takes the json mode, which the caller must give")
+        json_mode = required(json_mode=json_mode)
         # log.debug("Starts the request with the model, limit and turns")
         request: dict[str, Any] = {
             "model": model,
@@ -133,8 +198,19 @@ class AnthropicProvider:
         return self._completion(response, latency_ms)
 
     # log.debug("Defines how Anthropic's response becomes a completion")
-    def _completion(self, response: Any, latency_ms: int) -> Completion:
-        """Join the text blocks and collect the tool calls."""
+    def _completion(self, response: Any = None, latency_ms: int | None = None) -> Completion:
+        """Joins the text blocks and collects the tool calls.
+
+        Args:
+            response: The Messages API's response.
+            latency_ms: How long the call took, in milliseconds.
+                Required.
+
+        Returns:
+            The provider-neutral completion, with usage and timing.
+        """
+        # log.debug("Takes the latency ms, which the caller must give")
+        latency_ms = required(latency_ms=latency_ms)
         # log.debug("Starts the text parts and tool calls")
         texts: list[str] = []
         # log.debug("Starts the list of tool calls")
@@ -165,8 +241,25 @@ class AnthropicProvider:
         )
 
     # log.debug("Defines embeddings, which Anthropic does not offer")
-    def embed(self, *, model: str, texts: list[str]) -> list[list[float]]:
-        """Refuse: Anthropic has no embeddings endpoint."""
+    def embed(
+        self, *, model: str | None = None, texts: list[str] | None = None
+    ) -> list[list[float]]:
+        """Refuses, since Anthropic has no embeddings endpoint.
+
+        Args:
+            model: The embedding model asked for. Required.
+            texts: The texts to embed. Required.
+
+        Returns:
+            Nothing: the call always raises.
+
+        Raises:
+            NotImplementedError: Always, naming the setting to change.
+        """
+        # log.debug("Takes the model, which the caller must give")
+        model = required(model=model)
+        # log.debug("Takes the texts, which the caller must give")
+        texts = required(texts=texts)
         # log.debug("Raises with the setting that fixes it")
         msg = "Anthropic has no embeddings endpoint; set [llm] provider to openai for embeddings"
         # log.debug("Raises it")

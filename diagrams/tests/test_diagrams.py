@@ -1,34 +1,54 @@
 ########################################################################
 #                   diagrams/tests/test_diagrams.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests that diagrams render as valid SVG, escape  #
-#                     their text and refuse text that would overflow.  #
-########################################################################
-"""Tests for kds.diagrams."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests that diagrams render as valid SVG, escape their text and refuse
+text that would overflow.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
+# Third-party
 import pytest
 
+# Local
 from kds.diagrams import Box, Diagram
 from kds.diagrams.spec import render_file
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the SVG namespace ElementTree prefixes every tag with")
 NS = "{http://www.w3.org/2000/svg}"
 
 
+########################################################################
+#                            Diagram tests                             #
+########################################################################
 # log.debug("Defines a small diagram every test starts from")
 def _diagram() -> Diagram:
-    """Return a diagram with one zone, two parts, an arrow, a band."""
+    """Returns a diagram with one zone, two parts, an arrow, a band.
+
+    Returns:
+        The demo diagram, built but not yet rendered.
+    """
     # log.debug("Creates the canvas and its title block")
     d = Diagram(600, 420, "Demo at a glance", "Data stays inside.", "Blue: data.")
     # log.debug("Adds a zone around both components")
@@ -47,7 +67,11 @@ def _diagram() -> Diagram:
 
 # log.debug("Defines the test that the output parses as SVG")
 def test_renders_valid_svg(tmp_path: Path) -> None:
-    """The written file is well-formed SVG with an accessible name."""
+    """The written file is well-formed SVG with an accessible name.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Points at a folder that does not exist yet")
     path = tmp_path / "docs" / "architecture.svg"
     # log.debug("Writes the diagram, creating the folder")
@@ -87,7 +111,11 @@ def test_overflow_is_refused() -> None:
 
 # log.debug("Defines the test that a TOML spec draws its diagrams")
 def test_spec_file_is_drawn(tmp_path: Path) -> None:
-    """Each [[diagram]] in a spec is written beside it."""
+    """Each [[diagram]] in a spec is written beside it.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Names the spec file")
     spec = tmp_path / "diagrams.toml"
     # log.debug("Writes a spec with one diagram and one component")
@@ -103,7 +131,11 @@ def test_spec_file_is_drawn(tmp_path: Path) -> None:
 
 # log.debug("Defines the test that a missing key is named")
 def test_spec_missing_key_is_named(tmp_path: Path) -> None:
-    """A diagram without its title fails with the key's name."""
+    """A diagram without its title fails with the key's name.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Names the spec file")
     spec = tmp_path / "diagrams.toml"
     # log.debug("Writes a diagram with no title")

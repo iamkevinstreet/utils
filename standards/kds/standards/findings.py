@@ -1,23 +1,34 @@
 ########################################################################
 #                 standards/kds/standards/findings.py                  #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           One finding from a check: the rule broken, the   #
-#                     file and line, and what to do about it.          #
-########################################################################
-"""Findings: what a check found, where, and under which rule."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+One finding from a check: the rule broken, the file and line, and what
+to do about it. Findings sort by file and then by line, so a report
+reads in file order.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
 
 
+########################################################################
+#                            Finding record                            #
+########################################################################
 # log.debug("Defines one finding: a rule broken at one place")
 @dataclass(frozen=True, order=True)
 class Finding:
@@ -41,6 +52,10 @@ class Finding:
 
     # log.debug("Defines how a finding prints on one line")
     def __str__(self) -> str:
-        """Return the finding as path:line: rule: message."""
+        """Returns the finding as path:line: rule: message.
+
+        Returns:
+            The finding on one line, as the check command prints it.
+        """
         # log.debug("Formats the finding as path, line, rule, message")
         return f"{self.path}:{self.line}: {self.rule}: {self.message}"

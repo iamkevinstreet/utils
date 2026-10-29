@@ -1,30 +1,43 @@
 ########################################################################
 #                       evals/kds/evals/judge.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           A model judge for answers exact match cannot     #
-#                     score, and its agreement with human grades.      #
-########################################################################
-"""A model-as-judge with a calibration check.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
-A judge is only as good as its agreement with a person. `calibrate`
+Grades answers that exact match cannot score, with a model as judge,
+and checks the judge against human grades.
+
+A judge is only as good as its agreement with a person: `calibrate`
 runs the judge over cases a person already graded and reports how
-often they agree; that rate belongs beside any judged metric.
+often they agree. That rate belongs beside any judged metric.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from typing import Any
 
+# Third-party
 from pydantic import BaseModel, Field
 
+# Local
+from kds.args import required
 from kds.llm.adapter import ModelAdapter
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the judge's standing instructions")
 JUDGE_SYSTEM = (
     "You grade an answer against a rubric. Be strict and literal. A claim that is not "
@@ -39,6 +52,9 @@ JUDGE_PROMPT = (
 )
 
 
+########################################################################
+#                             Model judge                              #
+########################################################################
 # log.debug("Defines the judge's verdict")
 class Verdict(BaseModel):
     """A score from 0 to 2 and the reason for it."""
@@ -50,17 +66,29 @@ class Verdict(BaseModel):
 
 
 # log.debug("Defines one grading")
-def judge(adapter: ModelAdapter, case: dict[str, str], rubric: str) -> Verdict:
-    """Grade one answer.
+def judge(
+    adapter: ModelAdapter | None = None,
+    case: dict[str, str] | None = None,
+    rubric: str | None = None,
+) -> Verdict:
+    """Grades one answer.
 
     Args:
         adapter: The adapter; the judge model comes from its settings.
+            Required.
         case: The question, the answer and the reference material.
-        rubric: What a full-score answer must do.
+            Required.
+        rubric: What a full-score answer must do. Required.
 
     Returns:
         The judge's verdict.
     """
+    # log.debug("Takes the adapter, which the caller must give")
+    adapter = required(adapter=adapter)
+    # log.debug("Takes the case, which the caller must give")
+    case = required(case=case)
+    # log.debug("Takes the rubric, which the caller must give")
+    rubric = required(rubric=rubric)
     # log.debug("Fills the grading prompt")
     prompt = JUDGE_PROMPT.format(rubric=rubric, **case)
     # log.debug("Asks the judge model for a verdict")
@@ -73,18 +101,27 @@ def judge(adapter: ModelAdapter, case: dict[str, str], rubric: str) -> Verdict:
 
 # log.debug("Defines the judge's agreement with human grades")
 def calibrate(
-    adapter: ModelAdapter, graded: list[dict[str, Any]], rubric: str
+    adapter: ModelAdapter | None = None,
+    graded: list[dict[str, Any]] | None = None,
+    rubric: str | None = None,
 ) -> dict[str, float]:
-    """Return how often the judge matches a person's grade.
+    """Returns how often the judge matches a person's grade.
 
     Args:
-        adapter: The adapter the judge runs on.
+        adapter: The adapter the judge runs on. Required.
         graded: Rows of question, answer, reference and human_score.
-        rubric: The rubric both the person and the judge used.
+            Required.
+        rubric: The rubric both the person and the judge used. Required.
 
     Returns:
         The count, exact agreement and agreement within one point.
     """
+    # log.debug("Takes the adapter, which the caller must give")
+    adapter = required(adapter=adapter)
+    # log.debug("Takes the graded, which the caller must give")
+    graded = required(graded=graded)
+    # log.debug("Takes the rubric, which the caller must give")
+    rubric = required(rubric=rubric)
     # log.debug("Starts both agreement counts")
     exact = within_one = 0
     # log.debug("Grades each row the person graded")

@@ -1,13 +1,13 @@
 ########################################################################
 #                    diagrams/kds/diagrams/spec.py                     #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Reads diagrams written as data in a TOML file    #
-#                     and builds each one, so layouts stay reviewable. #
-########################################################################
-"""Diagrams as data: a TOML file of zones, components, arrows, bands.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Reads diagrams written as data in a TOML file and builds each one, so
+layouts stay reviewable.
 
 Each `[[diagram]]` names its output `file`, its size and title block,
 then lists its parts. Parts are drawn zones first, then components,
@@ -27,6 +27,10 @@ arrows and bands, so the order inside the file does not matter.
     details = ["FastAPI, /api/v1"]
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -34,13 +38,21 @@ import tomllib
 from pathlib import Path
 from typing import Any
 
-from kds.diagrams import Diagram
+# Local
+from kds.args import required
+from kds.diagrams import Diagram, config
 from kds.diagrams.svg import Box
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
-# log.debug("Sets the encoding the spec file is read in")
-ENCODING = "utf-8"
+# log.debug("Takes the encoding the spec file is read in, from the config")
+ENCODING = config.ENCODING
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Names the key that holds a part's rectangle")
 BOX = "box"
 # log.debug("Names the keys that title a zone or band")
@@ -49,13 +61,24 @@ TITLE = "title"
 FILE = "file"
 
 
+########################################################################
+#                              Spec files                              #
+########################################################################
 # log.debug("Defines how one diagram is built from its table")
-def build(table: dict[str, Any]) -> Diagram:
-    """Return the diagram a `[[diagram]]` table describes.
+def build(table: dict[str, Any] | None = None) -> Diagram:
+    """Returns the diagram a `[[diagram]]` table describes.
+
+    Args:
+        table: One `[[diagram]]` table, as tomllib reads it. Required.
+
+    Returns:
+        The diagram with every part added, not yet written.
 
     Raises:
         ValueError: A required key is missing; the message names it.
     """
+    # log.debug("Takes the table, which the caller must give")
+    table = required(table=table)
     # log.debug("Reads the keys every diagram must have")
     try:
         # log.debug("Creates the canvas and title block")
@@ -93,8 +116,17 @@ def build(table: dict[str, Any]) -> Diagram:
 
 
 # log.debug("Defines how a whole spec file is drawn")
-def render_file(spec: Path) -> list[Path]:
-    """Write each diagram in `spec` beside it; return the paths."""
+def render_file(spec: Path | None = None) -> list[Path]:
+    """Writes each diagram in `spec` beside it; returns the paths.
+
+    Args:
+        spec: The TOML file of `[[diagram]]` tables. Required.
+
+    Returns:
+        The files written, in the order the spec lists them.
+    """
+    # log.debug("Takes the spec, which the caller must give")
+    spec = required(spec=spec)
     # log.debug("Reads the spec")
     tables = tomllib.loads(spec.read_text(encoding=ENCODING)).get("diagram", [])
     # log.debug("Starts the list of files written")

@@ -45,7 +45,7 @@ with `kds-standards trace on <path>` and set `[log] trace = true`, and a run pri
   `setup_logging()` once.
 - Redaction covers emails, phone numbers, SSNs, card numbers and dates of birth; pass real names as
   `extra_terms` to `redact()` if a dataset ever holds any.
-- Settings live in [config/settings.toml](../config/settings.toml):
+- Settings live in [config/config.toml](../config/config.toml):
 
 | Setting | Default | What it does |
 | --- | --- | --- |

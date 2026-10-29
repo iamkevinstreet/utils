@@ -1,24 +1,48 @@
 ########################################################################
 #                  standards/kds/standards/jsrules.py                  #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Checks TypeScript, JavaScript and Astro          #
-#                     frontmatter: a logger line above every           #
-#                     statement, none left on.                         #
-########################################################################
-"""The script rules, read line by line from Prettier-formatted code."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Checks each statement of a TypeScript or JavaScript file, or of an
+Astro component's frontmatter, has a logger line directly above it,
+indented like it and saying what it does, and that none is left
+switched on. Scripts are not parsed but read line by line, as Prettier
+formats them: a statement starts after a line ending in ;, { or }, and
+a stack of the brackets still open tells a block of code from a value
+or a type's body, whose lines are not statements.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 import re
 
+# Local
+from kds.args import required
+from kds.standards import config
 from kds.standards.findings import Finding
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the fence that opens and closes Astro frontmatter, from the config")
+FENCE = config.FENCE
+# log.debug("Takes the fewest words a logger description may have, from the config")
+MIN_WORDS = config.MIN_WORDS
+# log.debug("Takes the name of the rule every finding here belongs to, from the config")
+RULE = config.LOGGER_RULE
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Matches a commented logger line; captures indent, text")
 LOGGER_RE = re.compile(r"^(?P<indent>\s*)// log\.debug\('(?P<desc>[^']+)'\)$")
 # log.debug("Matches a logger line someone left switched on")
@@ -51,25 +75,37 @@ BLOCK_BEFORE = re.compile(
 )
 # log.debug("Matches code before a { that opens a function body inside a call")
 CALLBACK_BEFORE = re.compile(r"(\)|=>)\s*$")
-# log.debug("Names the rule every finding here belongs to")
-RULE = "logger-line"
-# log.debug("Sets the fewest words a logger description may have")
-MIN_WORDS = 2
 # log.debug("Sets the marker that starts a line comment")
 COMMENT = "//"
 # log.debug("Names a bracket that opens a block of code")
-BLOCK = "block"
+CODE_BLOCK = "block"
 # log.debug("Names a bracket that opens a value")
 LITERAL = "literal"
 # log.debug("Names a brace that opens a type's body")
 TYPE = "type"
-# log.debug("Sets the fence that opens and closes Astro frontmatter")
-FENCE = "---"
 
 
+########################################################################
+#                         Script logger lines                          #
+########################################################################
 # log.debug("Defines which lines of a file hold script code")
-def script_lines(path: str, source: str) -> list[tuple[int, str]]:
-    """Return (line number, text) for each line of script code."""
+def script_lines(path: str | None = None, source: str | None = None) -> list[tuple[int, str]]:
+    """Returns (line number, text) for each line of script code.
+
+    Args:
+        path: The file's path from the repository root, whose
+            extension says whether it is an Astro component. Required.
+        source: The file's text. Required.
+
+    Returns:
+        Every line of a plain script, numbered from 1; for an Astro
+        component, only the lines between its two fences, and none
+        when it has no frontmatter.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
+    # log.debug("Takes the source, which the caller must give")
+    source = required(source=source)
     # log.debug("Numbers every line from 1")
     numbered = list(enumerate(source.splitlines(), start=1))
     # log.debug("Returns every line for a plain script file")
@@ -87,8 +123,18 @@ def script_lines(path: str, source: str) -> list[tuple[int, str]]:
 
 
 # log.debug("Defines how statement starts are found")
-def statement_rows(lines: list[tuple[int, str]]) -> list[tuple[int, str]]:
-    """Return (line number, text) for each statement's first line."""
+def statement_rows(lines: list[tuple[int, str]] | None = None) -> list[tuple[int, str]]:
+    """Returns (line number, text) for each statement's first line.
+
+    Args:
+        lines: The script's numbered lines, from script_lines. Required.
+
+    Returns:
+        The number and text, indent kept, of each line that starts a
+        statement, in file order.
+    """
+    # log.debug("Takes the lines, which the caller must give")
+    lines = required(lines=lines)
     # log.debug("Starts an empty list of statement starts")
     starts: list[tuple[int, str]] = []
     # log.debug("Tracks open brackets: code blocks or value literals")
@@ -128,8 +174,18 @@ def statement_rows(lines: list[tuple[int, str]]) -> list[tuple[int, str]]:
 
 
 # log.debug("Defines how a line is reduced to its code")
-def _code_only(line: str) -> str:
-    """Return the line with strings blanked and comments removed."""
+def _code_only(line: str | None = None) -> str:
+    """Returns the line with strings blanked and comments removed.
+
+    Args:
+        line: The line, stripped of its indent. Required.
+
+    Returns:
+        The line's code, each string emptied and any trailing //
+        comment cut.
+    """
+    # log.debug("Takes the line, which the caller must give")
+    line = required(line=line)
     # log.debug("Replaces each string with an empty pair of quotes")
     blanked = STRING_RE.sub('""', line)
     # log.debug("Cuts a trailing // comment")
@@ -137,10 +193,30 @@ def _code_only(line: str) -> str:
 
 
 # log.debug("Defines the test for a statement start")
-def _starts(previous: str, stack: list[str], line: str) -> bool:
-    """Return True when this line begins a new statement."""
+def _starts(
+    previous: str | None = None, stack: list[str] | None = None, line: str | None = None
+) -> bool:
+    """Returns True when this line begins a new statement.
+
+    Args:
+        previous: The last character of the code before this line.
+            Required.
+        stack: The kinds of the brackets still open, innermost last.
+            Required.
+        line: The line, stripped of its indent. Required.
+
+    Returns:
+        True in a block of code after a line ending in ;, { or },
+        unless the line continues the one before.
+    """
+    # log.debug("Takes the previous, which the caller must give")
+    previous = required(previous=previous)
+    # log.debug("Takes the stack, which the caller must give")
+    stack = required(stack=stack)
+    # log.debug("Takes the line, which the caller must give")
+    line = required(line=line)
     # log.debug("Says no inside a value literal or type body")
-    if stack and stack[-1] != BLOCK:
+    if stack and stack[-1] != CODE_BLOCK:
         # log.debug("Returns no")
         return False
     # log.debug("Says yes after an end, unless the line continues")
@@ -148,8 +224,24 @@ def _starts(previous: str, stack: list[str], line: str) -> bool:
 
 
 # log.debug("Defines how brackets on a line update the stack")
-def _track(code: str, stack: list[str], line: str) -> None:
-    """Push each opening bracket's kind and pop each closing one."""
+def _track(
+    code: str | None = None, stack: list[str] | None = None, line: str | None = None
+) -> None:
+    """Pushes each opening bracket's kind and pops each closing one.
+
+    Args:
+        code: The line's code, from _code_only. Required.
+        stack: The kinds of the brackets still open, innermost last,
+            changed in place. Required.
+        line: The line, stripped of its indent, whose start shows a
+            type declaration. Required.
+    """
+    # log.debug("Takes the code, which the caller must give")
+    code = required(code=code)
+    # log.debug("Takes the stack, which the caller must give")
+    stack = required(stack=stack)
+    # log.debug("Takes the line, which the caller must give")
+    line = required(line=line)
     # log.debug("Walks the line's characters with their positions")
     for index, char in enumerate(code):
         # log.debug("Pops the innermost bracket on a closer")
@@ -159,18 +251,43 @@ def _track(code: str, stack: list[str], line: str) -> None:
         # log.debug("Pushes the kind of each opening bracket")
         if char in "{[(":
             # log.debug("Notes whether the bracket sits inside a call, array or object")
-            inside = bool(stack) and stack[-1] != BLOCK
+            inside = bool(stack) and stack[-1] != CODE_BLOCK
             # log.debug("Classifies the bracket from the code before it")
             stack.append(_kind(char, code[:index], line, inside=inside))
 
 
 # log.debug("Defines what kind of bracket an opener is")
-def _kind(char: str, before: str, line: str, *, inside: bool) -> str:
-    """Return block for a code block, else type or literal.
+def _kind(
+    char: str | None = None,
+    before: str | None = None,
+    line: str | None = None,
+    *,
+    inside: bool | None = None,
+) -> str:
+    """Returns block for a code block, else type or literal.
 
     Inside a call, array or object, a { opens an object unless it
     follows => or ) and so opens a callback's body.
+
+    Args:
+        char: The opening bracket: {, [ or (. Required.
+        before: The line's code before the bracket. Required.
+        line: The line, stripped of its indent, whose start shows a
+            type declaration. Required.
+        inside: True when the bracket sits inside a call, array or
+            object. Required.
+
+    Returns:
+        The bracket's kind: block, type or literal.
     """
+    # log.debug("Takes the char, which the caller must give")
+    char = required(char=char)
+    # log.debug("Takes the before, which the caller must give")
+    before = required(before=before)
+    # log.debug("Takes the line, which the caller must give")
+    line = required(line=line)
+    # log.debug("Takes the inside, which the caller must give")
+    inside = required(inside=inside)
     # log.debug("Treats [ and ( as value brackets")
     if char != "{":
         # log.debug("Returns literal")
@@ -182,14 +299,28 @@ def _kind(char: str, before: str, line: str, *, inside: bool) -> str:
     # log.debug("Treats a { inside a value as an object, unless a callback opens")
     if inside:
         # log.debug("Returns block for a callback body, literal for an object")
-        return BLOCK if CALLBACK_BEFORE.search(before.rstrip()) else LITERAL
+        return CODE_BLOCK if CALLBACK_BEFORE.search(before.rstrip()) else LITERAL
     # log.debug("Returns block when the code before reads like one")
-    return BLOCK if BLOCK_BEFORE.search(before.rstrip()) else LITERAL
+    return CODE_BLOCK if BLOCK_BEFORE.search(before.rstrip()) else LITERAL
 
 
 # log.debug("Defines the logger-line rule for one script file")
-def check_logger_lines(path: str, source: str) -> list[Finding]:
-    """Check every statement has a logger line directly above it."""
+def check_logger_lines(path: str | None = None, source: str | None = None) -> list[Finding]:
+    """Checks every statement has a logger line directly above it.
+
+    Args:
+        path: The file's path from the repository root. Required.
+        source: The file's text. Required.
+
+    Returns:
+        A finding for each statement with no logger line directly
+        above it at its indent, and for each description too short to
+        say what the line does.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
+    # log.debug("Takes the source, which the caller must give")
+    source = required(source=source)
     # log.debug("Takes the lines that hold script code")
     lines = script_lines(path, source)
     # log.debug("Indexes the whole file by line number")
@@ -218,8 +349,20 @@ def check_logger_lines(path: str, source: str) -> list[Finding]:
 
 
 # log.debug("Defines the check for logger lines left on")
-def check_live(path: str, source: str) -> list[Finding]:
-    """Flag any logger line left switched on."""
+def check_live(path: str | None = None, source: str | None = None) -> list[Finding]:
+    """Flags any logger line left switched on.
+
+    Args:
+        path: The file's path from the repository root. Required.
+        source: The file's text. Required.
+
+    Returns:
+        A finding for each live logger line in the script's code.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
+    # log.debug("Takes the source, which the caller must give")
+    source = required(source=source)
     # log.debug("Returns a finding for each live logger line")
     return [
         Finding(path, number, "trace-off", "logger line left on; run trace off")

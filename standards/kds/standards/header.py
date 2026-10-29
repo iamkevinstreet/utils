@@ -1,14 +1,22 @@
 ########################################################################
 #                  standards/kds/standards/header.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Writes, reads and checks the header box every    #
-#                     source file starts with, in each language.       #
-########################################################################
-"""The header box: render it, find it in a file, check its fields."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Writes, reads and checks the header every source file starts with: a
+box that holds only the file's path, then a doc block with the author,
+the created and last modified dates, a blank line and the description.
+In Python the doc block is the module docstring; every other language
+writes it as its own doc comment, after the box.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -17,77 +25,98 @@ import textwrap
 from dataclasses import dataclass
 from pathlib import PurePosixPath
 
+# Local
+from kds.args import required
+from kds.standards import config
 from kds.standards.findings import Finding
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the fence that opens Astro frontmatter, from the config")
+FENCE = config.FENCE
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the box's full width, inside PEP 8's comment width")
 WIDTH = 72
 # log.debug("Sets the width between the box's two side walls")
 INNER = WIDTH - 2
-# log.debug("Sets the width of the label column inside the box")
+# log.debug("Sets the full-width rule that opens and closes every box")
+BORDER = "#" * WIDTH
+# log.debug("Sets the width of the label column in the doc block")
 LABEL_WIDTH = 19
-# log.debug("Sets where values start: two spaces plus the labels")
-VALUE_COL = 2 + LABEL_WIDTH
-# log.debug("Sets the purpose's wrap width, one space before the wall")
-PURPOSE_WIDTH = INNER - VALUE_COL - 1
-# log.debug("Sets the most characters a purpose may have")
-PURPOSE_MAX = 140
 # log.debug("Sets the author every header names")
 AUTHOR = "Kevin Street"
-# log.debug("Sets the full-width rule that opens and closes the box")
-BORDER = "#" * WIDTH
-# log.debug("Sets the labels, in the order the box lists them")
-LABELS = ("Author:", "Created on:", "Last modified on:", "Purpose:")
+# log.debug("Lists the doc block's labels, in order")
+LABELS = ("Author", "Created on", "Last modified on")
 # log.debug("Matches an ISO date, the only date form allowed")
 DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
-# log.debug("Matches a labelled line and captures label and value")
-FIELD_RE = re.compile(r"^#  (Author|Created on|Last modified on|Purpose):\s+(.*?)\s*#$")
-# log.debug("Matches a purpose line that continues the one above")
-MORE_RE = re.compile(rf"^# {{{VALUE_COL}}}(\S.*?)\s*#$")
-# log.debug("Splits the labels: three one-line fields, then purpose")
-SINGLE_LABELS, PURPOSE_LABEL = LABELS[:-1], LABELS[-1]
-# log.debug("Names the purpose field as the box's lines spell it")
-PURPOSE = PURPOSE_LABEL[:-1]
-# log.debug("Names the style for // comment files")
+# log.debug("Matches one labelled line and captures the label and value")
+FIELD_RE = re.compile(r"^(Author|Created on|Last modified on):\s+(\S.*?)\s*$")
+# log.debug("Names the style of Python files, whose doc block is a docstring")
+PYTHON = "python"
+# log.debug("Names the style of other files written with # comments")
+HASH = "hash"
+# log.debug("Names the style of TypeScript and JavaScript files")
 SLASH = "slash"
-# log.debug("Names the style for Astro components")
+# log.debug("Names the style of CSS files")
+BLOCK = "block"
+# log.debug("Names the style of Astro components")
 ASTRO = "astro"
-# log.debug("Sets the prefix script styles put before each line")
-PREFIX = "// "
-# log.debug("Names the rule every header finding belongs to")
-RULE = "header"
-# log.debug("Maps each comment style to the extensions that use it")
+# log.debug("Names the style of HTML templates")
+HTML = "html"
+# log.debug("Maps each style to the extensions that use it")
 STYLES = {
-    "hash": (".py", ".sh", ".bash", ".yml", ".yaml", ".toml"),
+    PYTHON: (".py",),
+    HASH: (".sh", ".bash", ".yml", ".yaml", ".toml"),
     SLASH: (".ts", ".tsx", ".js", ".mjs", ".cjs"),
-    "block": (".css", ".scss"),
+    BLOCK: (".css", ".scss"),
     ASTRO: (".astro",),
-    "html": (".html", ".htm"),
+    HTML: (".html", ".htm"),
 }
 # log.debug("Lists file names with no extension that use # comments")
 HASH_NAMES = ("Dockerfile", "Makefile")
-# log.debug("Sets how many lines open the box: border, title, border")
-OPENING = 3
-# log.debug("Sets the fence that opens Astro frontmatter")
-FENCE = "---"
-# log.debug("Sets the opening and closing lines of wrapped styles")
-WRAPS = {"block": ("/*", "*/"), "html": ("<!--", "-->"), ASTRO: (FENCE, None)}
+# log.debug("Sets the prefix // styles put before each box line")
+SLASH_PREFIX = "// "
+# log.debug("Sets the lines that wrap the box in the wrapped styles")
+BOX_WRAPS = {BLOCK: ("/*", "*/"), HTML: ("<!--", "-->")}
+# log.debug("Sets how each style opens, prefixes and closes its doc block")
+DOC_FORMS = {
+    PYTHON: ('"""', "", '"""'),
+    HASH: ("", "# ", ""),
+    SLASH: ("/**", " * ", " */"),
+    ASTRO: ("/**", " * ", " */"),
+    BLOCK: ("/*", " * ", " */"),
+    HTML: ("<!--", "", "-->"),
+}
+# log.debug("Sets how many lines the box takes: border, title, border")
+BOX_LINES = 3
+# log.debug("Names the rule every header finding belongs to")
+RULE = "header"
 
 
-# log.debug("Defines the parsed fields of one header box")
+########################################################################
+#                             File header                              #
+########################################################################
+# log.debug("Defines the parsed fields of one file header")
 @dataclass(frozen=True)
 class Header:
-    """The fields of a header box, and the lines it occupies.
+    """The fields of a file header, and the lines it occupies.
 
     Attributes:
-        title: The centred title (the file's path).
+        title: The box's centred title, the file's path.
         author: The author's name.
         created: The Created on date.
         modified: The Last modified on date.
-        purpose: The purpose, rejoined into one line.
-        first: Index of the box's first line in the file.
-        last: Index of the box's last line in the file.
+        description: The description, rejoined into one line.
+        title_line: Index of the title line in the file.
+        created_line: Index of the Created on line.
+        modified_line: Index of the Last modified on line.
+        last: Index of the header's last line.
+        centred: True when the title is centred exactly.
     """
 
     # log.debug("Holds the centred title")
@@ -98,200 +127,349 @@ class Header:
     created: str
     # log.debug("Holds the Last modified on date")
     modified: str
-    # log.debug("Holds the purpose as one line")
-    purpose: str
-    # log.debug("Holds the index of the box's first line")
-    first: int
-    # log.debug("Holds the index of the box's last line")
+    # log.debug("Holds the description as one line")
+    description: str
+    # log.debug("Holds the index of the title line")
+    title_line: int
+    # log.debug("Holds the index of the Created on line")
+    created_line: int
+    # log.debug("Holds the index of the Last modified on line")
+    modified_line: int
+    # log.debug("Holds the index of the header's last line")
     last: int
+    # log.debug("Holds whether the title is centred exactly")
+    centred: bool = True
 
 
-# log.debug("Defines how a file's comment style is chosen")
-def style_for(path: str) -> str | None:
-    """Return the comment style of a file's header, or None."""
+# log.debug("Defines how a file's header style is chosen")
+def style_for(path: str | None = None) -> str | None:
+    """Returns the header style of a file, or None when it carries none.
+
+    Args:
+        path: The file's path from the repository root. Required.
+
+    Returns:
+        The style's name, or None for a kind of file with no header.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
     # log.debug("Reads the file's name and extension")
     name = PurePosixPath(path)
     # log.debug("Treats Dockerfile and Makefile as # files")
     if name.name in HASH_NAMES:
         # log.debug("Returns the hash style for a named build file")
-        return "hash"
+        return HASH
     # log.debug("Looks for the extension among each style's list")
     for style, extensions in STYLES.items():
         # log.debug("Returns the style whose list holds the extension")
         if name.suffix in extensions:
             # log.debug("Returns the matching style")
             return style
-    # log.debug("Returns None: this kind of file carries no box")
+    # log.debug("Returns None: this kind of file carries no header")
     return None
 
 
-# log.debug("Defines how the box's lines are drawn")
-def render(title: str, created: str, modified: str, purpose: str) -> list[str]:
-    """Return the box's lines, without any comment prefix.
+# log.debug("Defines how a box's title line is drawn")
+def title_line(title: str = "") -> str:
+    """Returns the box line that holds a centred title.
+
+    Args:
+        title: The text to centre: a file's path or a section's name.
+
+    Returns:
+        The line, exactly 72 characters wide.
+    """
+    # log.debug("Centres the title between the two side walls")
+    return f"#{title:^{INNER}}#"
+
+
+# log.debug("Defines how the box is drawn in a style")
+def box(title: str = "", style: str = PYTHON) -> list[str]:
+    """Returns a box's lines as a file of the style writes them.
+
+    The file header and every section banner use the same box.
+
+    Args:
+        title: The text to centre in the box.
+        style: The file's header style.
+
+    Returns:
+        The box's lines, with the style's prefix or wrapper.
+    """
+    # log.debug("Draws the border, the title line and the border")
+    lines = [BORDER, title_line(title), BORDER]
+    # log.debug("Prefixes each line with // for script styles")
+    if style in (SLASH, ASTRO):
+        # log.debug("Returns the prefixed lines")
+        return [f"{SLASH_PREFIX}{line}" for line in lines]
+    # log.debug("Wraps the lines in a comment for CSS and HTML")
+    if style in BOX_WRAPS:
+        # log.debug("Returns the lines inside the style's comment")
+        return [BOX_WRAPS[style][0], *lines, BOX_WRAPS[style][1]]
+    # log.debug("Returns the plain lines for # styles")
+    return lines
+
+
+# log.debug("Defines how the doc block is drawn in a style")
+def doc_block(
+    created: str = "", modified: str = "", description: str = "", style: str = PYTHON
+) -> list[str]:
+    """Returns the header's doc block as a file of the style writes it.
+
+    Args:
+        created: The Created on date (YYYY-MM-DD).
+        modified: The Last modified on date (YYYY-MM-DD).
+        description: What the file is for, as plain sentences.
+        style: The file's header style.
+
+    Returns:
+        The doc block's lines, opener and closer included.
+    """
+    # log.debug("Reads how the style opens, prefixes and closes the block")
+    opener, prefix, closer = DOC_FORMS[style]
+    # log.debug("Pads each label to the label column")
+    fields = [
+        f"{label + ':':<{LABEL_WIDTH}}{value}"
+        for label, value in zip(LABELS, (AUTHOR, created, modified), strict=True)
+    ]
+    # log.debug("Wraps the description so each line fits in 72 characters")
+    text = textwrap.wrap(description, WIDTH - len(prefix)) or [""]
+    # log.debug("Prefixes every line, keeping blank lines free of trailing space")
+    body = [f"{prefix}{line}".rstrip() for line in [*fields, "", *text]]
+    # log.debug("Returns the block with its opener and closer where the style has them")
+    return ([opener] if opener else []) + body + ([closer] if closer else [])
+
+
+# log.debug("Defines how a whole header is drawn")
+def render(
+    title: str = "",
+    created: str = "",
+    modified: str = "",
+    description: str = "",
+    style: str | None = None,
+) -> list[str]:
+    """Returns a file's whole header: the box, then the doc block.
 
     Args:
         title: The file's path from the repository root.
         created: The Created on date (YYYY-MM-DD).
         modified: The Last modified on date (YYYY-MM-DD).
-        purpose: What the file is for, at most 140 characters.
+        description: What the file is for, as plain sentences.
+        style: The file's header style. Required.
 
     Returns:
-        The lines of the box, each exactly 72 characters.
+        The header's lines, starting with Astro's fence for components.
     """
-    # log.debug("Starts with the border, the title and the border")
-    lines = [BORDER, f"#{title:^{INNER}}#", BORDER]
-    # log.debug("Pairs each single-line label with its value")
-    for label, value in zip(SINGLE_LABELS, (AUTHOR, created, modified), strict=True):
-        # log.debug("Adds a padded line for that label and value")
-        lines.append(_field_line(label, value))
-    # log.debug("Wraps the purpose to fit beside its label")
-    wrapped = textwrap.wrap(purpose, PURPOSE_WIDTH) or [""]
-    # log.debug("Adds the purpose's first line beside its label")
-    lines.append(_field_line(PURPOSE_LABEL, wrapped[0]))
-    # log.debug("Adds each further purpose line under the first")
-    for more in wrapped[1:]:
-        # log.debug("Indents the line to the value column")
-        lines.append(f"#{' ' * VALUE_COL}{more:<{INNER - VALUE_COL}}#")
-    # log.debug("Closes the box with the border")
-    lines.append(BORDER)
-    # log.debug("Returns the finished box")
-    return lines
+    # log.debug("Takes the style, which the caller must give")
+    style = required(style=style)
+    # log.debug("Opens the frontmatter first in an Astro component")
+    fence = [FENCE] if style == ASTRO else []
+    # log.debug("Returns the fence, the box and the doc block")
+    return fence + box(title, style) + doc_block(created, modified, description, style)
 
 
-# log.debug("Defines how one labelled line is padded")
-def _field_line(label: str, value: str) -> str:
-    """Return one labelled line, padded to the box's width."""
-    # log.debug("Builds the inner text: indent, label, value")
-    inner = f"  {label:<{LABEL_WIDTH}}{value}"
-    # log.debug("Pads the inner text and adds the side walls")
-    return f"#{inner:<{INNER}}#"
-
-
-# log.debug("Defines how a box is given its comment prefix")
-def wrap(lines: list[str], style: str) -> list[str]:
-    """Return the box's lines as they appear in a file of `style`."""
-    # log.debug("Prefixes each line with // for script files")
-    body = [f"{PREFIX}{line}" for line in lines] if style in (SLASH, ASTRO) else list(lines)
-    # log.debug("Finds any opening and closing lines for the style")
-    opener, closer = WRAPS.get(style, (None, None))
-    # log.debug("Returns the lines with the style's wrapper, if any")
-    return ([opener] if opener else []) + body + ([closer] if closer else [])
-
-
-# log.debug("Defines how the box is found and read in a file")
-def parse(text: str, style: str) -> tuple[Header | None, str]:
-    """Find the header box at the top of a file and read its fields.
+# log.debug("Defines how a header is found and read in a file")
+def parse(text: str = "", style: str | None = None) -> tuple[Header | None, str]:
+    """Finds the header at the top of a file and reads its fields.
 
     Args:
         text: The file's full text.
-        style: The file's comment style, from `style_for`.
+        style: The file's header style, from style_for. Required.
 
     Returns:
         The header and an empty string, or None and what is wrong.
     """
+    # log.debug("Takes the style, which the caller must give")
+    style = required(style=style)
     # log.debug("Splits the file into lines")
     lines = text.splitlines()
     # log.debug("Skips a script's #! line when there is one")
     start = 1 if lines and lines[0].startswith("#!") else 0
-    # log.debug("Skips the wrapper's opening line for wrapped styles")
-    if style in WRAPS:
-        # log.debug("Checks the first line is the style's opener")
-        if len(lines) <= start or lines[start].strip() != WRAPS[style][0]:
-            # log.debug("Reports a missing opener as no header")
-            return None, f"the file must open with {WRAPS[style][0]} and the header box"
-        # log.debug("Moves past the opener")
+    # log.debug("Skips Astro's opening fence")
+    if style == ASTRO:
+        # log.debug("Reports a component that does not open with its fence")
+        if len(lines) <= start or lines[start].strip() != FENCE:
+            # log.debug("Returns the problem")
+            return None, "the component must open with --- and the header"
+        # log.debug("Moves past the fence")
         start += 1
-    # log.debug("Strips each line's comment prefix")
-    plain = [_unprefix(line, style) for line in lines[start:]]
-    # log.debug("Reads the box from the stripped lines")
-    return _read_box(plain, start)
+    # log.debug("Reads the box, then the doc block after it")
+    return _read_box(lines, start, style)
 
 
-# log.debug("Defines how a line's comment prefix is removed")
-def _unprefix(line: str, style: str) -> str:
-    """Return the line without its `// ` prefix in script styles."""
-    # log.debug("Removes // and one space where the style uses them")
-    if style in (SLASH, ASTRO) and line.startswith(PREFIX):
-        # log.debug("Returns the line after the prefix")
-        return line[len(PREFIX) :]
-    # log.debug("Returns the line unchanged otherwise")
-    return line
-
-
-# log.debug("Defines how the box's lines are checked and read")
-def _read_box(plain: list[str], offset: int) -> tuple[Header | None, str]:
-    """Read the box from lines that start with it."""
-    # log.debug("Checks the box opens with a border, title, border")
-    if len(plain) < OPENING or plain[0] != BORDER or plain[2] != BORDER:
-        # log.debug("Reports a missing or broken opening")
-        return None, "the file must start with the 72-character header box"
-    # log.debug("Reads the title from between the side walls")
-    title = plain[1][1:-1].strip() if len(plain[1]) == WIDTH else ""
-    # log.debug("Collects each label's values from the field lines")
-    fields: dict[str, list[str]] = {}
-    # log.debug("Remembers the last label seen, for purpose lines")
-    last_label = ""
-    # log.debug("Walks the lines after the title until the border")
-    for index, line in enumerate(plain[OPENING:], start=OPENING):
-        # log.debug("Stops at the closing border")
-        if line == BORDER:
-            # log.debug("Builds the header from what was collected")
-            return _finish(title, fields, offset, offset + index)
-        # log.debug("Checks every box line is exactly 72 characters")
-        if len(line) != WIDTH:
-            # log.debug("Reports a line of the wrong width")
-            return None, f"header line {offset + index + 1} must be {WIDTH} characters wide"
-        # log.debug("Tries the line as a labelled field")
-        match = FIELD_RE.match(line)
-        # log.debug("Tries it as a continued purpose line otherwise")
-        more = MORE_RE.match(line)
-        # log.debug("Records a labelled value under its label")
-        if match:
-            # log.debug("Remembers this label for any continuation")
-            last_label = match.group(1)
-            # log.debug("Starts the label's list with its value")
-            fields[last_label] = [match.group(2)]
-        elif more and last_label == PURPOSE:
-            # log.debug("Appends the continued text")
-            fields[PURPOSE].append(more.group(1))
-        else:
-            # log.debug("Reports any other line as not fitting the format")
-            return None, f"header line {offset + index + 1} is not a field line"
-    # log.debug("Reports a box with no closing border")
-    return None, "the header box has no closing border"
-
-
-# log.debug("Defines how collected fields become a Header")
-def _finish(
-    title: str, fields: dict[str, list[str]], first: int, last: int
+# log.debug("Defines how the box is checked and its title read")
+def _read_box(
+    lines: list[str] | None = None, start: int = 0, style: str = PYTHON
 ) -> tuple[Header | None, str]:
-    """Return the header if every field is present."""
-    # log.debug("Lists the labels the box is missing")
-    missing = [label[:-1] for label in LABELS if label[:-1] not in fields]
-    # log.debug("Reports missing labels by name")
-    if missing:
-        # log.debug("Returns the list of missing labels")
-        return None, "the header box is missing " + ", ".join(missing)
-    # log.debug("Builds the header from the fields")
-    header = Header(
-        title=title,
-        author=fields["Author"][0],
-        created=fields["Created on"][0],
-        modified=fields["Last modified on"][0],
-        purpose=" ".join(fields[PURPOSE]),
-        first=first,
+    """Reads the box at a line, then hands on to the doc block reader.
+
+    Args:
+        lines: The file's lines. Required.
+        start: The index the box should start at.
+        style: The file's header style.
+
+    Returns:
+        The header and an empty string, or None and what is wrong.
+    """
+    # log.debug("Takes the lines, which the caller must give")
+    lines = required(lines=lines)
+    # log.debug("Draws the box this style expects, with a placeholder title")
+    expected = box("", style)
+    # log.debug("Takes as many lines as the box has")
+    found = lines[start : start + len(expected)]
+    # log.debug("Finds where the title sits inside the box")
+    at = expected.index(next(line for line in expected if line.endswith(title_line(""))))
+    # log.debug("Checks every line but the title matches the drawn box")
+    if len(found) < len(expected) or any(
+        a != b for i, (a, b) in enumerate(zip(found, expected, strict=True)) if i != at
+    ):
+        # log.debug("Reports a missing or broken box")
+        return None, "the file must start with the 72-character box holding its path"
+    # log.debug("Reads the title line without its prefix")
+    raw = found[at].removeprefix(SLASH_PREFIX) if style in (SLASH, ASTRO) else found[at]
+    # log.debug("Checks the title line is exactly the box's width")
+    if len(raw) != WIDTH or not (raw.startswith("#") and raw.endswith("#")):
+        # log.debug("Reports a title line of the wrong shape")
+        return None, f"header line {start + at + 1} must be {WIDTH} characters, walls included"
+    # log.debug("Reads the doc block after the box")
+    return _read_doc(lines, start + len(expected), style, (raw[1:-1].strip(), start + at, raw))
+
+
+# log.debug("Defines how the doc block is checked and read")
+def _read_doc(
+    lines: list[str] | None = None,
+    start: int = 0,
+    style: str = PYTHON,
+    titled: tuple[str, int, str] = ("", 0, ""),
+) -> tuple[Header | None, str]:
+    """Reads the doc block that starts at a line.
+
+    Args:
+        lines: The file's lines. Required.
+        start: The index the doc block should start at.
+        style: The file's header style.
+        titled: The box's title, the index of its line and the line.
+
+    Returns:
+        The header and an empty string, or None and what is wrong.
+    """
+    # log.debug("Takes the lines, which the caller must give")
+    lines = required(lines=lines)
+    # log.debug("Reads how the style opens, prefixes and closes the block")
+    opener, prefix, closer = DOC_FORMS[style]
+    # log.debug("Checks the opener when the style has one")
+    if opener and (len(lines) <= start or lines[start] != opener):
+        # log.debug("Reports a missing doc block")
+        return None, f"line {start + 1} must open the doc block with {opener}"
+    # log.debug("Collects the block's lines without their prefix")
+    body, end = _doc_lines(lines, start + (1 if opener else 0), prefix, closer)
+    # log.debug("Reports a block that never closes")
+    if end < 0:
+        # log.debug("Returns the problem")
+        return None, "the doc block has no end"
+    # log.debug("Reads the fields and the description from the lines")
+    return _fields(body, start + (1 if opener else 0), titled, end)
+
+
+# log.debug("Defines how the doc block's own lines are collected")
+def _doc_lines(
+    lines: list[str] | None = None, first: int = 0, prefix: str = "", closer: str = ""
+) -> tuple[list[str], int]:
+    """Returns the doc block's lines, unprefixed, and its last index.
+
+    Args:
+        lines: The file's lines. Required.
+        first: The index of the block's first field line.
+        prefix: What starts each of the block's lines.
+        closer: The line that ends the block; empty for # blocks.
+
+    Returns:
+        The lines without their prefix, and the index of the
+        block's last line, or -1 when the block never ends.
+    """
+    # log.debug("Takes the lines, which the caller must give")
+    lines = required(lines=lines)
+    # log.debug("Starts with no lines")
+    body: list[str] = []
+    # log.debug("Walks the lines after the opener")
+    for index in range(first, len(lines)):
+        # log.debug("Reads the line")
+        line = lines[index]
+        # log.debug("Ends at the closer in styles that have one")
+        if closer and line == closer:
+            # log.debug("Returns the lines and the closer's index")
+            return body, index
+        # log.debug("Ends a # block at the first line that is not a comment")
+        if not closer and not (line == prefix.rstrip() or line.startswith(prefix)):
+            # log.debug("Returns the lines and the last comment line's index")
+            return body, index - 1
+        # log.debug("Ends a # block at a box border, which opens a banner")
+        if not closer and line == BORDER:
+            # log.debug("Returns the lines before the border")
+            return body, index - 1
+        # log.debug("Keeps the line without its prefix")
+        body.append(line[len(prefix) :] if line.startswith(prefix) else "")
+    # log.debug("Returns the lines of a # block that runs to the end of the file")
+    return (body, len(lines) - 1) if not closer else (body, -1)
+
+
+# log.debug("Defines how the fields and description are read from the block")
+def _fields(
+    body: list[str] | None = None,
+    first: int = 0,
+    titled: tuple[str, int, str] = ("", 0, ""),
+    last: int = 0,
+) -> tuple[Header | None, str]:
+    """Reads the three labelled lines, a blank line and the description.
+
+    Args:
+        body: The doc block's lines, without their prefix. Required.
+        first: The index of the block's first field line in the file.
+        titled: The box's title, the index of its line and the line.
+        last: The index of the header's last line.
+
+    Returns:
+        The header and an empty string, or None and what is wrong.
+    """
+    # log.debug("Takes the lines, which the caller must give")
+    body = required(body=body)
+    # log.debug("Matches the first three lines against the labelled form")
+    matches = [FIELD_RE.match(line) for line in body[: len(LABELS)]]
+    # log.debug("Reads the labels the lines actually carry")
+    labels = tuple(m.group(1) if m else "" for m in matches)
+    # log.debug("Reports fields that are missing or out of order")
+    if labels != LABELS:
+        # log.debug("Returns the problem with the expected labels")
+        return None, "the doc block must start with Author, Created on and Last modified on"
+    # log.debug("Reports a description not set apart by a blank line")
+    if len(body) <= len(LABELS) or body[len(LABELS)].strip():
+        # log.debug("Returns the problem")
+        return None, "a blank line must come between the dates and the description"
+    # log.debug("Reads each field's value")
+    author, created, modified = (m.group(2) for m in matches if m)
+    # log.debug("Returns the header")
+    return Header(
+        title=titled[0],
+        author=author,
+        created=created,
+        modified=modified,
+        description=" ".join(line.strip() for line in body[len(LABELS) + 1 :]).strip(),
+        title_line=titled[1],
+        created_line=first + 1,
+        modified_line=first + 2,
         last=last,
-    )
-    # log.debug("Returns the header with no error")
-    return header, ""
+        centred=titled[2] == title_line(titled[0]),
+    ), ""
 
 
 # log.debug("Defines the checks on a header's values")
-def check_fields(header: Header, path: str, created: str, modified: str) -> list[Finding]:
-    """Check a header's values against the file and its git history.
+def check_fields(
+    header: Header | None = None, path: str = "", created: str = "", modified: str = ""
+) -> list[Finding]:
+    """Checks a header's values against the file and its git history.
 
     Args:
-        header: The parsed header.
+        header: The parsed header. Required.
         path: The file's path from the repository root.
         created: The Created on date git implies.
         modified: The Last modified on date git implies.
@@ -299,27 +477,24 @@ def check_fields(header: Header, path: str, created: str, modified: str) -> list
     Returns:
         A finding for each value that is wrong.
     """
-    # log.debug("Starts with no findings")
-    found: list[Finding] = []
-    # log.debug("Lists each check: whether it fails and the message")
+    # log.debug("Takes the header, which the caller must give")
+    header = required(header=header)
+    # log.debug("Lists each check: whether it fails, its line and the message")
     checks = (
-        (header.title != path, f"title must be the file's path, {path}"),
-        (header.author != AUTHOR, f"author must be {AUTHOR}"),
-        (not DATE_RE.match(header.created), "Created on must be a date, YYYY-MM-DD"),
-        (not DATE_RE.match(header.modified), "Last modified on must be a date, YYYY-MM-DD"),
-        (header.created != created, f"Created on must be {created}, when git first saw the file"),
+        (header.title != path, header.title_line, f"the box must hold the file's path, {path}"),
+        (not header.centred, header.title_line, "centre the path; run kds-standards stamp"),
+        (header.author != AUTHOR, header.created_line - 1, f"Author must be {AUTHOR}"),
         (
-            header.modified != modified,
+            not DATE_RE.match(header.created) or header.created != created,
+            header.created_line,
+            f"Created on must be {created}, when git first saw the file",
+        ),
+        (
+            not DATE_RE.match(header.modified) or header.modified != modified,
+            header.modified_line,
             f"Last modified on must be {modified}; run kds-standards stamp",
         ),
-        (not header.purpose, "Purpose must say what the file is for"),
-        (len(header.purpose) > PURPOSE_MAX, f"Purpose must be at most {PURPOSE_MAX} characters"),
+        (not header.description, header.last, "the doc block must describe the file"),
     )
-    # log.debug("Keeps a finding for each check that fails")
-    for failed, message in checks:
-        # log.debug("Records the failed check against line 1")
-        if failed:
-            # log.debug("Adds the finding")
-            found.append(Finding(path, 1, RULE, message))
-    # log.debug("Returns every finding")
-    return found
+    # log.debug("Returns a finding for each check that fails, on its 1-based line")
+    return [Finding(path, line + 1, RULE, message) for failed, line, message in checks if failed]

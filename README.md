@@ -47,7 +47,8 @@ commits behind each release are in [CHANGELOG.md](CHANGELOG.md).
 
 | Package | Import | What it does | Depends on |
 | --- | --- | --- | --- |
-| [settings](settings/) | `kds.settings` | typed, frozen settings from `config/settings.toml` and `.env` | pydantic |
+| [args](args/) | `kds.args` | `required()` and `missing()`: the arguments a function cannot do without | none |
+| [settings](settings/) | `kds.settings` | typed, frozen settings from `config/config.toml` and `config/.env` | pydantic |
 | [logs](logs/) | `kds.logs` | JSON-lines logs, request ids, redaction, trace lines | settings |
 | [llm](llm/) | `kds.llm` | one adapter for model providers, with an offline stand-in | settings, logs |
 | [evals](evals/) | `kds.evals` | cases, metrics, a runner and reports | llm, logs |
@@ -63,7 +64,7 @@ commits behind each release are in [CHANGELOG.md](CHANGELOG.md).
    the developer tools, whatever its language.
 2. **Pin one commit.** Every package comes from git at one reviewed commit, locked with hashes, so
    nothing changes underneath the project (see [installing a package](#installing-a-package)).
-3. **Configure.** `kds.settings` reads `config/settings.toml`, then secrets from `.env`;
+3. **Configure.** `kds.settings` reads `config/config.toml`, then secrets from `config/.env`;
    environment variables override both. It validates everything once and freezes it.
 4. **Use the tools.** Each package's README says what it does, how to use it and the settings it
    reads; model calls are covered in [llm/README.md](llm/README.md).
@@ -103,9 +104,9 @@ Case studies with the evaluation plans and results: https://kevindstreet.com/pro
 
 ## Configuration
 
-Every shared setting, with its default, is in [config/settings.toml](config/settings.toml); a test
-fails if that file and the defaults in code drift apart. Secrets are only ever in `.env` (names in
-[.env.example](.env.example)). [settings/README.md](settings/README.md) says how a value is chosen,
+Every shared setting, with its default, is in [config/config.toml](config/config.toml); a test
+fails if that file and the defaults in code drift apart. Secrets are only ever in `config/.env` (names in
+[config/.env.example](config/.env.example)). [settings/README.md](settings/README.md) says how a value is chosen,
 and each package's README lists the settings it reads: [logs](logs/README.md) and
 [llm](llm/README.md).
 
@@ -136,7 +137,7 @@ folder.
 
 ## Security
 
-Secrets live only in `.env`, and the settings loader refuses one in `settings.toml`. Logs redact
+Secrets live only in `config/.env`, and the settings loader refuses one in `config.toml`. Logs redact
 personal data by default. Dependencies are locked with hashes and audited in CI; Actions are pinned
 to commit SHAs; gitleaks scans every commit and the whole history; CodeQL scans the code. To report a
 vulnerability, see [SECURITY.md](SECURITY.md).
@@ -145,14 +146,14 @@ vulnerability, see [SECURITY.md](SECURITY.md).
 
 ```
 utils/
-├── settings/      kds.settings: settings.toml and .env, typed and frozen
+├── settings/      kds.settings: config.toml and .env, typed and frozen
 ├── logs/          kds.logs: JSON lines, request ids, redaction, traces
 ├── llm/           kds.llm: the model adapter, providers, pricing
 ├── evals/         kds.evals: cases, metrics, runner, reports, judge
 ├── synthetic/     kds.synthetic: made-up names and PDFs
 ├── standards/     kds.standards: the kds-standards checker
 ├── diagrams/      kds.diagrams: the kds-diagrams renderer
-├── config/        settings.toml: every shared setting at its default
+├── config/        config.toml: every shared setting at its default; .env.example
 ├── docs/          diagrams.toml and the two SVGs it draws
 └── .github/       CI, CodeQL, Dependabot, CODEOWNERS
 ```

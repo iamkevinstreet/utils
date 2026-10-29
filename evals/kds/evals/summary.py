@@ -1,42 +1,72 @@
 ########################################################################
 #                      evals/kds/evals/summary.py                      #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Averages a run's scores, adds time and cost      #
-#                     figures, and writes the Markdown results table.  #
-########################################################################
-"""Run summaries and the Markdown report."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Averages a run's scores, adds time and cost figures, and writes the
+Markdown results table.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from typing import TYPE_CHECKING, Any
 
+# Local
+from kds.args import required
+from kds.evals import config
 from kds.evals.metrics import mean, percentile
 
 # log.debug("Imports the run types for annotations only, avoiding a cycle")
 if TYPE_CHECKING:
     from kds.evals.runner import CaseResult, RunResult
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the decimal places the cost per case is kept to, from the config")
+COST_PLACES = config.COST_PLACES
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the decimal places averaged scores are kept to")
 SCORE_PLACES = 4
-# log.debug("Sets the decimal places the cost per case is kept to")
-COST_PLACES = 6
 # log.debug("Sets the size above which a number is shown whole")
 LARGE = 1000
+
+
+########################################################################
+#                            Run summaries                             #
+########################################################################
 # log.debug("Sets the median and tail percentiles reported")
 MEDIAN, TAIL = 50, 95
+
+
 # log.debug("Sets the separator between table cells, and the row end")
 SEP, END = " | ", " |"
 
 
 # log.debug("Defines the score names a set of results shares")
-def score_keys(results: list[CaseResult]) -> list[str]:
-    """Return the sorted names of every numeric or boolean score."""
+def score_keys(results: list[CaseResult] | None = None) -> list[str]:
+    """Returns the sorted names of every numeric or boolean score.
+
+    Args:
+        results: The case results to look through. Required.
+
+    Returns:
+        The names, each once, in alphabetical order.
+    """
+    # log.debug("Takes the results, which the caller must give")
+    results = required(results=results)
     # log.debug("Collects names whose values are numbers or booleans")
     return sorted(
         {k for r in results for k, v in r.scores.items() if isinstance(v, bool | int | float)}
@@ -44,12 +74,22 @@ def score_keys(results: list[CaseResult]) -> list[str]:
 
 
 # log.debug("Defines a run's summary")
-def summarise(results: list[CaseResult]) -> dict[str, Any]:
-    """Average each score over the cases that ran; add time and cost.
+def summarise(results: list[CaseResult] | None = None) -> dict[str, Any]:
+    """Averages each score over the cases that ran; adds time and cost.
 
     Failed cases count in the failure rate, latency and cost, but not
     in the score averages, which would otherwise mix in zeros.
+
+    Args:
+        results: The case results of a run, or of one tag's cases.
+            Required.
+
+    Returns:
+        Each score's mean, the median and 95th percentile latency, the
+        total and per-case cost, and the failure rate.
     """
+    # log.debug("Takes the results, which the caller must give")
+    results = required(results=results)
     # log.debug("Keeps the cases that ran")
     ok = [r for r in results if r.ok]
     # log.debug("Averages each score over those cases")
@@ -76,8 +116,17 @@ def summarise(results: list[CaseResult]) -> dict[str, Any]:
 
 
 # log.debug("Defines how a number is shown in the report")
-def fmt(value: Any) -> str:
-    """Show floats without trailing zeros, and large ones whole."""
+def fmt(value: Any = None) -> str:
+    """Shows floats without trailing zeros, and large ones whole.
+
+    Args:
+        value: The value to show.
+
+    Returns:
+        A float to four places with trailing zeros trimmed, or whole
+        with commas once its size reaches 1,000; anything else as
+        plain text.
+    """
     # log.debug("Shows anything but a float as it is")
     if not isinstance(value, float):
         # log.debug("Returns its text")
@@ -91,8 +140,17 @@ def fmt(value: Any) -> str:
 
 
 # log.debug("Defines the Markdown report of a run")
-def to_markdown(run: RunResult) -> str:
-    """Return the report: the summary, a table by tag, the failures."""
+def to_markdown(run: RunResult | None = None) -> str:
+    """Returns the report: the summary, a table by tag, the failures.
+
+    Args:
+        run: The run to report on. Required.
+
+    Returns:
+        The report as Markdown, ending in a newline.
+    """
+    # log.debug("Takes the run, which the caller must give")
+    run = required(run=run)
     # log.debug("Writes the title, the run's facts and the summary table")
     lines = [
         f"# {run.name}",
@@ -117,8 +175,18 @@ def to_markdown(run: RunResult) -> str:
 
 
 # log.debug("Defines the table that breaks scores down by tag")
-def _by_tag(run: RunResult) -> list[str]:
-    """Return the by-tag table's lines, or none if no case has tags."""
+def _by_tag(run: RunResult | None = None) -> list[str]:
+    """Returns the by-tag table's lines, or none if no case has tags.
+
+    Args:
+        run: The run whose cases are broken down by tag. Required.
+
+    Returns:
+        The section's heading and table, one row per tag, or an empty
+        list.
+    """
+    # log.debug("Takes the run, which the caller must give")
+    run = required(run=run)
     # log.debug("Collects every tag used")
     tags = sorted({t for r in run.results for t in r.tags})
     # log.debug("Returns nothing when there are no tags")

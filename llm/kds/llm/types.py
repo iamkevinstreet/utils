@@ -1,27 +1,42 @@
 ########################################################################
 #                         llm/kds/llm/types.py                         #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The provider-neutral request and response types  #
-#                     every provider converts to and from.             #
-########################################################################
-"""Provider-neutral messages, tool calls, usage and completions."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+The provider-neutral request and response types every provider converts
+to and from.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from typing import Any, Literal
 
+# Third-party
 from pydantic import BaseModel, Field
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists who can speak in a conversation")
 Role = Literal["user", "assistant", "tool"]
 
 
+########################################################################
+#                        Provider-neutral types                        #
+########################################################################
 # log.debug("Defines a tool the model may call")
 class ToolSpec(BaseModel):
     """A tool offered to the model: its name, purpose and arguments."""
@@ -72,7 +87,11 @@ class Usage(BaseModel):
     # log.debug("Defines the total of both")
     @property
     def total(self) -> int:
-        """Return input and output tokens together."""
+        """Returns input and output tokens together.
+
+        Returns:
+            The total tokens the call used.
+        """
         # log.debug("Returns the sum")
         return self.input_tokens + self.output_tokens
 

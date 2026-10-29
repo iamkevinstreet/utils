@@ -1,19 +1,23 @@
 ########################################################################
 #                       logs/kds/logs/redact.py                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Removes emails, phone numbers, SSNs, card        #
-#                     numbers, birth dates and named terms from text.  #
-########################################################################
-"""Redaction for logs and audit records.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
+
+Removes emails, phone numbers, SSNs, card numbers, birth dates and named
+terms from text.
 
 The patterns are simple and a little greedy on purpose: in logs it is
 better to redact a harmless number than to leak a real one. Pass
 the names of real people as `extra_terms` if a dataset ever has any.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -21,8 +25,17 @@ import re
 from collections.abc import Iterable
 from typing import Any
 
-# Module constants
+# Local
+from kds.args import required
+
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Lists each kind of identifier and the pattern that finds it")
 PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("EMAIL", re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")),
@@ -35,18 +48,23 @@ PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
 NAME_LABEL = "[NAME]"
 
 
+########################################################################
+#                       Personal data redaction                        #
+########################################################################
 # log.debug("Defines redaction of one string")
-def redact(text: str, extra_terms: Iterable[str] = ()) -> str:
-    """Replace identifiers and any extra terms with labels like [EMAIL].
+def redact(text: str | None = None, extra_terms: Iterable[str] = ()) -> str:
+    """Replaces identifiers and extra terms with labels like [EMAIL].
 
     Args:
-        text: The text to clean.
+        text: The text to clean. Required.
         extra_terms: Exact words to remove too, such as real names;
             matched without regard to case.
 
     Returns:
         The text with every match replaced by its label.
     """
+    # log.debug("Takes the text, which the caller must give")
+    text = required(text=text)
     # log.debug("Starts from the original text")
     out = text
     # log.debug("Applies each identifier pattern in turn")
@@ -62,10 +80,19 @@ def redact(text: str, extra_terms: Iterable[str] = ()) -> str:
 
 
 # log.debug("Defines redaction of a whole structure")
-def redact_obj(obj: Any, extra_terms: Iterable[str] = ()) -> Any:
-    """Redact every string inside dicts, lists and tuples.
+def redact_obj(obj: Any = None, extra_terms: Iterable[str] = ()) -> Any:
+    """Redacts every string inside dicts, lists and tuples.
 
     Other values (numbers, None, booleans) pass through unchanged.
+
+    Args:
+        obj: The value to clean, at any depth.
+        extra_terms: Exact words to remove too, such as real names;
+            matched without regard to case.
+
+    Returns:
+        The value with every string in it redacted and dict keys
+        kept; a tuple comes back as a list.
     """
     # log.debug("Fixes the terms so a generator is read only once")
     terms = tuple(extra_terms)

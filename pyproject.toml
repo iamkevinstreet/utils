@@ -1,20 +1,24 @@
 ########################################################################
 #                            pyproject.toml                            #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Repository-wide tool settings: ruff, mypy and    #
-#                     pytest, set to one code standard across every    #
-#                     package.                                         #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Repository-wide tool settings: ruff, mypy and pytest, set to one code
+# standard across every package.
+#
 # Each package folder has its own installable pyproject.toml; these settings apply to all.
+
 [tool.ruff]
 line-length = 99
 target-version = "py312"
 
 [tool.ruff.lint]
-select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D"]
+select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D", "ANN"]
+# A module's doc block opens with its fields (Author and the dates), not a summary, so the
+# summary-first docstring rules do not fit it; kds-standards checks every function's doc block.
+ignore = ["D205", "D212", "D415", "ANN401"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
@@ -30,12 +34,13 @@ max-positional-args = 5
 known-first-party = ["kds"]
 
 [tool.ruff.lint.per-file-ignores]
-"**/tests/**" = ["S101", "PLR2004", "D"]
+"**/tests/**" = ["S101", "PLR2004"]
 
 # Tests run from the repository root, so the package folders merge into one `kds` namespace.
 [tool.pytest.ini_options]
-pythonpath = ["settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams"]
+pythonpath = ["args", "settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams"]
 testpaths = [
+  "args/tests",
   "settings/tests",
   "logs/tests",
   "llm/tests",
@@ -52,4 +57,4 @@ python_version = "3.12"
 strict = true
 explicit_package_bases = true
 namespace_packages = true
-mypy_path = "settings:logs:llm:evals:synthetic:standards:diagrams"
+mypy_path = "args:settings:logs:llm:evals:synthetic:standards:diagrams"

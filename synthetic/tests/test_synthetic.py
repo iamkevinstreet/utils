@@ -1,29 +1,44 @@
 ########################################################################
 #                  synthetic/tests/test_synthetic.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests repeatable names, the classic near-        #
-#                     duplicate traps, and a PDF's text round trip.    #
-########################################################################
-"""Tests for kds.synthetic."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Tests repeatable names, the classic near-duplicate traps, and a PDF's
+text round trip.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 from pathlib import Path
 
+# Local
 from kds.synthetic.names import NameGen, near_duplicates
 from kds.synthetic.pdf import PdfDoc
 from kds.synthetic.pdftext import pages_text, span_in_page
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the charge line the PDF test places on page one")
 CHARGE = "Charge No. 510-2026-01234"
 
 
+########################################################################
+#                         Synthetic data tests                         #
+########################################################################
 # log.debug("Defines the test that a seed repeats its names")
 def test_namegen_is_deterministic() -> None:
     """Two generators with one seed give the same names."""
@@ -52,7 +67,11 @@ def test_near_duplicates_cover_the_classic_traps() -> None:
 
 # log.debug("Defines the test of a PDF's text round trip")
 def test_pdf_roundtrip_and_span_check(tmp_path: Path) -> None:
-    """Text written to a page is found on it, and only on it."""
+    """Text written to a page is found on it, and only on it.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
     # log.debug("Starts a document")
     doc = PdfDoc(tmp_path / "charge.pdf")
     # log.debug("Adds the charge line to page one")

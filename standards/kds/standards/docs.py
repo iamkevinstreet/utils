@@ -1,21 +1,24 @@
 ########################################################################
 #                   standards/kds/standards/docs.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Checks the published docs: only README.md,       #
-#                     CHANGELOG.md and SECURITY.md, and live links.    #
-########################################################################
-"""The published-docs rules: which Markdown, and links that resolve.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
-A repository publishes README.md files, a root CHANGELOG.md and a root
-SECURITY.md, and no other Markdown; Markdown under data/ is data, not
-documentation. Every relative link or image in a published file must
-point at a file or folder the repository holds, so nothing a visitor
-reads points at a private file, a removed file or a local path.
+Checks the docs a repository publishes: README.md files, a root
+CHANGELOG.md and a root SECURITY.md, and no other Markdown. Markdown
+under data/ is data, not documentation, so it may stay, and only a
+README there has its links checked. Every relative link or image in a
+published file must point at a file or folder the repository holds, so
+nothing a visitor reads points at a private file, a removed file or a
+local path.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -24,10 +27,21 @@ import re
 from pathlib import Path, PurePosixPath
 from urllib.parse import unquote
 
+# Local
+from kds.args import required
+from kds.standards import config
 from kds.standards.findings import Finding
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the encoding every file is read in, from the config")
+ENCODING = config.ENCODING
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Names the rule")
 RULE = "docs"
 # log.debug("Names the README every folder may have")
@@ -46,13 +60,27 @@ CODE_SPAN_RE = re.compile(r"`[^`\n]*`")
 FENCE = "```"
 # log.debug("Lists the targets that point outside the repository")
 EXTERNAL = ("http://", "https://", "mailto:", "#")
-# log.debug("Sets the encoding every file is read in")
-ENCODING = "utf-8"
 
 
+########################################################################
+#                            Published docs                            #
+########################################################################
 # log.debug("Defines the published-docs check of a repository")
-def check_docs(root: Path, files: list[str]) -> list[Finding]:
-    """Flag Markdown that is not published, and links that break."""
+def check_docs(root: Path | None = None, files: list[str] | None = None) -> list[Finding]:
+    """Flags Markdown that is not published, and links that break.
+
+    Args:
+        root: The repository root. Required.
+        files: Every file a commit would hold. Required.
+
+    Returns:
+        A finding for each Markdown file the repository may not
+        publish, and one for each link that breaks.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
+    # log.debug("Takes the files, which the caller must give")
+    files = required(files=files)
     # log.debug("Collects the file set for quick lookups")
     present = set(files)
     # log.debug("Lists the Markdown files")
@@ -74,15 +102,43 @@ def check_docs(root: Path, files: list[str]) -> list[Finding]:
 
 
 # log.debug("Defines which Markdown a repository publishes")
-def published(path: str) -> bool:
-    """Return True for README.md files, the root docs and data."""
+def published(path: str | None = None) -> bool:
+    """Returns True for README.md files, the root docs and data.
+
+    Args:
+        path: The Markdown file's path from the repository root.
+            Required.
+
+    Returns:
+        True when the repository may publish the file.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
     # log.debug("Returns the verdict")
     return PurePosixPath(path).name == README or path in ROOT_DOCS or path.startswith(DATA)
 
 
 # log.debug("Defines the links check for one document")
-def check_links(path: str, text: str, present: set[str]) -> list[Finding]:
-    """Flag each relative link in `text` whose target is not present."""
+def check_links(
+    path: str | None = None, text: str | None = None, present: set[str] | None = None
+) -> list[Finding]:
+    """Flags each relative link whose target is not in the repository.
+
+    Args:
+        path: The document's path from the repository root; relative
+            links start from its folder. Required.
+        text: The document's Markdown. Required.
+        present: Every file the repository holds. Required.
+
+    Returns:
+        A finding for each link that breaks, on its line.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
+    # log.debug("Takes the text, which the caller must give")
+    text = required(text=text)
+    # log.debug("Takes the present, which the caller must give")
+    present = required(present=present)
     # log.debug("Starts outside a fenced code block")
     fenced = False
     # log.debug("Starts with no findings")
@@ -112,8 +168,27 @@ def check_links(path: str, text: str, present: set[str]) -> list[Finding]:
 
 
 # log.debug("Defines whether one link target resolves")
-def _resolves(path: str, target: str, present: set[str]) -> bool:
-    """Return True for an external target or a file or folder held."""
+def _resolves(
+    path: str | None = None, target: str | None = None, present: set[str] | None = None
+) -> bool:
+    """Returns True for an external target or a file or folder held.
+
+    Args:
+        path: The linking document's path from the repository root.
+            Required.
+        target: The link's target, as the document writes it. Required.
+        present: Every file the repository holds. Required.
+
+    Returns:
+        True when the link resolves; False when it names nothing the
+        repository holds.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
+    # log.debug("Takes the target, which the caller must give")
+    target = required(target=target)
+    # log.debug("Takes the present, which the caller must give")
+    present = required(present=present)
     # log.debug("Trusts addresses outside the repository and in-page anchors")
     if target.startswith(EXTERNAL):
         # log.debug("Returns resolved")
@@ -129,7 +204,17 @@ def _resolves(path: str, target: str, present: set[str]) -> bool:
 
 
 # log.debug("Defines the test for a data file, whose links are not ours")
-def _is_data_file(path: str) -> bool:
-    """Return True for Markdown under data/ that is not a README."""
+def _is_data_file(path: str | None = None) -> bool:
+    """Returns True for Markdown under data/ that is not a README.
+
+    Args:
+        path: The Markdown file's path from the repository root.
+            Required.
+
+    Returns:
+        True for a data file, whose links are not checked.
+    """
+    # log.debug("Takes the path, which the caller must give")
+    path = required(path=path)
     # log.debug("Returns the verdict")
     return path.startswith(DATA) and PurePosixPath(path).name != README

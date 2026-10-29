@@ -1,14 +1,19 @@
 ########################################################################
 #                       evals/kds/evals/case.py                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           An evaluation case: input, expected output and   #
-#                     tags; and the loader that refuses duplicate ids. #
-########################################################################
-"""Evaluation cases and their loader."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+An evaluation case: input, expected output and tags; and the loader that
+refuses duplicate ids.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import json
@@ -16,14 +21,27 @@ import logging
 from pathlib import Path
 from typing import Any
 
+# Third-party
 from pydantic import BaseModel, Field
 
-# Module constants
+# Local
+from kds.args import missing
+
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the start of a comment line in a .jsonl case file")
 COMMENT = "#"
 
 
+########################################################################
+#                           Evaluation cases                           #
+########################################################################
 # log.debug("Defines one evaluation case")
 class EvalCase(BaseModel):
     """An input, the expected output, and tags for slicing results."""
@@ -41,12 +59,22 @@ class EvalCase(BaseModel):
 
 
 # log.debug("Defines the loader for a case file")
-def load_cases(path: Path | str) -> list[EvalCase]:
-    """Load cases from .jsonl (one per line) or .json (a list).
+def load_cases(path: Path | str | None = None) -> list[EvalCase]:
+    """Loads cases from .jsonl (one per line) or .json (a list).
+
+    Args:
+        path: The case file to read. Required.
+
+    Returns:
+        The cases, in the order the file lists them.
 
     Raises:
         ValueError: Two cases share an id.
     """
+    # log.debug("Stops when the caller left out the path")
+    if path is None:
+        # log.debug("Raises the missing-argument error")
+        raise missing(path=path)
     # log.debug("Points at the file")
     file = Path(path)
     # log.debug("Reads its text")

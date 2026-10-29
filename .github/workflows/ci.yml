@@ -1,13 +1,13 @@
 ########################################################################
 #                       .github/workflows/ci.yml                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Every push and pull request: secrets scan, lint, #
-#                     types, the code standard, tests, installs and an #
-#                     audit.                                           #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-14
+# Last modified on:  2026-10-29
+#
+# Every push and pull request: secrets scan, lint, types, the code
+# standard, tests, installs and an audit.
+
 name: ci
 
 on:
@@ -55,9 +55,9 @@ jobs:
       # checkout under test installs with --no-deps; the lockfile supplies the rest.
       - name: Each package builds and installs on its own
         run: |
-          python -m pip install --no-deps ./settings ./logs ./llm ./evals ./synthetic \
+          python -m pip install --no-deps ./args ./settings ./logs ./llm ./evals ./synthetic \
             ./standards ./diagrams
-          python -c "import kds.settings, kds.logs, kds.llm, kds.evals, kds.synthetic"
+          python -c "import kds.args, kds.settings, kds.logs, kds.llm, kds.evals, kds.synthetic"
           python -c "import kds.standards, kds.diagrams"
 
       - name: Lint, format, strict types and the code standard

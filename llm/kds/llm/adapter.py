@@ -1,24 +1,24 @@
 ########################################################################
 #                        llm/kds/llm/adapter.py                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           The one object every project calls a model       #
-#                     through: retries, JSON, cost, budget, logs.      #
-########################################################################
-"""The model adapter.
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
-- uses the provider the settings name, or one passed in (tests pass
-  the offline fake)
-- retries failures that can succeed later, with capped, jittered
-  backoff, and never retries ones that cannot
-- validates structured output against a pydantic model, with one
-  repair attempt
-- prices every call and stops a run at its budget
-- logs every call with its request id, tokens, latency and cost
+The one object every project calls a model through. It uses the
+provider the settings name, or one passed in (tests pass the offline
+fake). Failures that can succeed later are retried with capped,
+jittered backoff; failures that cannot are never retried. Structured
+output is validated against a pydantic model, with one repair attempt.
+Every call is priced and logged with its request id, tokens, latency
+and cost, and a run stops at its budget.
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -28,8 +28,11 @@ from collections.abc import Callable
 from functools import lru_cache
 from typing import Any, Final
 
+# Third-party
 from pydantic import BaseModel
 
+# Local
+from kds.args import missing, required
 from kds.llm import structured
 from kds.llm.base import Provider
 from kds.llm.errors import BudgetExceededError, StructuredOutputError, is_transient
@@ -39,8 +42,14 @@ from kds.llm.types import Completion, Message, ToolSpec
 from kds.logs import current_request_id, log_event
 from kds.settings import Settings, get_settings
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the first retry's longest wait, in seconds")
 BACKOFF_BASE_S = 0.5
 # log.debug("Sets the longest wait between retries, in seconds")
@@ -55,13 +64,25 @@ MODEL: Final = "model"
 REPAIR = "That did not validate: {error}. Return the corrected JSON object only."
 
 
+########################################################################
+#                            Model adapter                             #
+########################################################################
 # log.debug("Defines the wait before a given retry")
-def backoff(attempt: int) -> float:
-    """Return a random wait up to 0.5s, 1s, 2s ... capped at 8s.
+def backoff(attempt: int | None = None) -> float:
+    """Returns a random wait up to 0.5s, 1s, 2s ... capped at 8s.
 
     "Full jitter": spreading retries at random stops many clients
     that failed together from retrying together.
+
+    Args:
+        attempt: The attempt that just failed; each one doubles the
+            longest wait. Required.
+
+    Returns:
+        A random wait in seconds, from zero up to the attempt's limit.
     """
+    # log.debug("Takes the attempt, which the caller must give")
+    attempt = required(attempt=attempt)
     # log.debug("Doubles the ceiling each attempt, up to the cap")
     ceiling = min(BACKOFF_CAP_S, BACKOFF_BASE_S * 2**attempt)
     # log.debug("Returns a random wait under the ceiling")
@@ -69,8 +90,20 @@ def backoff(attempt: int) -> float:
 
 
 # log.debug("Defines how a prompt becomes a conversation")
-def as_turns(messages: list[Message] | str) -> list[Message]:
-    """Return the conversation; a plain string becomes one user turn."""
+def as_turns(messages: list[Message] | str | None = None) -> list[Message]:
+    """Returns the conversation; a plain string becomes one user turn.
+
+    Args:
+        messages: The conversation, or a prompt as a plain string.
+            Required.
+
+    Returns:
+        The conversation as a list of turns.
+    """
+    # log.debug("Stops when the caller left out the messages")
+    if messages is None:
+        # log.debug("Raises the missing-argument error")
+        raise missing(messages=messages)
     # log.debug("Wraps a string as a single user turn")
     return [Message(role=USER, content=messages)] if isinstance(messages, str) else messages
 
@@ -89,7 +122,7 @@ class ModelAdapter:
         budget_usd: float | None = None,
         sleep: Callable[[float], None] = time.sleep,
     ) -> None:
-        """Build an adapter from settings, overriding what is passed.
+        """Builds an adapter from settings, overriding what is passed.
 
         Args:
             provider: The provider to call; built from settings if None.
@@ -116,7 +149,7 @@ class ModelAdapter:
     # log.debug("Defines one call to the model")
     def complete(
         self,
-        messages: list[Message] | str,
+        messages: list[Message] | str | None = None,
         *,
         system: str | None = None,
         tools: list[ToolSpec] | None = None,
@@ -124,11 +157,28 @@ class ModelAdapter:
         json_mode: bool = False,
         model: str | None = None,
     ) -> Completion:
-        """Call the model once, with retries; price and log the call.
+        """Calls the model once, with retries; prices and logs the call.
+
+        Args:
+            messages: The conversation, or a prompt as a plain string.
+                Required.
+            system: The system prompt, if any.
+            tools: Any tools the model may call.
+            max_tokens: The most tokens the answer may use;
+                `llm_max_tokens` if None.
+            json_mode: True to ask for a single JSON object.
+            model: The model to use; the adapter's model if None.
+
+        Returns:
+            The completion, priced and stamped with the request id.
 
         Raises:
             BudgetExceededError: The run has already spent its budget.
         """
+        # log.debug("Stops when the caller left out the messages")
+        if messages is None:
+            # log.debug("Raises the missing-argument error")
+            raise missing(messages=messages)
         # log.debug("Stops before calling when the budget is spent")
         if self.spent_usd > self.budget_usd:
             # log.debug("Raises with the spend and the limit")
@@ -153,8 +203,18 @@ class ModelAdapter:
         return self._record(completion)
 
     # log.debug("Defines the retry loop around one provider call")
-    def _call_with_retries(self, request: dict[str, Any]) -> Completion:
-        """Call the provider; retry transient failures with backoff."""
+    def _call_with_retries(self, request: dict[str, Any] | None = None) -> Completion:
+        """Calls the provider; retries transient failures with backoff.
+
+        Args:
+            request: The keyword arguments for one provider call.
+                Required.
+
+        Returns:
+            The completion from the first call that succeeds.
+        """
+        # log.debug("Takes the request, which the caller must give")
+        request = required(request=request)
         # log.debug("Counts attempts from one")
         attempt = 1
         # log.debug("Tries until a call succeeds or retrying cannot help")
@@ -194,8 +254,18 @@ class ModelAdapter:
                 attempt += 1
 
     # log.debug("Defines the bookkeeping after a successful call")
-    def _record(self, completion: Completion) -> Completion:
-        """Price the call, add it to the spend, log it, return it."""
+    def _record(self, completion: Completion | None = None) -> Completion:
+        """Prices the call, adds it to the spend, logs it, returns it.
+
+        Args:
+            completion: The provider's completion for the call.
+                Required.
+
+        Returns:
+            The same completion, with its cost and request id set.
+        """
+        # log.debug("Takes the completion, which the caller must give")
+        completion = required(completion=completion)
         # log.debug("Prices the call at list price")
         completion.cost_usd = estimate_cost(completion.model, completion.usage)
         # log.debug("Stamps the call with the current request id")
@@ -229,18 +299,36 @@ class ModelAdapter:
     # log.debug("Defines a call whose answer must match a schema")
     def complete_json[T: BaseModel](
         self,
-        messages: list[Message] | str,
-        schema: type[T],
+        messages: list[Message] | str | None = None,
+        schema: type[T] | None = None,
         *,
         system: str | None = None,
         max_tokens: int | None = None,
         model: str | None = None,
     ) -> tuple[T, Completion]:
-        """Ask for JSON matching `schema`; on a mismatch, repair once.
+        """Asks for JSON matching `schema`; on a mismatch, repairs once.
+
+        Args:
+            messages: The conversation, or a prompt as a plain string.
+                Required.
+            schema: The pydantic model the answer must match. Required.
+            system: The system prompt the schema is added to.
+            max_tokens: The most tokens each answer may use;
+                `llm_max_tokens` if None.
+            model: The model to use; the adapter's model if None.
+
+        Returns:
+            The validated answer and the completion it came from.
 
         Raises:
             StructuredOutputError: The repaired answer still fails.
         """
+        # log.debug("Stops when the caller left out the messages")
+        if messages is None:
+            # log.debug("Raises the missing-argument error")
+            raise missing(messages=messages)
+        # log.debug("Takes the schema, which the caller must give")
+        schema = required(schema=schema)
         # log.debug("Turns a plain string into a one-message conversation")
         turns = as_turns(messages)
         # log.debug("Adds the schema to the system prompt")
@@ -273,8 +361,20 @@ class ModelAdapter:
             raise StructuredOutputError(str(error)) from error
 
     # log.debug("Defines embeddings through the configured provider")
-    def embed(self, texts: list[str], *, model: str | None = None) -> list[list[float]]:
-        """Return one vector per text from the embedding model."""
+    def embed(
+        self, texts: list[str] | None = None, *, model: str | None = None
+    ) -> list[list[float]]:
+        """Returns one vector per text from the embedding model.
+
+        Args:
+            texts: The texts to embed. Required.
+            model: The embedding model; `llm_embedding_model` if None.
+
+        Returns:
+            One vector per text, in the order given.
+        """
+        # log.debug("Takes the texts, which the caller must give")
+        texts = required(texts=texts)
         # log.debug("Returns the provider's vectors")
         return self.provider.embed(model=model or self.settings.llm_embedding_model, texts=texts)
 
@@ -282,9 +382,12 @@ class ModelAdapter:
 # log.debug("Defines the process-wide adapter")
 @lru_cache(maxsize=1)
 def get_adapter() -> ModelAdapter:
-    """Return one adapter built from settings, shared by the process.
+    """Returns one adapter built from settings, shared by the process.
 
     Tests build their own `ModelAdapter(FakeProvider(...))` instead.
+
+    Returns:
+        The shared adapter, built on the first call.
     """
     # log.debug("Builds the adapter once")
     return ModelAdapter()

@@ -1,13 +1,13 @@
 ########################################################################
 #                  diagrams/kds/diagrams/__init__.py                   #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Builds an at-a-glance diagram from zones,        #
-#                     components, arrows and a foundation, as one SVG. #
-########################################################################
-"""kds.diagrams: architecture and flow diagrams in one house style.
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
+
+Builds an at-a-glance diagram from zones, components, arrows and a
+foundation, as one SVG.
 
 Usage:
     d = Diagram(760, 620, "Q&A at a glance", "One idea.", "Key.")
@@ -18,6 +18,10 @@ Usage:
     d.write(Path("docs/architecture.svg"))
 """
 
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -25,23 +29,36 @@ from dataclasses import dataclass, field
 from html import escape
 from pathlib import Path
 
-from kds.diagrams import svg
+# Local
+from kds.args import required
+from kds.diagrams import config, svg
 from kds.diagrams.svg import Box
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the encoding the SVG is written in, from the config")
+ENCODING = config.ENCODING
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the margin around the title block")
 MARGIN = 28
-# log.debug("Sets the encoding the SVG is written in")
-ENCODING = "utf-8"
 # log.debug("Sets the size of the serif display title")
 TITLE_SIZE = 44
 # log.debug("Sets the size of the bold subtitle")
 SUBTITLE_SIZE = 16
-# log.debug("Sets the baselines of the title, subtitle and caption")
-TITLE_ROW, SUBTITLE_ROW, CAPTION_ROW = 64, 100, 122
 # log.debug("Lists what the package exports")
 __all__ = ["Box", "Diagram"]
+
+
+########################################################################
+#                           Diagram building                           #
+########################################################################
+# log.debug("Sets the baselines of the title, subtitle and caption")
+TITLE_ROW, SUBTITLE_ROW, CAPTION_ROW = 64, 100, 122
 
 
 # log.debug("Defines a diagram as a list of drawn elements")
@@ -72,38 +89,99 @@ class Diagram:
     parts: list[str] = field(default_factory=list)
 
     # log.debug("Defines how a zone is added")
-    def zone(self, at: Box, title: str, rule: str = "") -> None:
-        """Add a dashed zone: where things run, who may touch them."""
+    def zone(self, at: Box | None = None, title: str | None = None, rule: str = "") -> None:
+        """Adds a dashed zone: where things run, who may touch them.
+
+        Args:
+            at: Where the zone goes on the canvas. Required.
+            title: The zone's name, such as "Your network". Required.
+            rule: Who may touch what runs there, shown after the title;
+                empty for none.
+        """
+        # log.debug("Takes the at, which the caller must give")
+        at = required(at=at)
+        # log.debug("Takes the title, which the caller must give")
+        title = required(title=title)
         # log.debug("Adds the zone's drawing")
         self.parts.append(svg.zone(at, title, rule))
 
     # log.debug("Defines how a component is added")
-    def component(self, at: Box, name: str, details: list[str], note: str = "") -> None:
-        """Add a component; `note` marks it "new" or "to build"."""
+    def component(
+        self,
+        at: Box | None = None,
+        name: str | None = None,
+        details: list[str] | None = None,
+        note: str = "",
+    ) -> None:
+        """Adds a component; `note` marks it "new" or "to build".
+
+        Args:
+            at: Where the component goes on the canvas. Required.
+            name: The component's name, bold and centred. Required.
+            details: Up to three short lines under the name. Required.
+            note: A muted marker after the name; empty for none.
+        """
+        # log.debug("Takes the at, which the caller must give")
+        at = required(at=at)
+        # log.debug("Takes the name, which the caller must give")
+        name = required(name=name)
+        # log.debug("Takes the details, which the caller must give")
+        details = required(details=details)
         # log.debug("Adds the component's drawing")
         self.parts.append(svg.component(at, name, details, note))
 
     # log.debug("Defines how an arrow is added")
     def arrow(
         self,
-        points: list[tuple[float, float]],
-        label: str,
-        at: tuple[float, float],
+        points: list[tuple[float, float]] | None = None,
+        label: str | None = None,
+        at: tuple[float, float] | None = None,
         accent: bool = False,
     ) -> None:
-        """Add an arrow; accent marks a path that matters."""
+        """Adds an arrow; accent marks a path that matters.
+
+        Args:
+            points: The corners of the path, start to end. Required.
+            label: What crosses the arrow; empty for none. Required.
+            at: Where the label's left baseline goes. Required.
+            accent: True for a path that matters, drawn in the accent.
+        """
+        # log.debug("Takes the points, which the caller must give")
+        points = required(points=points)
+        # log.debug("Takes the label, which the caller must give")
+        label = required(label=label)
+        # log.debug("Takes the at, which the caller must give")
+        at = required(at=at)
         # log.debug("Adds the arrow's drawing")
         self.parts.append(svg.arrow(points, label, at, accent))
 
     # log.debug("Defines how the foundation band is added")
-    def band(self, at: Box, title: str, lines: list[str]) -> None:
-        """Add the band for what every zone shares."""
+    def band(
+        self, at: Box | None = None, title: str | None = None, lines: list[str] | None = None
+    ) -> None:
+        """Adds the band for what every zone shares.
+
+        Args:
+            at: Where the band goes on the canvas. Required.
+            title: The band's heading. Required.
+            lines: What every zone shares, one line each. Required.
+        """
+        # log.debug("Takes the at, which the caller must give")
+        at = required(at=at)
+        # log.debug("Takes the title, which the caller must give")
+        title = required(title=title)
+        # log.debug("Takes the lines, which the caller must give")
+        lines = required(lines=lines)
         # log.debug("Adds the band's drawing")
         self.parts.append(svg.band(at, title, lines))
 
     # log.debug("Defines how the whole diagram becomes SVG text")
     def render(self) -> str:
-        """Return the diagram as a standalone SVG document."""
+        """Returns the diagram as a standalone SVG document.
+
+        Returns:
+            The SVG document as text, ending in a newline.
+        """
         # log.debug("Stops if the subtitle would run off the canvas")
         svg.ensure_fits(self.subtitle, SUBTITLE_SIZE, self.width - 2 * MARGIN, bold=True)
         # log.debug("Opens the SVG with its size and accessible name")
@@ -135,8 +213,15 @@ class Diagram:
         return head + svg.markers() + canvas + block + "".join(self.parts) + "</svg>\n"
 
     # log.debug("Defines how the diagram is saved")
-    def write(self, path: Path) -> None:
-        """Write the SVG to `path`, creating its folder if needed."""
+    def write(self, path: Path | None = None) -> None:
+        """Writes the SVG to `path`, creating its folder if needed.
+
+        Args:
+            path: The file to write, such as docs/architecture.svg.
+                Required.
+        """
+        # log.debug("Takes the path, which the caller must give")
+        path = required(path=path)
         # log.debug("Creates the folder the file goes in")
         path.parent.mkdir(parents=True, exist_ok=True)
         # log.debug("Writes the SVG text")

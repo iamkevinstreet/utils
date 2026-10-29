@@ -1,30 +1,56 @@
 ########################################################################
 #                   standards/tests/test_jsrules.py                    #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests the TypeScript and JavaScript logger-line  #
-#                     rule: statements, exemptions, unions, objects,   #
-#                     JSX.                                             #
-########################################################################
-"""Tests for kds.standards.jsrules."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Tests the logger-line rule for scripts. A statement with no logger line
+above it is a finding, and so are a one-word description and a logger
+line left on. Imports and types need none; the lines of a union, an
+object, a JSX tree or a template string are not statements of their
+own, but a callback's body holds statements. An Astro component is
+read only in its frontmatter.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 
+# Third-party
 import pytest
 
+# Local
+from kds.args import required
 from kds.standards.jsrules import check_live, check_logger_lines, script_lines, statement_rows
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
 
 
+########################################################################
+#                         Script logger lines                          #
+########################################################################
 # log.debug("Defines a helper that lists the lines flagged in a source")
-def _flagged(source: str, path: str = "x.ts") -> list[int]:
-    """Return the line numbers the logger-line rule flags."""
+def _flagged(source: str | None = None, path: str = "x.ts") -> list[int]:
+    """Returns the line numbers the logger-line rule flags.
+
+    Args:
+        source: The script's text. Required.
+        path: The path the script is checked under.
+
+    Returns:
+        The line of each finding, in order.
+    """
+    # log.debug("Takes the source, which the caller must give")
+    source = required(source=source)
     # log.debug("Returns the flagged line numbers")
     return [f.line for f in check_logger_lines(path, source)]
 
@@ -148,7 +174,12 @@ def test_astro_checks_only_the_frontmatter() -> None:
     ("line", "count"), [("  log.debug('On');", 1), ("  // log.debug('Off')", 0)]
 )
 def test_live_logger_lines_are_flagged(line: str, count: int) -> None:
-    """A logger line left on is a finding; a commented one is not."""
+    """A logger line left on is a finding; a commented one is not.
+
+    Args:
+        line: A script line, live or commented out.
+        count: How many findings the line should give.
+    """
     # log.debug("Checks the count")
     assert len(check_live("x.ts", line + "\n")) == count
 

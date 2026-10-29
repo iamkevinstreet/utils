@@ -1,22 +1,34 @@
 ########################################################################
 #                      logs/tests/test_redact.py                       #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-14                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Tests that redaction removes each identifier,    #
-#                     named terms and nested values, and nothing else. #
-########################################################################
-"""Tests for kds.logs.redact."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-14
+Last modified on:  2026-10-29
 
+Tests that redaction removes each identifier, named terms and nested
+values, and nothing else.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
 
+# Local
 from kds.logs.redact import redact, redact_obj
 
-# Module constants
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets a made-up sentence holding one of each identifier")
 SENTENCE = (
     "Call 404-555-0133 or mail kevin@example.com. SSN 123-45-6789, "
@@ -24,6 +36,9 @@ SENTENCE = (
 )
 
 
+########################################################################
+#                           Redaction tests                            #
+########################################################################
 # log.debug("Defines the test that each identifier is replaced")
 def test_redacts_common_identifiers() -> None:
     """Phone, email, SSN, card and birth date each become a label."""

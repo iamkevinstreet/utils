@@ -1,14 +1,21 @@
 ########################################################################
 #                 standards/kds/standards/gitdates.py                  #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Reads from git which files a repository holds,   #
-#                     when each was created and last changed.          #
-########################################################################
-"""Git facts the checks need: the file list and each file's dates."""
+"""
+Author:            Kevin Street
+Created on:        2026-10-29
+Last modified on:  2026-10-29
 
+Reads from git which files a repository holds, and when each was
+created and last changed. Dates follow a file through renames; a file
+git has not seen yet was created today, and a file with uncommitted
+changes was last modified today.
+"""
+
+########################################################################
+#                               Imports                                #
+########################################################################
+# Standard library
 from __future__ import annotations
 
 import logging
@@ -17,8 +24,17 @@ from dataclasses import dataclass, field
 from datetime import date
 from pathlib import Path
 
-# Module constants
+# Local
+from kds.args import required
+
+########################################################################
+#                           Global constants                           #
+########################################################################
 log = logging.getLogger(__name__)
+
+########################################################################
+#                           Local constants                            #
+########################################################################
 # log.debug("Sets the marker that starts each commit in the log")
 COMMIT_MARK = "@@"
 # log.debug("Sets the log format: the marker and the author date")
@@ -27,6 +43,9 @@ LOG_FORMAT = f"--format={COMMIT_MARK}%ad"
 GIT = "git"
 
 
+########################################################################
+#                              Git dates                               #
+########################################################################
 # log.debug("Defines what git says about the repository's files")
 @dataclass
 class History:
@@ -49,14 +68,32 @@ class History:
     today: str = field(default_factory=lambda: date.today().isoformat())
 
     # log.debug("Defines the date a header's Created on must show")
-    def created_on(self, path: str) -> str:
-        """Return the date the path was first committed, or today."""
+    def created_on(self, path: str | None = None) -> str:
+        """Returns the date the path was first committed, or today.
+
+        Args:
+            path: The file's path from the repository root. Required.
+
+        Returns:
+            The date, as YYYY-MM-DD.
+        """
+        # log.debug("Takes the path, which the caller must give")
+        path = required(path=path)
         # log.debug("Returns the recorded date, or today for a new file")
         return self.created.get(path, self.today)
 
     # log.debug("Defines the date a header's Last modified must show")
-    def modified_on(self, path: str) -> str:
-        """Return today for a changed file, else the commit date."""
+    def modified_on(self, path: str | None = None) -> str:
+        """Returns today for a changed file, else the commit date.
+
+        Args:
+            path: The file's path from the repository root. Required.
+
+        Returns:
+            The date, as YYYY-MM-DD.
+        """
+        # log.debug("Takes the path, which the caller must give")
+        path = required(path=path)
         # log.debug("Returns today when the file has uncommitted changes")
         if path in self.dirty or path not in self.modified:
             # log.debug("Returns today's date")
@@ -66,8 +103,18 @@ class History:
 
 
 # log.debug("Defines how git is run and its output read")
-def _git(root: Path, *args: str) -> str:
-    """Run git in `root` with fixed arguments and return its output."""
+def _git(root: Path | None = None, *args: str) -> str:
+    """Runs git in the repository root and returns its output.
+
+    Args:
+        root: The repository root, where git runs. Required.
+        *args: The git command and its fixed arguments.
+
+    Returns:
+        What git printed.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
     # log.debug("Runs git without a shell and captures the output")
     result = subprocess.run(  # noqa: S603 - fixed arguments, no shell
         [GIT, *args], cwd=root, capture_output=True, text=True, check=True
@@ -77,8 +124,18 @@ def _git(root: Path, *args: str) -> str:
 
 
 # log.debug("Defines the list of files a commit would hold")
-def repo_files(root: Path) -> list[str]:
-    """Return tracked files plus new files that are not ignored."""
+def repo_files(root: Path | None = None) -> list[str]:
+    """Returns tracked files plus new files that are not ignored.
+
+    Args:
+        root: The repository root. Required.
+
+    Returns:
+        Each such file's path from the root, sorted, leaving out any
+        that no longer exists.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
     # log.debug("Asks git for tracked and new, unignored files")
     out = _git(root, "ls-files", "--cached", "--others", "--exclude-standard")
     # log.debug("Returns the unique paths, sorted, that still exist")
@@ -86,15 +143,17 @@ def repo_files(root: Path) -> list[str]:
 
 
 # log.debug("Defines how the whole history is read in one pass")
-def read_history(root: Path) -> History:
-    """Read every file's created and modified dates, following renames.
+def read_history(root: Path | None = None) -> History:
+    """Reads every file's created and modified dates, following renames.
 
     Args:
-        root: The repository root.
+        root: The repository root. Required.
 
     Returns:
         The dates for every path that exists now, and the dirty paths.
     """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
     # log.debug("Starts an empty history")
     history = History()
     # log.debug("Reads every commit, newest first, with renames found")
@@ -126,8 +185,30 @@ def read_history(root: Path) -> History:
 
 
 # log.debug("Defines how one file line updates the history")
-def _record(history: History, alias: dict[str, str], parts: list[str], when: str) -> None:
-    """Record one --name-status line of the log."""
+def _record(
+    history: History | None = None,
+    alias: dict[str, str] | None = None,
+    parts: list[str] | None = None,
+    when: str | None = None,
+) -> None:
+    """Records one --name-status line of the log.
+
+    Args:
+        history: The history being built. Required.
+        alias: Each older name mapped to the path the file has now; a
+            rename adds to it. Required.
+        parts: The line split at its tabs: the status, then the path,
+            or a rename's old and new paths. Required.
+        when: The date of the commit the line belongs to. Required.
+    """
+    # log.debug("Takes the history, which the caller must give")
+    history = required(history=history)
+    # log.debug("Takes the alias, which the caller must give")
+    alias = required(alias=alias)
+    # log.debug("Takes the parts, which the caller must give")
+    parts = required(parts=parts)
+    # log.debug("Takes the when, which the caller must give")
+    when = required(when=when)
     # log.debug("Reads the status letter: A, M, D or R")
     status = parts[0][0]
     # log.debug("Takes the path the file had after this commit")
@@ -149,8 +230,18 @@ def _record(history: History, alias: dict[str, str], parts: list[str], when: str
 
 
 # log.debug("Defines the set of files with uncommitted changes")
-def _dirty(root: Path) -> set[str]:
-    """Return paths that are staged, changed or new."""
+def _dirty(root: Path | None = None) -> set[str]:
+    """Returns paths that are staged, changed or new.
+
+    Args:
+        root: The repository root. Required.
+
+    Returns:
+        Each such path from the root, a renamed file under its new
+        name.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
     # log.debug("Asks git for the short status of every file")
     out = _git(root, "status", "--porcelain", "--untracked-files=all")
     # log.debug("Returns each path, taking the new name of renames")

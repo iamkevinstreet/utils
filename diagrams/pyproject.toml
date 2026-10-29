@@ -1,21 +1,24 @@
 ########################################################################
 #                       diagrams/pyproject.toml                        #
 ########################################################################
-#  Author:            Kevin Street                                     #
-#  Created on:        2026-10-29                                       #
-#  Last modified on:  2026-10-29                                       #
-#  Purpose:           Packages kds-diagrams, which draws README        #
-#                     architecture and flow diagrams as SVG.           #
-########################################################################
+# Author:            Kevin Street
+# Created on:        2026-10-29
+# Last modified on:  2026-10-29
+#
+# Packages kds-diagrams, which draws README architecture and flow
+# diagrams as SVG.
+
 [project]
 name = "kds-diagrams"
-version = "0.3.0"
+version = "0.4.0"
 description = "Architecture and flow diagrams for READMEs, in one dark house style, as plain SVG."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
-dependencies = []
+dependencies = [
+  "kds-args>=0.4,<0.5",
+]
 
 [project.scripts]
 kds-diagrams = "kds.diagrams.__main__:main"
