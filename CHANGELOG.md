@@ -4,6 +4,15 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.4.1, Oct 29, 2026
+
+Pin: (the commit this release lands on)
+
+- **standards:** the `docs` rule treats Markdown under `src/content/`, where a site keeps the text of
+  its pages, as data, the way it treats `data/`: it may stay, and its links are not checked. Four
+  logger lines that named a parameter without saying what it holds now say it.
+- **All packages** move to 0.4.1 together.
+
 ## v0.4.0, Oct 29, 2026
 
 Pin: `74142bcad36446dd53b66f462b8e3a8b3bc3fe56`

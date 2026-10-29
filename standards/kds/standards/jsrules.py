@@ -209,7 +209,7 @@ def _starts(
         True in a block of code after a line ending in ;, { or },
         unless the line continues the one before.
     """
-    # log.debug("Takes the previous, which the caller must give")
+    # log.debug("Takes the last character before the line, which the caller must give")
     previous = required(previous=previous)
     # log.debug("Takes the stack, which the caller must give")
     stack = required(stack=stack)

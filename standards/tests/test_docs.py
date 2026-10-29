@@ -40,7 +40,7 @@ FILES = {"README.md", "LICENSE", "docs/flow.svg", "backend/README.md", "backend/
 ########################################################################
 # log.debug("Defines the test of which Markdown is published")
 def test_only_readmes_changelog_security_and_data_are_published() -> None:
-    """README.md anywhere, the two root docs, and data are allowed."""
+    """README.md anywhere, the two root docs, data and page content."""
     # log.debug("Checks each path")
     assert [
         published(p)
@@ -50,11 +50,13 @@ def test_only_readmes_changelog_security_and_data_are_published() -> None:
             "CHANGELOG.md",
             "SECURITY.md",
             "data/sources/fact-sheet.md",
+            "src/content/projects/case-study.md",
             "STYLE.md",
             "docs/plan.md",
             "docs/CHANGELOG.md",
+            "content/notes.md",
         )
-    ] == [True, True, True, True, True, False, False, False]
+    ] == [True, True, True, True, True, True, False, False, False, False]
 
 
 # log.debug("Defines the test of links that resolve")

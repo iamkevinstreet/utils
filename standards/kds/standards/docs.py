@@ -8,8 +8,9 @@ Last modified on:  2026-10-29
 
 Checks the docs a repository publishes: README.md files, a root
 CHANGELOG.md and a root SECURITY.md, and no other Markdown. Markdown
-under data/ is data, not documentation, so it may stay, and only a
-README there has its links checked. Every relative link or image in a
+under data/, or under src/content/ where a site keeps the text of its
+pages, is data, not documentation, so it may stay, and only a README
+there has its links checked. Every relative link or image in a
 published file must point at a file or folder the repository holds, so
 nothing a visitor reads points at a private file, a removed file or a
 local path.
@@ -48,8 +49,8 @@ RULE = "docs"
 README = "README.md"
 # log.debug("Lists the Markdown a repository may publish at its root, besides README.md")
 ROOT_DOCS = ("CHANGELOG.md", "SECURITY.md")
-# log.debug("Names the folder whose Markdown is data, not documentation")
-DATA = "data/"
+# log.debug("Names the folders whose Markdown is data: data/ and a site's page content")
+DATA = ("data/", "src/content/")
 # log.debug("Names the Markdown extension")
 MARKDOWN = ".md"
 # log.debug("Matches a Markdown link or image and captures its target")
@@ -137,7 +138,7 @@ def check_links(
     path = required(path=path)
     # log.debug("Takes the text, which the caller must give")
     text = required(text=text)
-    # log.debug("Takes the present, which the caller must give")
+    # log.debug("Takes the files the repository holds, which the caller must give")
     present = required(present=present)
     # log.debug("Starts outside a fenced code block")
     fenced = False
@@ -187,7 +188,7 @@ def _resolves(
     path = required(path=path)
     # log.debug("Takes the target, which the caller must give")
     target = required(target=target)
-    # log.debug("Takes the present, which the caller must give")
+    # log.debug("Takes the files the repository holds, which the caller must give")
     present = required(present=present)
     # log.debug("Trusts addresses outside the repository and in-page anchors")
     if target.startswith(EXTERNAL):
@@ -205,7 +206,7 @@ def _resolves(
 
 # log.debug("Defines the test for a data file, whose links are not ours")
 def _is_data_file(path: str | None = None) -> bool:
-    """Returns True for Markdown under data/ that is not a README.
+    """Returns True for Markdown in a data folder that is not a README.
 
     Args:
         path: The Markdown file's path from the repository root.

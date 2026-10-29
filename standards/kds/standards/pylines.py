@@ -101,7 +101,7 @@ def _is_prose(
     Returns:
         True when the line is prose, held to the narrower width.
     """
-    # log.debug("Takes the stripped, which the caller must give")
+    # log.debug("Takes the line without its indent, which the caller must give")
     stripped = required(stripped=stripped)
     # log.debug("Takes the number, which the caller must give")
     number = required(number=number)

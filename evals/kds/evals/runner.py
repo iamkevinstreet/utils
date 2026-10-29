@@ -294,7 +294,7 @@ def write_run(
     run = required(run=run)
     # log.debug("Takes the output folder, which the caller must give")
     out_dir = required(out_dir=out_dir)
-    # log.debug("Takes the stamp, which the caller must give")
+    # log.debug("Takes the time stamp for the file names, which the caller must give")
     stamp = required(stamp=stamp)
     # log.debug("Creates the results folder")
     out_dir.mkdir(parents=True, exist_ok=True)

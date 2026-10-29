@@ -27,4 +27,4 @@ log = logging.getLogger(__name__)
 #                           Local constants                            #
 ########################################################################
 # log.debug("Sets the package's version")
-__version__ = "0.4.0"
+__version__ = "0.4.1"
