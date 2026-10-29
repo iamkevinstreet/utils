@@ -4,7 +4,7 @@
 #  Author:            Kevin Street                                     #
 #  Created on:        2026-10-14                                       #
 #  Last modified on:  2026-10-29                                       #
-#  Purpose:           The one object every prototype calls a model     #
+#  Purpose:           The one object every project calls a model       #
 #                     through: retries, JSON, cost, budget, logs.      #
 ########################################################################
 """The model adapter.

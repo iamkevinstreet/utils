@@ -7,7 +7,7 @@
 #  Purpose:           Reads a PDF back into page text, and checks a    #
 #                     quoted span really appears on its cited page.    #
 ########################################################################
-"""Page text from a PDF, the input every extraction prototype reads."""
+"""Page text from a PDF, the input every extraction project reads."""
 
 from __future__ import annotations
 

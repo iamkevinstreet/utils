@@ -7,7 +7,7 @@
 #  Purpose:           Typed, read-only settings: values from           #
 #                     config/settings.toml, secrets from .env.         #
 ########################################################################
-"""kds.settings: one typed home for every setting a prototype reads.
+"""kds.settings: one typed home for every setting a project reads.
 
 Values come from, highest priority first: arguments, environment
 variables, `.env`, `config/settings.toml`, then the defaults below.
@@ -51,7 +51,7 @@ Level = Literal["DEBUG", "INFO", "WARNING", "ERROR"]
 __all__ = ["Level", "Provider", "Settings", "describe", "get_settings"]
 
 
-# log.debug("Defines the settings every prototype shares")
+# log.debug("Defines the settings every project shares")
 class Settings(BaseSettings):
     """Shared settings. A project subclasses this to add its own.
 

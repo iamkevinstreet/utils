@@ -4,6 +4,14 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## Unreleased
+
+- **Docs:** the README describes the repository as the workshop every project draws from: tools
+  collected over time, of which each project takes what it needs. Its flow diagram shows how a
+  project uses them. Everything specific to model calls (the steps of a call, its settings, its log
+  lines and what is next) is in the llm package's README, and each package's README lists the
+  settings it reads. Package docstrings say "project" where they said "prototype". No code changed.
+
 ## v0.3.0, Oct 29, 2026
 
 Pin: `1b67de07d6de8006f4d6f0ee7ea5668277e411f7`

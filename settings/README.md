@@ -1,6 +1,6 @@
 # kds.settings
 
-Typed, read-only settings for every prototype. Values come from `config/settings.toml`, secrets from
+Typed, read-only settings for every project. Values come from `config/settings.toml`, secrets from
 `.env`, and an environment variable overrides either. Settings are validated once, frozen, and
 secrets are `SecretStr`: never in a repr, an error message or a log line.
 
@@ -36,7 +36,7 @@ log_event(log, "settings.loaded", **describe(get_app_settings()))  # secrets sho
 
 ## Conventions
 
-- A TOML key's name is its section and key joined: `[llm] model` is `llm_model`, and `LLM_MODEL`
+- A TOML key's name is its section and key joined: `[log] level` is `log_level`, and `LOG_LEVEL`
   overrides it.
 - Priority, highest first: arguments, environment variables, `.env`, `config/settings.toml`, defaults.
 - A secret written into `settings.toml` stops startup, naming the key but never printing its value.

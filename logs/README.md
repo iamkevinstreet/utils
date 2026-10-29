@@ -45,4 +45,11 @@ with `kds-standards trace on <path>` and set `[log] trace = true`, and a run pri
   `setup_logging()` once.
 - Redaction covers emails, phone numbers, SSNs, card numbers and dates of birth; pass real names as
   `extra_terms` to `redact()` if a dataset ever holds any.
-- Settings: `[log] dir`, `level`, `redact`, `trace` in [config/settings.toml](../config/settings.toml).
+- Settings live in [config/settings.toml](../config/settings.toml):
+
+| Setting | Default | What it does |
+| --- | --- | --- |
+| `[log] dir` | `logs` | where the daily JSON log files go |
+| `[log] level` | `INFO` | the lowest level written: `DEBUG`, `INFO`, `WARNING` or `ERROR` |
+| `[log] redact` | `true` | removes emails, phone numbers and ID-like numbers before writing |
+| `[log] trace` | `false` | prints the logger lines, once turned on, as `HH:MM:SS - what happened` |

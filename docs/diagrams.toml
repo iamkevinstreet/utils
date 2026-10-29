@@ -14,23 +14,29 @@ file = "architecture.svg"
 width = 1000
 height = 720
 title = "utils at a glance"
-subtitle = "Seven small packages; a prototype installs only the ones it needs."
-caption = "Grey arrows: depends on. Blue: the one path that leaves your environment, a model call. Dashed boxes: who installs what."
+subtitle = "Tools collected over time; each project takes only what it needs."
+caption = "Grey arrows: depends on. Blue: how a tool reaches a project, pinned to one commit. Dashed boxes: who uses what."
 
 [[diagram.component]]
-box = [28, 150, 440, 70]
-name = "Your prototype"
-details = ["imports only the packages it needs"]
+box = [28, 150, 380, 70]
+name = "Any project"
+details = ["takes only the tools it needs"]
 
 [[diagram.component]]
-box = [512, 150, 460, 70]
-name = "Model provider"
-details = ["outside your environment: Anthropic, OpenAI or Azure"]
+box = [592, 150, 380, 70]
+name = "This repository"
+details = ["on GitHub, never PyPI", "each release names one commit"]
+
+[[diagram.arrow]]
+points = [[592, 185], [410, 185]]
+label = "installed at one commit"
+at = [424, 176]
+accent = true
 
 [[diagram.zone]]
 box = [28, 270, 944, 160]
 title = "Runtime"
-rule = "installed by every prototype"
+rule = "imported by a project's code"
 
 [[diagram.component]]
 box = [48, 312, 208, 96]
@@ -45,12 +51,12 @@ details = ["one JSON line per event", "request ids", "redaction, traces"]
 [[diagram.component]]
 box = [512, 312, 208, 96]
 name = "llm"
-details = ["one adapter, any provider", "retries, JSON repair", "cost and budget"]
+details = ["one interface for", "model providers", "see its README"]
 
 [[diagram.component]]
 box = [744, 312, 208, 96]
 name = "evals"
-details = ["cases and metrics", "runner and reports", "judge, comparison"]
+details = ["cases and metrics", "runner and reports"]
 
 [[diagram.arrow]]
 points = [[280, 360], [256, 360]]
@@ -74,7 +80,7 @@ details = ["made-up names, near duplicates", "PDFs that record page text"]
 [[diagram.zone]]
 box = [350, 450, 622, 140]
 title = "Developer tools"
-rule = "never shipped to users"
+rule = "for any repository, never shipped to users"
 
 [[diagram.component]]
 box = [370, 488, 280, 86]
@@ -87,15 +93,9 @@ name = "diagrams"
 details = ["these README diagrams", "drawn from docs/diagrams.toml"]
 
 [[diagram.arrow]]
-points = [[248, 220], [248, 266]]
+points = [[218, 220], [218, 266]]
 label = "imports"
-at = [256, 248]
-
-[[diagram.arrow]]
-points = [[616, 312], [616, 222]]
-label = "prompt out, answer back"
-at = [626, 258]
-accent = true
+at = [226, 248]
 
 [[diagram.band]]
 box = [28, 610, 944, 86]
@@ -109,42 +109,43 @@ lines = [
 file = "flow.svg"
 width = 1000
 height = 560
-title = "How a model call works"
-subtitle = "Every call is budgeted, retried with care, validated, priced and logged."
-caption = "Steps in reading order. Blue: the request that leaves your environment."
+title = "How a project uses the workshop"
+subtitle = "Pick the tools, pin one commit, and every project runs, logs and is checked the same way."
+caption = "Steps in reading order. Blue: the step that brings the tools in."
 
 [[diagram.component]]
 box = [28, 160, 272, 80]
-name = "1. Load settings"
-details = ["settings.toml, then .env secrets", "validated once, then frozen"]
+name = "1. Pick the tools"
+details = ["only what the project needs", "each tool is its own package"]
 
 [[diagram.component]]
 box = [364, 160, 272, 80]
-name = "2. Open a request id"
-details = ["every log line carries it", "one per evaluation case"]
+name = "2. Pin one commit"
+details = ["from git at one commit, not PyPI", "locked with hashes"]
 
 [[diagram.component]]
 box = [700, 160, 272, 80]
-name = "3. Check the budget"
-details = ["refuse once spend passes it", "eval_budget_usd"]
+name = "3. Configure"
+details = ["settings.toml, then .env secrets", "validated once, then frozen"]
 
 [[diagram.component]]
 box = [28, 300, 272, 80]
-name = "4. Call the provider"
-details = ["retry 408, 409, 429, 5xx only", "jittered backoff, capped"]
+name = "4. Use the tools"
+details = ["in the project's own code", "each tool's README says how"]
 
 [[diagram.component]]
 box = [364, 300, 272, 80]
-name = "5. Validate the JSON"
-details = ["parse against the schema", "one repair turn, then fail"]
+name = "5. Log every event"
+details = ["one JSON line, one request id", "personal data redacted"]
 
 [[diagram.component]]
 box = [700, 300, 272, 80]
-name = "6. Price and log"
-details = ["tokens, latency, cost", "at the dated list price"]
+name = "6. Test and check"
+details = ["offline stand-ins, seeded data", "kds-standards on every commit"]
 
 [[diagram.arrow]]
 points = [[300, 200], [364, 200]]
+accent = true
 
 [[diagram.arrow]]
 points = [[636, 200], [700, 200]]
@@ -158,22 +159,10 @@ points = [[300, 340], [364, 340]]
 [[diagram.arrow]]
 points = [[636, 340], [700, 340]]
 
-[[diagram.component]]
-box = [28, 440, 272, 80]
-name = "Model provider"
-details = ["outside your environment"]
-note = "external"
-
-[[diagram.arrow]]
-points = [[164, 380], [164, 438]]
-label = "prompt out, answer back"
-at = [174, 414]
-accent = true
-
 [[diagram.band]]
-box = [336, 440, 636, 80]
-title = "Every call leaves"
+box = [28, 440, 944, 80]
+title = "Every project gets"
 lines = [
-  "a JSON log line: request id, provider, model, tokens, latency, cost",
-  "an entry in the adapter's record, which the evaluation runner reads",
+  "the same settings and logs, so runs compare across projects",
+  "one code standard and the same README diagrams, in every repository",
 ]

@@ -9,8 +9,8 @@
 ########################################################################
 """Redaction for logs and audit records.
 
-The patterns are simple and a little greedy on purpose: in a prototype
-it is better to redact a harmless number than to leak a real one. Pass
+The patterns are simple and a little greedy on purpose: in logs it is
+better to redact a harmless number than to leak a real one. Pass
 the names of real people as `extra_terms` if a dataset ever has any.
 """
 
