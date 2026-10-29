@@ -6,7 +6,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.4.0, Oct 29, 2026
 
-Pin: (the commit this release lands on)
+Pin: `74142bcad36446dd53b66f462b8e3a8b3bc3fe56`
 
 Every package now follows the code standard's new file layout, and one package joins them.
 
