@@ -1,17 +1,26 @@
+########################################################################
+#                         logs/pyproject.toml                          #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Packages kds-logs: JSON-lines logs with request  #
+#                     ids, redaction and traces.                       #
+########################################################################
 [project]
 name = "kds-logs"
-version = "0.1.0"
-description = "JSON-lines logging with request ids and redaction of emails, phone numbers and ID-like numbers."
+version = "0.3.0"
+description = "JSON-lines logging with request ids, redaction of personal data, and HH:MM:SS trace lines."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-settings @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=settings"
+  "kds-settings>=0.3,<0.4",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6"]
+dev = ["pytest>=8.3", "ruff>=0.17"]
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]
@@ -20,8 +29,5 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["kds.logs"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-q"
-asyncio_mode = "auto"
-filterwarnings = ["ignore::DeprecationWarning"]
+[tool.setuptools.package-data]
+"kds.logs" = ["py.typed"]

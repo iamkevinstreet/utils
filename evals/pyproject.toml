@@ -1,18 +1,27 @@
+########################################################################
+#                         evals/pyproject.toml                         #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Packages kds-evals: cases, metrics, a runner and #
+#                     reports, a judge.                                #
+########################################################################
 [project]
 name = "kds-evals"
-version = "0.1.0"
-description = "Evaluation cases, metrics, a runner that writes a results table, a model judge with calibration, and run comparison."
+version = "0.3.0"
+description = "Evaluation cases, metrics, a runner that writes results tables, a model judge with calibration, and run comparison."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-llm @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=llm",
-  "kds-logs @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=logs"
+  "kds-llm>=0.3,<0.4",
+  "kds-logs>=0.3,<0.4",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6"]
+dev = ["pytest>=8.3", "ruff>=0.17"]
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]
@@ -21,8 +30,5 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["kds.evals"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-q"
-asyncio_mode = "auto"
-filterwarnings = ["ignore::DeprecationWarning"]
+[tool.setuptools.package-data]
+"kds.evals" = ["py.typed"]

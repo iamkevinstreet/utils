@@ -1,0 +1,36 @@
+########################################################################
+#                         config/settings.toml                         #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Every shared setting at its default; projects    #
+#                     copy the sections they change. No secrets here.  #
+########################################################################
+# Each key's name is its section and key joined: [llm] model is llm_model,
+# and the environment variable LLM_MODEL overrides it. Secrets (API keys)
+# never go here; they go in .env. tests/test_settings.py keeps this file
+# equal to the defaults in settings/kds/settings/__init__.py.
+
+[llm]
+provider = "fake"                         # anthropic | openai | azure | fake (offline)
+model = "claude-sonnet-5-5"               # the model that does the work
+judge_model = "claude-sonnet-5-5"         # the model that grades answers in evaluations
+embedding_model = "text-embedding-3-small"
+max_tokens = 2048                         # the most tokens one answer may use
+temperature = 0.0                         # 0 keeps runs repeatable
+max_retries = 3                           # retries for failures that can succeed later
+timeout_s = 60.0                          # how long one call may take
+
+[azure_openai]
+api_version = "2024-10-21"
+# endpoint = "https://<your-resource>.openai.azure.com"
+
+[eval]
+budget_usd = 5.0                          # a run stops once it has spent this
+
+[log]
+dir = "logs"                              # one YYYY-MM-DD.jsonl file per day
+level = "INFO"                            # DEBUG | INFO | WARNING | ERROR
+redact = true                             # remove emails, phone numbers and IDs
+trace = false                             # print logger lines as HH:MM:SS traces

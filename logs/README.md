@@ -1,34 +1,48 @@
 # kds.logs
 
-One JSON object per line, a request id on every record, and redaction of emails, phone numbers, SSN-like and card-like numbers before anything is written. Fields are plain keyword arguments.
+One JSON object per line, a request id on every record, redaction of personal data before anything
+is written, and trace lines that print what each line of code does, with the time since start.
 
 ## Install
 
-```toml
-# in a project's pyproject.toml
-dependencies = ["kds-logs @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=logs"]
-```
+Pin a commit of this repository (see [installing](../README.md#installing-a-package)).
 
 ```sh
-# or directly
-pip install "kds-logs @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=logs"
+pip install "kds-logs @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=logs" \
+  "kds-settings @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=settings"
 ```
+
+`kds-logs` needs the other kds packages listed, from the same commit.
 
 ## Use
 
 ```python
-from kds.logs import get_logger, log_event, new_request_id
+from kds.logs import get_logger, log_event, new_request_id, setup_logging
 
-log = get_logger("intake")
+setup_logging()  # once, when the service starts
+log = get_logger(__name__)
 with new_request_id():
     log_event(log, "intake.start", email="person@example.com")  # written as "[EMAIL]"
 ```
 
-## Develop
-
-```sh
-# from the repository root
-pytest logs/tests
+```json
+{"ts": "2026-10-29T14:02:11.402+00:00", "level": "INFO", "logger": "intake", "request_id": "3f9c2a71b0de", "msg": "intake.start", "kind": "intake.start", "email": "[EMAIL]"}
 ```
 
-Apache License 2.0. See the repository `LICENSE` and `NOTICE`.
+## Trace lines
+
+Every statement in our code has a commented logger line above it. Turn them on
+with `kds-standards trace on <path>` and set `[log] trace = true`, and a run prints:
+
+```text
+00:00:02 - Splits the question into search terms
+00:00:02 - Keeps passages above the relevance cut-off
+```
+
+## Conventions
+
+- Libraries use `logging.getLogger(__name__)` and never configure logging; a service calls
+  `setup_logging()` once.
+- Redaction covers emails, phone numbers, SSNs, card numbers and dates of birth; pass real names as
+  `extra_terms` to `redact()` if a dataset ever holds any.
+- Settings: `[log] dir`, `level`, `redact`, `trace` in [config/settings.toml](../config/settings.toml).

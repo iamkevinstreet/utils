@@ -1,6 +1,15 @@
+########################################################################
+#                       synthetic/pyproject.toml                       #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Packages kds-synthetic: made-up names and PDFs   #
+#                     that record their text.                          #
+########################################################################
 [project]
 name = "kds-synthetic"
-version = "0.1.0"
+version = "0.3.0"
 description = "Made-up names with near-duplicate variants, and a PDF builder that records page text for span checks."
 readme = "README.md"
 requires-python = ">=3.12"
@@ -8,11 +17,11 @@ license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
   "reportlab>=4.2",
-  "pypdf>=5.0"
+  "pypdf>=5.0",
 ]
 
 [project.optional-dependencies]
-dev = ["pytest>=8.3", "pytest-asyncio>=0.24", "ruff>=0.6"]
+dev = ["pytest>=8.3", "ruff>=0.17"]
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]
@@ -21,8 +30,5 @@ build-backend = "setuptools.build_meta"
 [tool.setuptools]
 packages = ["kds.synthetic"]
 
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-q"
-asyncio_mode = "auto"
-filterwarnings = ["ignore::DeprecationWarning"]
+[tool.setuptools.package-data]
+"kds.synthetic" = ["py.typed"]

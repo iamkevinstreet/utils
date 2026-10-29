@@ -1,10 +1,21 @@
-"""Structured logging: one JSON object per line, a request id on every record, redaction on by default.
+########################################################################
+#                      logs/kds/logs/__init__.py                       #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Structured logs: one JSON object per line, a     #
+#                     request id on each, redaction, trace lines.      #
+########################################################################
+"""kds.logs: JSON-lines logs with request ids, redaction and traces.
 
-Usage:
-    from kds.logs import get_logger, new_request_id, log_event
-    log = get_logger("eeoc.extract")
+Usage, once when a service starts:
+    setup_logging(settings)
+
+then in any module:
+    log = get_logger(__name__)
     with new_request_id():
-        log_event(log, "extract.start", doc="charge-0007.pdf")
+        log_event(log, "intake.start", email="person@example.com")
 """
 
 from __future__ import annotations
@@ -20,30 +31,77 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from kds.logs.redact import redact_obj
-from kds.settings import get_settings
+from kds.logs.redact import redact, redact_obj
+from kds.logs.trace import TraceFormatter, elapsed, trace_to_stderr
+from kds.settings import Settings, get_settings
 
-_request_id: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
-_configured = False
+# Module constants
+log = logging.getLogger(__name__)
+# log.debug("Holds the request id of whatever is running now")
+_REQUEST_ID: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
+# log.debug("Names the handlers this module adds, so it adds them once")
+HANDLER_NAME = "kds.logs"
+# log.debug("Sets how many hex characters a new request id has")
+REQUEST_ID_LENGTH = 12
+# log.debug("Sets the encoding log files are written in")
+ENCODING = "utf-8"
+# log.debug("Names the record attribute an event's fields travel in")
+EVENT = "event"
+# log.debug("Lists what the package exports")
+__all__ = [
+    "TraceFormatter",
+    "current_request_id",
+    "elapsed",
+    "get_logger",
+    "log_event",
+    "new_request_id",
+    "redact",
+    "redact_obj",
+    "setup_logging",
+    "trace_to_stderr",
+]
 
 
+# log.debug("Defines the lookup of the current request id")
 def current_request_id() -> str:
-    return _request_id.get()
+    """Return the request id of the work running now, or "-"."""
+    # log.debug("Returns the id from the context")
+    return _REQUEST_ID.get()
 
 
+# log.debug("Defines the block that gives its work a request id")
 @contextmanager
 def new_request_id(value: str | None = None) -> Iterator[str]:
-    """Set a request id for everything logged inside the block."""
-    rid = value or uuid.uuid4().hex[:12]
-    token = _request_id.set(rid)
+    """Tag everything logged inside the block with one request id.
+
+    Args:
+        value: The id to use, such as one from an incoming header; a
+            new random id when omitted.
+
+    Yields:
+        The id, so it can be returned to the caller or passed on.
+    """
+    # log.debug("Uses the given id or makes a short random one")
+    request_id = value or uuid.uuid4().hex[:REQUEST_ID_LENGTH]
+    # log.debug("Sets it for this context, keeping a token to undo it")
+    token = _REQUEST_ID.set(request_id)
+    # log.debug("Runs the block, restoring the old id however it ends")
     try:
-        yield rid
+        # log.debug("Hands the id to the block")
+        yield request_id
     finally:
-        _request_id.reset(token)
+        # log.debug("Restores the id that was there before")
+        _REQUEST_ID.reset(token)
 
 
-class _JsonFormatter(logging.Formatter):
+# log.debug("Defines the formatter that writes one JSON object per record")
+class JsonFormatter(logging.Formatter):
+    """Format a record as one line of JSON with its request id."""
+
+    # log.debug("Defines how one record becomes one JSON line")
     def format(self, record: logging.LogRecord) -> str:
+        """Return the record as a JSON object on a single line."""
+        # log.debug("Collects the fields every line carries")
         payload: dict[str, Any] = {
             "ts": datetime.now(UTC).isoformat(timespec="milliseconds"),
             "level": record.levelname,
@@ -51,46 +109,89 @@ class _JsonFormatter(logging.Formatter):
             "request_id": current_request_id(),
             "msg": record.getMessage(),
         }
-        extra = getattr(record, "event", None)
-        if extra:
-            payload.update(extra)
+        # log.debug("Adds the structured fields of an event, if any")
+        payload |= getattr(record, EVENT, None) or {}
+        # log.debug("Adds the traceback when an exception was logged")
         if record.exc_info:
+            # log.debug("Formats the traceback into the line")
             payload["exc"] = self.formatException(record.exc_info)
+        # log.debug("Returns the line, with anything unusual as text")
         return json.dumps(payload, default=str, ensure_ascii=False)
 
 
-def setup_logging(log_dir: Path | None = None, level: int = logging.INFO) -> Path:
-    """Configure the root logger once. Returns the log file path."""
-    global _configured
-    settings = get_settings()
-    directory = Path(log_dir or settings.log_dir)
-    directory.mkdir(parents=True, exist_ok=True)
-    path = directory / f"{datetime.now(UTC):%Y-%m-%d}.jsonl"
-    if _configured:
-        return path
+# log.debug("Defines the one-time setup of logging for a service")
+def setup_logging(settings: Settings | None = None) -> Path:
+    """Send JSON lines to today's file and stderr; add traces if on.
+
+    Safe to call more than once: later calls change nothing.
+
+    Args:
+        settings: The service's settings; the shared ones by default.
+
+    Returns:
+        The path of today's log file.
+    """
+    # log.debug("Uses the shared settings unless the caller passed its own")
+    settings = settings or get_settings()
+    # log.debug("Names today's file in the configured folder")
+    path = settings.log_dir / f"{datetime.now(UTC):%Y-%m-%d}.jsonl"
+    # log.debug("Finds the root logger every module logger feeds")
     root = logging.getLogger()
+    # log.debug("Stops when this module already set the root logger up")
+    if any(handler.get_name() == HANDLER_NAME for handler in root.handlers):
+        # log.debug("Returns the file without adding handlers twice")
+        return path
+    # log.debug("Creates the log folder")
+    settings.log_dir.mkdir(parents=True, exist_ok=True)
+    # log.debug("Reads the configured level as a number")
+    level = logging.getLevelNamesMapping()[settings.log_level]
+    # log.debug("Adds a JSON handler for the file and one for stderr")
+    for handler in (
+        logging.FileHandler(path, encoding=ENCODING),
+        logging.StreamHandler(sys.stderr),
+    ):
+        # log.debug("Names the handler so a second setup can find it")
+        handler.set_name(HANDLER_NAME)
+        # log.debug("Sets the handler to the configured level")
+        handler.setLevel(level)
+        # log.debug("Gives it the JSON format")
+        handler.setFormatter(JsonFormatter())
+        # log.debug("Attaches it to the root logger")
+        root.addHandler(handler)
+    # log.debug("Lets the root logger pass the configured level")
     root.setLevel(level)
-    for handler in list(root.handlers):
-        root.removeHandler(handler)
-    file_handler = logging.FileHandler(path, encoding="utf-8")
-    file_handler.setFormatter(_JsonFormatter())
-    stream_handler = logging.StreamHandler(sys.stderr)
-    stream_handler.setFormatter(_JsonFormatter())
-    root.addHandler(file_handler)
-    root.addHandler(stream_handler)
-    _configured = True
+    # log.debug("Adds the trace lines when the settings ask for them")
+    if settings.log_trace:
+        # log.debug("Prints debug lines as HH:MM:SS - what happened")
+        trace = trace_to_stderr()
+        # log.debug("Keeps the trace to debug lines; JSON shows the rest")
+        trace.addFilter(lambda record: record.levelno == logging.DEBUG)
+    # log.debug("Returns the log file's path")
     return path
 
 
+# log.debug("Defines the logger lookup services use")
 def get_logger(name: str) -> logging.Logger:
-    setup_logging()
+    """Return the named logger; `setup_logging` sets where it goes."""
+    # log.debug("Returns the standard library's logger for the name")
     return logging.getLogger(name)
 
 
+# log.debug("Defines how a structured event is logged")
 def log_event(logger: logging.Logger, kind: str, level: int = logging.INFO, **fields: Any) -> None:
-    """Log a structured event. Fields are redacted unless LOG_REDACT is false."""
-    settings = get_settings()
+    """Log an event and its fields; fields are redacted unless off.
+
+    Args:
+        logger: The module's logger.
+        kind: A dotted event name, such as "llm.call".
+        level: The level to log at.
+        **fields: The event's data; strings in it are redacted.
+    """
+    # log.debug("Puts the event's name first among its fields")
     data = {"kind": kind, **fields}
-    if settings.log_redact:
+    # log.debug("Redacts personal data unless the settings turn it off")
+    if get_settings().log_redact:
+        # log.debug("Replaces emails, phone numbers and the like")
         data = redact_obj(data)
-    logger.log(level, kind, extra={"event": data})
+    # log.debug("Logs the event with its fields attached")
+    logger.log(level, kind, extra={EVENT: data})

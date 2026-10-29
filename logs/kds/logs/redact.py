@@ -1,42 +1,85 @@
+########################################################################
+#                       logs/kds/logs/redact.py                        #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Removes emails, phone numbers, SSNs, card        #
+#                     numbers, birth dates and named terms from text.  #
+########################################################################
 """Redaction for logs and audit records.
 
-The patterns are deliberately simple and a little greedy. In a prototype it is better to redact a harmless
-number than to leak a real one. Add names of real people to `extra_terms` if a dataset ever contains any.
+The patterns are simple and a little greedy on purpose: in a prototype
+it is better to redact a harmless number than to leak a real one. Pass
+the names of real people as `extra_terms` if a dataset ever has any.
 """
 
 from __future__ import annotations
 
+import logging
 import re
 from collections.abc import Iterable
 from typing import Any
 
-_PATTERNS: list[tuple[str, re.Pattern[str]]] = [
+# Module constants
+log = logging.getLogger(__name__)
+# log.debug("Lists each kind of identifier and the pattern that finds it")
+PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("EMAIL", re.compile(r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+")),
     ("SSN", re.compile(r"\b\d{3}-\d{2}-\d{4}\b")),
     ("CARD", re.compile(r"\b(?:\d[ -]?){13,19}\b")),
     ("PHONE", re.compile(r"(?<!\w)(?:\+?1[ .-]?)?\(?\d{3}\)?[ .-]?\d{3}[ .-]?\d{4}(?!\w)")),
     ("DOB", re.compile(r"\b(?:0?[1-9]|1[0-2])/(?:0?[1-9]|[12]\d|3[01])/(?:19|20)\d{2}\b")),
-]
+)
+# log.debug("Sets the placeholder a named term becomes")
+NAME_LABEL = "[NAME]"
 
 
+# log.debug("Defines redaction of one string")
 def redact(text: str, extra_terms: Iterable[str] = ()) -> str:
-    """Replace emails, phone numbers, SSNs, card numbers, dates of birth and any extra terms."""
+    """Replace identifiers and any extra terms with labels like [EMAIL].
+
+    Args:
+        text: The text to clean.
+        extra_terms: Exact words to remove too, such as real names;
+            matched without regard to case.
+
+    Returns:
+        The text with every match replaced by its label.
+    """
+    # log.debug("Starts from the original text")
     out = text
-    for label, pattern in _PATTERNS:
+    # log.debug("Applies each identifier pattern in turn")
+    for label, pattern in PATTERNS:
+        # log.debug("Replaces every match with the pattern's label")
         out = pattern.sub(f"[{label}]", out)
-    for term in extra_terms:
-        if term:
-            out = re.sub(re.escape(term), "[NAME]", out, flags=re.IGNORECASE)
+    # log.debug("Replaces each extra term that is not empty")
+    for term in filter(None, extra_terms):
+        # log.debug("Replaces the term wherever it appears, in any case")
+        out = re.sub(re.escape(term), NAME_LABEL, out, flags=re.IGNORECASE)
+    # log.debug("Returns the cleaned text")
     return out
 
 
+# log.debug("Defines redaction of a whole structure")
 def redact_obj(obj: Any, extra_terms: Iterable[str] = ()) -> Any:
-    """Walk dicts, lists and strings and redact every string leaf. Other types pass through unchanged."""
+    """Redact every string inside dicts, lists and tuples.
+
+    Other values (numbers, None, booleans) pass through unchanged.
+    """
+    # log.debug("Fixes the terms so a generator is read only once")
     terms = tuple(extra_terms)
+    # log.debug("Redacts a string directly")
     if isinstance(obj, str):
+        # log.debug("Returns the redacted string")
         return redact(obj, terms)
+    # log.debug("Redacts each value of a dict, keeping its keys")
     if isinstance(obj, dict):
-        return {k: redact_obj(v, terms) for k, v in obj.items()}
+        # log.debug("Returns the dict with redacted values")
+        return {key: redact_obj(value, terms) for key, value in obj.items()}
+    # log.debug("Redacts each item of a list or tuple")
     if isinstance(obj, list | tuple):
-        return [redact_obj(v, terms) for v in obj]
+        # log.debug("Returns the items as a redacted list")
+        return [redact_obj(value, terms) for value in obj]
+    # log.debug("Returns any other value as it was")
     return obj

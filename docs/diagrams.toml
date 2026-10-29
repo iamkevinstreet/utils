@@ -1,0 +1,179 @@
+########################################################################
+#                          docs/diagrams.toml                          #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-29                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           The README diagrams as data. Redraw them with    #
+#                     make diagrams; never edit the SVGs by hand.      #
+########################################################################
+# Boxes are [left, top, width, height] in pixels; arrow points are [x, y].
+
+[[diagram]]
+file = "architecture.svg"
+width = 1000
+height = 720
+title = "utils at a glance"
+subtitle = "Seven small packages; a prototype installs only the ones it needs."
+caption = "Grey arrows: depends on. Blue: the one path that leaves your environment, a model call. Dashed boxes: who installs what."
+
+[[diagram.component]]
+box = [28, 150, 440, 70]
+name = "Your prototype"
+details = ["imports only the packages it needs"]
+
+[[diagram.component]]
+box = [512, 150, 460, 70]
+name = "Model provider"
+details = ["outside your environment: Anthropic, OpenAI or Azure"]
+
+[[diagram.zone]]
+box = [28, 270, 944, 160]
+title = "Runtime"
+rule = "installed by every prototype"
+
+[[diagram.component]]
+box = [48, 312, 208, 96]
+name = "settings"
+details = ["settings.toml + .env", "typed, frozen", "secrets masked"]
+
+[[diagram.component]]
+box = [280, 312, 208, 96]
+name = "logs"
+details = ["one JSON line per event", "request ids", "redaction, traces"]
+
+[[diagram.component]]
+box = [512, 312, 208, 96]
+name = "llm"
+details = ["one adapter, any provider", "retries, JSON repair", "cost and budget"]
+
+[[diagram.component]]
+box = [744, 312, 208, 96]
+name = "evals"
+details = ["cases and metrics", "runner and reports", "judge, comparison"]
+
+[[diagram.arrow]]
+points = [[280, 360], [256, 360]]
+
+[[diagram.arrow]]
+points = [[512, 360], [488, 360]]
+
+[[diagram.arrow]]
+points = [[744, 360], [720, 360]]
+
+[[diagram.zone]]
+box = [28, 450, 300, 140]
+title = "Test data"
+rule = "when a test needs it"
+
+[[diagram.component]]
+box = [48, 488, 260, 86]
+name = "synthetic"
+details = ["made-up names, near duplicates", "PDFs that record page text"]
+
+[[diagram.zone]]
+box = [350, 450, 622, 140]
+title = "Developer tools"
+rule = "never shipped to users"
+
+[[diagram.component]]
+box = [370, 488, 280, 86]
+name = "standards"
+details = ["kds-standards check", "headers, logger lines, layout, docs"]
+
+[[diagram.component]]
+box = [672, 488, 280, 86]
+name = "diagrams"
+details = ["these README diagrams", "drawn from docs/diagrams.toml"]
+
+[[diagram.arrow]]
+points = [[248, 220], [248, 266]]
+label = "imports"
+at = [256, 248]
+
+[[diagram.arrow]]
+points = [[616, 312], [616, 222]]
+label = "prompt out, answer back"
+at = [626, 258]
+accent = true
+
+[[diagram.band]]
+box = [28, 610, 944, 86]
+title = "Foundation"
+lines = [
+  "One kds namespace across folders · Python 3.12 · Apache 2.0",
+  "One code standard, enforced by kds-standards, ruff and mypy in pre-commit and CI",
+]
+
+[[diagram]]
+file = "flow.svg"
+width = 1000
+height = 560
+title = "How a model call works"
+subtitle = "Every call is budgeted, retried with care, validated, priced and logged."
+caption = "Steps in reading order. Blue: the request that leaves your environment."
+
+[[diagram.component]]
+box = [28, 160, 272, 80]
+name = "1. Load settings"
+details = ["settings.toml, then .env secrets", "validated once, then frozen"]
+
+[[diagram.component]]
+box = [364, 160, 272, 80]
+name = "2. Open a request id"
+details = ["every log line carries it", "one per evaluation case"]
+
+[[diagram.component]]
+box = [700, 160, 272, 80]
+name = "3. Check the budget"
+details = ["refuse once spend passes it", "eval_budget_usd"]
+
+[[diagram.component]]
+box = [28, 300, 272, 80]
+name = "4. Call the provider"
+details = ["retry 408, 409, 429, 5xx only", "jittered backoff, capped"]
+
+[[diagram.component]]
+box = [364, 300, 272, 80]
+name = "5. Validate the JSON"
+details = ["parse against the schema", "one repair turn, then fail"]
+
+[[diagram.component]]
+box = [700, 300, 272, 80]
+name = "6. Price and log"
+details = ["tokens, latency, cost", "at the dated list price"]
+
+[[diagram.arrow]]
+points = [[300, 200], [364, 200]]
+
+[[diagram.arrow]]
+points = [[636, 200], [700, 200]]
+
+[[diagram.arrow]]
+points = [[836, 240], [836, 270], [164, 270], [164, 300]]
+
+[[diagram.arrow]]
+points = [[300, 340], [364, 340]]
+
+[[diagram.arrow]]
+points = [[636, 340], [700, 340]]
+
+[[diagram.component]]
+box = [28, 440, 272, 80]
+name = "Model provider"
+details = ["outside your environment"]
+note = "external"
+
+[[diagram.arrow]]
+points = [[164, 380], [164, 438]]
+label = "prompt out, answer back"
+at = [174, 414]
+accent = true
+
+[[diagram.band]]
+box = [336, 440, 636, 80]
+title = "Every call leaves"
+lines = [
+  "a JSON log line: request id, provider, model, tokens, latency, cost",
+  "an entry in the adapter's record, which the evaluation runner reads",
+]

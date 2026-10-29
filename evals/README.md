@@ -1,41 +1,42 @@
 # kds.evals
 
-Cases, metrics, a runner that times and prices every case and writes a Markdown results table (overall and by tag), a model judge with a calibration check against hand-graded samples, and a comparison tool that produces changelog lines.
+Evaluation cases, metrics plain enough to check by hand, a runner that times and prices every case
+and writes JSON and Markdown results (overall and by tag), a model judge with a calibration check
+against human grades, and a comparison that writes changelog lines.
 
 ## Install
 
-```toml
-# in a project's pyproject.toml
-dependencies = ["kds-evals @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=evals"]
-```
+Pin a commit of this repository (see [installing](../README.md#installing-a-package)).
 
 ```sh
-# or directly
-pip install "kds-evals @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=evals"
+pip install "kds-evals @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=evals" \
+  "kds-llm @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=llm" \
+  "kds-logs @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=logs" \
+  "kds-settings @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=settings"
 ```
+
+`kds-evals` needs the other kds packages listed, from the same commit.
 
 ## Use
 
 ```python
-from kds.evals import load_cases, run_eval
-from kds.evals.metrics import field_accuracy
+from kds.evals import field_accuracy, load_cases, run_eval
 
 run = run_eval(
-    name="extraction-v0.1",
-    cases=load_cases("evals/cases/sample.jsonl"),
+    name="extraction-v0.2",
+    cases=load_cases("data/samples/cases.jsonl"),
     adapter=adapter,
-    system_fn=lambda case: my_system(case.input),
-    scorer_fn=lambda case, out: {"accuracy": field_accuracy(out, case.expected, FIELDS)["accuracy"]},
-    out_dir="evals/results",
+    system_fn=lambda case: extract(case.input),
+    scorer_fn=lambda case, out: field_accuracy(out, case.expected, FIELDS),
+    out_dir="results",
 )
-run.summary  # also written to evals/results/extraction-v0.1-latest.md
+run.summary  # also in results/extraction-v0.2-latest.md
 ```
 
-## Develop
+## Conventions
 
-```sh
-# from the repository root
-pytest evals/tests
-```
-
-Apache License 2.0. See the repository `LICENSE` and `NOTICE`.
+- A project supplies `system_fn(case)` and `scorer_fn(case, output)`; the runner owns timing, cost,
+  failures and reports. A failing case is recorded, never raised.
+- Each case runs under its own request id, `<run name>:<case id>`.
+- Scores are averaged over the cases that ran; failures count in the failure rate, latency and cost.
+- A judged metric is reported beside the judge's agreement with human grades (`calibrate`).

@@ -1,36 +1,51 @@
 # kds.settings
 
-Typed settings for every prototype, read from the environment or a `.env` file. Secrets are `SecretStr`, so they never appear in logs or error messages by accident.
+Typed, read-only settings for every prototype. Values come from `config/settings.toml`, secrets from
+`.env`, and an environment variable overrides either. Settings are validated once, frozen, and
+secrets are `SecretStr`: never in a repr, an error message or a log line.
 
 ## Install
 
-```toml
-# in a project's pyproject.toml
-dependencies = ["kds-settings @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=settings"]
-```
+Pin a commit of this repository (see [installing](../README.md#installing-a-package)).
 
 ```sh
-# or directly
-pip install "kds-settings @ git+https://github.com/iamkevinstreet/utils.git@main#subdirectory=settings"
+pip install "kds-settings @ git+https://github.com/iamkevinstreet/utils@<commit>#subdirectory=settings"
 ```
 
 ## Use
 
-```python
-from kds.settings import get_settings
+A project has one config module that subclasses `Settings` with its own fields:
 
-s = get_settings()
-s.llm_provider  # "anthropic" | "openai" | "azure" | "fake"
-s.llm_model
-s.eval_budget_usd  # the evaluation runner stops at this spend
-s.entra_configured  # True when the three ENTRA_* values are set
+```python
+from functools import lru_cache
+
+from kds.settings import Settings, describe
+
+
+class AppSettings(Settings):
+    answer_min_score: float = 0.35  # [answer] min_score in settings.toml
+
+
+@lru_cache(maxsize=1)
+def get_app_settings() -> AppSettings:
+    return AppSettings()
+
+
+log_event(log, "settings.loaded", **describe(get_app_settings()))  # secrets show as ********
 ```
+
+## Conventions
+
+- A TOML key's name is its section and key joined: `[llm] model` is `llm_model`, and `LLM_MODEL`
+  overrides it.
+- Priority, highest first: arguments, environment variables, `.env`, `config/settings.toml`, defaults.
+- A secret written into `settings.toml` stops startup, naming the key but never printing its value.
+- `SETTINGS_FILE` points the loader at another file; tests point it at one that does not exist.
+
+Every shared setting and its default: [config/settings.toml](../config/settings.toml).
 
 ## Develop
 
 ```sh
-# from the repository root
-pytest settings/tests
+make test   # from the repository root
 ```
-
-Apache License 2.0. See the repository `LICENSE` and `NOTICE`.

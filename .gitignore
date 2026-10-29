@@ -1,11 +1,24 @@
-# secrets and local config
+########################################################################
+#                              .gitignore                              #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Keeps secrets, keys, caches, builds, runtime     #
+#                     logs and generated data out of git.              #
+########################################################################
+# Secrets and keys: never committed
 .env
 .env.*
 !.env.example
 *.pem
 *.key
+*.p12
+*.pfx
+id_*
+secrets/
 
-# python
+# Python
 __pycache__/
 *.py[cod]
 .venv/
@@ -16,21 +29,26 @@ dist/
 .pytest_cache/
 .ruff_cache/
 .mypy_cache/
+.coverage
+htmlcov/
 
-# generated data, runtime logs and eval outputs (regenerate with the scripts; never commit real records).
-# Runtime log files are named by date (kds.logs writes <LOG_DIR>/YYYY-MM-DD.jsonl). The logs/ folder
-# at the root of this repository is a package, so it must not be ignored as a whole.
+# Node
+node_modules/
+
+# Runtime logs: kds.logs writes <log_dir>/YYYY-MM-DD.jsonl
+logs/
+*.log
 ????-??-??.jsonl
-*/data/generated/
-*/evals/results/
+# ...except the logs package, whose folders share the name
+!/logs/
+!/logs/kds/logs/
+
+# Generated data and databases (regenerate with the scripts)
+data/generated/
 *.sqlite
 *.db
 
-# node (review UIs)
-node_modules/
-*/ui/dist/
-
-# editors and OS
-.vscode/
+# Editors and operating systems
 .idea/
+.vscode/
 .DS_Store

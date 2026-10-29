@@ -1,3 +1,13 @@
+########################################################################
+#                       .github/workflows/ci.yml                       #
+########################################################################
+#  Author:            Kevin Street                                     #
+#  Created on:        2026-10-14                                       #
+#  Last modified on:  2026-10-29                                       #
+#  Purpose:           Every push and pull request: secrets scan, lint, #
+#                     types, the code standard, tests, installs and an #
+#                     audit.                                           #
+########################################################################
 name: ci
 
 on:
@@ -8,42 +18,53 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   checks:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     env:
-      LLM_PROVIDER: fake
-      LLM_MODEL: fake-model
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
-          fetch-depth: 0
+          fetch-depth: 0  # the secrets scan and the header dates read all of history
+          persist-credentials: false
 
       - name: Secrets scan (whole history)
         run: |
-          curl -sSL https://github.com/gitleaks/gitleaks/releases/download/v8.24.3/gitleaks_8.24.3_linux_x64.tar.gz \
-            | tar xz -C /tmp gitleaks
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "/tmp/${archive}" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  /tmp/${archive}" | sha256sum --check --strict
+          tar -xzf "/tmp/${archive}" -C /tmp gitleaks
           /tmp/gitleaks git . --no-banner --redact --exit-code 1
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
         with:
           python-version: "3.12"
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip ruff pytest pytest-asyncio
-          pip install pydantic pydantic-settings anthropic openai httpx reportlab pypdf
+      - name: Install the locked dependencies (hashes required)
+        run: python -m pip install --require-hashes -r requirements-dev.txt
 
-      # Third-party dependencies are installed above, so the folders install with --no-deps.
-      # Their kds-* dependencies point at this repository on GitHub, which would otherwise
-      # be resolved from the remote instead of the checkout under test.
-      - name: Install check (each folder builds and installs as its own package)
+      # The packages' kds-* dependencies point at tagged releases on GitHub, so the
+      # checkout under test installs with --no-deps; the lockfile supplies the rest.
+      - name: Each package builds and installs on its own
         run: |
-          pip install --no-deps ./settings ./logs ./llm ./evals ./synthetic
-          python -c "import kds.settings, kds.logs, kds.llm, kds.evals, kds.synthetic; print('all five import')"
+          python -m pip install --no-deps ./settings ./logs ./llm ./evals ./synthetic \
+            ./standards ./diagrams
+          python -c "import kds.settings, kds.logs, kds.llm, kds.evals, kds.synthetic"
+          python -c "import kds.standards, kds.diagrams"
 
-      - name: Lint
-        run: ruff check . && ruff format --check .
+      - name: Lint, format, strict types and the code standard
+        run: make check PY=python
 
       - name: Tests
-        run: pytest
+        run: make test PY=python
+
+      - name: Known vulnerabilities in dependencies
+        run: make audit PY=python
