@@ -6,6 +6,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.3.0, Oct 29, 2026
 
+Pin: `1b67de07d6de8006f4d6f0ee7ea5668277e411f7`
+
 - **standards:** `kds-standards check` no longer asks each repository for a copy of the standard. A
   new `docs` rule checks what a repository publishes: README.md files, a root CHANGELOG.md and a root
   SECURITY.md, and no other Markdown outside `data/`. Every relative link or image in them must
