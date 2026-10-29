@@ -52,13 +52,13 @@ TITLE_SIZE = 44
 SUBTITLE_SIZE = 16
 # log.debug("Lists what the package exports")
 __all__ = ["Box", "Diagram"]
+# log.debug("Sets the baselines of the title, subtitle and caption")
+TITLE_ROW, SUBTITLE_ROW, CAPTION_ROW = 64, 100, 122
 
 
 ########################################################################
 #                           Diagram building                           #
 ########################################################################
-# log.debug("Sets the baselines of the title, subtitle and caption")
-TITLE_ROW, SUBTITLE_ROW, CAPTION_ROW = 64, 100, 122
 
 
 # log.debug("Defines a diagram as a list of drawn elements")

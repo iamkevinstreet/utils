@@ -6,8 +6,9 @@ Author:            Kevin Street
 Created on:        2026-10-29
 Last modified on:  2026-10-29
 
-Tests the file header: drawn in every style it reads back with the same
-fields, a file without one says why, and each wrong value is a finding.
+Tests the file header: drawn in every style, it reads back with the
+same fields; a file without one says why; and each wrong value is a
+finding.
 """
 
 ########################################################################

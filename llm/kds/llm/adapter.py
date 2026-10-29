@@ -75,8 +75,8 @@ def backoff(attempt: int | None = None) -> float:
     that failed together from retrying together.
 
     Args:
-        attempt: The attempt that just failed; each one doubles the
-            longest wait. Required.
+        attempt: The attempt that just failed, counted from one; each
+            one doubles the longest wait. Required.
 
     Returns:
         A random wait in seconds, from zero up to the attempt's limit.
@@ -84,7 +84,7 @@ def backoff(attempt: int | None = None) -> float:
     # log.debug("Takes the attempt, which the caller must give")
     attempt = required(attempt=attempt)
     # log.debug("Doubles the ceiling each attempt, up to the cap")
-    ceiling = min(BACKOFF_CAP_S, BACKOFF_BASE_S * 2**attempt)
+    ceiling = min(BACKOFF_CAP_S, BACKOFF_BASE_S * 2 ** (attempt - 1))
     # log.debug("Returns a random wait under the ceiling")
     return random.uniform(0, ceiling)  # noqa: S311 - timing jitter, not security
 

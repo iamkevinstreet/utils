@@ -222,14 +222,16 @@ class OpenAIProvider:
         """Reads the first choice's text and tool calls.
 
         Args:
-            response: The chat completions response.
+            response: The chat completions response. Required.
             latency_ms: How long the call took, in milliseconds.
                 Required.
 
         Returns:
             The provider-neutral completion, with usage and timing.
         """
-        # log.debug("Takes the latency ms, which the caller must give")
+        # log.debug("Takes the response, which the caller must give")
+        response = required(response=response)
+        # log.debug("Takes the call's time in milliseconds, which the caller must give")
         latency_ms = required(latency_ms=latency_ms)
         # log.debug("Takes the first choice")
         choice = response.choices[0]

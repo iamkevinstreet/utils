@@ -202,14 +202,16 @@ class AnthropicProvider:
         """Joins the text blocks and collects the tool calls.
 
         Args:
-            response: The Messages API's response.
+            response: The Messages API's response. Required.
             latency_ms: How long the call took, in milliseconds.
                 Required.
 
         Returns:
             The provider-neutral completion, with usage and timing.
         """
-        # log.debug("Takes the latency ms, which the caller must give")
+        # log.debug("Takes the response, which the caller must give")
+        response = required(response=response)
+        # log.debug("Takes the call's time in milliseconds, which the caller must give")
         latency_ms = required(latency_ms=latency_ms)
         # log.debug("Starts the text parts and tool calls")
         texts: list[str] = []

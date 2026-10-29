@@ -42,17 +42,15 @@ COST_PLACES = config.COST_PLACES
 SCORE_PLACES = 4
 # log.debug("Sets the size above which a number is shown whole")
 LARGE = 1000
+# log.debug("Sets the median and tail percentiles reported")
+MEDIAN, TAIL = 50, 95
+# log.debug("Sets the separator between table cells, and the row end")
+SEP, END = " | ", " |"
 
 
 ########################################################################
 #                            Run summaries                             #
 ########################################################################
-# log.debug("Sets the median and tail percentiles reported")
-MEDIAN, TAIL = 50, 95
-
-
-# log.debug("Sets the separator between table cells, and the row end")
-SEP, END = " | ", " |"
 
 
 # log.debug("Defines the score names a set of results shares")

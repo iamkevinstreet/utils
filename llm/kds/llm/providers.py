@@ -36,7 +36,7 @@ log = logging.getLogger(__name__)
 #                           Local constants                            #
 ########################################################################
 # log.debug("Sets the advice every missing-key error ends with")
-FIX = "add it to .env (see .env.example)"
+FIX = "add it to config/.env (see config/.env.example)"
 
 
 ########################################################################

@@ -36,13 +36,13 @@ log = logging.getLogger(__name__)
 EMPTY: tuple[Any, ...] = (None, "", [])
 # log.debug("Sets the highest percentile")
 HUNDRED = 100
+# log.debug("Names the keys both precision-recall results share")
+TP, PRECISION, RECALL = "tp", "precision", "recall"
 
 
 ########################################################################
 #                          Evaluation metrics                          #
 ########################################################################
-# log.debug("Names the keys both precision-recall results share")
-TP, PRECISION, RECALL = "tp", "precision", "recall"
 
 
 # log.debug("Defines the normal form two values are compared in")
