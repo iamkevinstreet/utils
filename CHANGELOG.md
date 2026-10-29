@@ -6,7 +6,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.4.1, Oct 29, 2026
 
-Pin: (the commit this release lands on)
+Pin: `a8e96e31d30b98415cd842a5fa4bbc96f259bc07`
 
 - **standards:** the `docs` rule treats Markdown under `src/content/`, where a site keeps the text of
   its pages, as data, the way it treats `data/`: it may stay, and its links are not checked. Four
