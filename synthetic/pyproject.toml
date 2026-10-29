@@ -9,7 +9,7 @@
 
 [project]
 name = "kds-synthetic"
-version = "0.4.1"
+version = "0.4.2"
 description = "Made-up names with near-duplicate variants, and a PDF builder that records page text for span checks."
 readme = "README.md"
 requires-python = ">=3.12"

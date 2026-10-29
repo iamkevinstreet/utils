@@ -10,7 +10,7 @@
 
 [project]
 name = "kds-llm"
-version = "0.4.1"
+version = "0.4.2"
 description = "One model adapter for Anthropic, OpenAI and Azure OpenAI, with an offline stand-in, retries, structured output, cost accounting and a budget stop."
 readme = "README.md"
 requires-python = ">=3.12"

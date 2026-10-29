@@ -196,3 +196,32 @@ def test_a_stub_may_call_a_parameter_required() -> None:
     )
     # log.debug("Checks there are no findings")
     assert messages(stub) == []
+
+
+# log.debug("Defines the test: a function may run 60 lines below its doc block, not 61")
+def test_a_function_runs_at_most_sixty_lines_below_its_doc_block() -> None:
+    """Every line below the doc block counts, up to 60."""
+    # log.debug("Pads the good function to exactly 60 lines below its doc block")
+    fits = GOOD.replace(
+        "    notice = required(notice=notice)\n",
+        "    notice = required(notice=notice)\n" + '    # log.debug("Waits")\n' * 58,
+    )
+    # log.debug("Adds one more line")
+    long = fits.replace("    return notice", '    # log.debug("Returns")\n    return notice')
+    # log.debug("Checks only the longer one is flagged, with its count")
+    assert (messages(fits), messages(long)) == (
+        [],
+        ["due runs 61 lines below its doc block; at most 60, so split it"],
+    )
+
+
+# log.debug("Defines the test: with no doc block, the comments above the body count")
+def test_a_function_with_no_doc_block_counts_from_its_first_comment() -> None:
+    """The comments above the first statement count as its lines."""
+    # log.debug("Writes a test with 61 lines below its signature, comments first")
+    source = "def test_long() -> None:\n" + '    # log.debug("Waits")\n' * 60 + "    pass\n"
+    # log.debug("Checks it is flagged with all 61 lines, besides its missing doc block")
+    assert messages(source) == [
+        "test_long needs a doc block",
+        "test_long runs 61 lines below its doc block; at most 60, so split it",
+    ]

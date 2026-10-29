@@ -31,13 +31,17 @@ backend/grounded_qa/answer.py:1: header: Last modified on must be 2026-10-29; ru
 
 | Rule | Finding |
 | --- | --- |
-| `header` | the 72-character box is missing, malformed, or its title, dates or purpose are wrong |
-| `logger-line` | a statement has no commented logger line above it, or one sits above `else` |
+| `header` | the box holding the file's path is missing or malformed, or the doc block's author, dates or description are missing or wrong |
+| `sections` | a banner is malformed, missing or out of order: Imports, Global constants, Local constants, then one for the file's job |
+| `imports` | an import sits under the wrong label: standard library, third-party or local |
+| `functions` | a Python parameter has no default, a doc block is missing or incomplete, `Required.` and `required()` disagree, or a function runs over 60 lines below its doc block |
+| `constants` | a constant two files of a project share is not in the config |
+| `logger-line` | a statement has no commented logger line above it, one sits above `else`, or a file with logger lines has no logger |
 | `trace-off` | a logger line was left switched on |
 | `width` | code over 99 characters, or a comment or docstring over 72 |
 | `literal` | a string or number repeats inside functions instead of being a named constant |
 | `layout` | a file is over 500 lines or too deep; a required file, folder README or ignore rule is missing |
-| `docs` | a Markdown file other than a README.md, the root CHANGELOG.md and SECURITY.md, or data under `data/`; a link in a published file to something the repository does not hold |
+| `docs` | a Markdown file other than a README.md, the root CHANGELOG.md and SECURITY.md, or data under `data/` or a site's `src/content/`; a link in a published file to something the repository does not hold |
 
 Dates come from git, following renames: "Created on" is the first commit that held the file, "Last
 modified on" its latest, and a file changed since then must show today.

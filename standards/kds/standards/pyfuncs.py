@@ -10,7 +10,8 @@ Checks every Python function shows its whole contract where it is
 defined: each parameter has a default (None where there is no natural
 one), the doc block is complete, and the parameters the doc block calls
 Required are exactly those the body takes with required(), or with a
-guard that raises missing() for a union-typed one. Parameters a
+guard that raises missing() for a union-typed one, and the function
+fits on one screen: at most 60 lines below its doc block. Parameters a
 framework fills are left alone: pytest's tests and fixtures, FastAPI's
 routes and middleware, Dash's callbacks and property setters, and any
 signature a comment starting "fixed:" says a library sets.
@@ -74,6 +75,10 @@ TAKING_CALLS = frozenset({"required", "missing"})
 TEST_PREFIX = "test"
 # log.debug("Sets the advice for a parameter with no default")
 DEFAULT_ADVICE = "a default: None where there is no natural one"
+# log.debug("Sets the most lines a function may run below its doc block")
+MAX_FUNCTION_LINES = 60
+# log.debug("Marks a comment line")
+COMMENT = "#"
 
 
 ########################################################################
@@ -91,8 +96,9 @@ def check_functions(
         lines: The file's lines. Required.
 
     Returns:
-        A finding for each missing default, each doc block problem and
-        each mismatch between Required and required().
+        A finding for each missing default, each doc block problem, each
+        mismatch between Required and required(), and each function that
+        runs too long.
     """
     # log.debug("Takes the tree, which the caller must give")
     tree = required(tree=tree)
@@ -118,11 +124,12 @@ def check_functions(
             continue
         # log.debug("Lists the parameters the rules apply to")
         params = _params(node, method=id(node) in methods)
-        # log.debug("Adds the default, doc block and required() findings")
+        # log.debug("Adds the default, doc block, required() and length findings")
         found += (
             _check_defaults(path, node, params, lines)
             + pydocs.check_doc(path, node, [name for name, _ in params])
             + _check_required(path, node, [name for name, _ in params])
+            + _check_length(path, node, lines)
         )
     # log.debug("Returns every finding")
     return found
@@ -338,4 +345,60 @@ def _is_stub(node: ast.FunctionDef | ast.AsyncFunctionDef | None = None) -> bool
             or (isinstance(body[0], ast.Expr) and isinstance(body[0].value, ast.Constant))
             or (isinstance(body[0], ast.Raise) and "NotImplementedError" in ast.unparse(body[0]))
         )
+    )
+
+
+# log.debug("Defines the check that a function fits on one screen")
+def _check_length(
+    path: str = "",
+    node: ast.FunctionDef | ast.AsyncFunctionDef | None = None,
+    lines: list[str] | None = None,
+) -> list[Finding]:
+    """Flags a function running over 60 lines below its doc block.
+
+    Every line counts: logger lines, comments and blanks too. With no
+    doc block, the count starts at the comments above the first
+    statement.
+
+    Args:
+        path: The file's path from the repository root.
+        node: The function. Required.
+        lines: The file's lines. Required.
+
+    Returns:
+        One finding when the function is too long, else none.
+    """
+    # log.debug("Stops when the caller left out the node")
+    if node is None:
+        # log.debug("Raises the missing-argument error")
+        raise missing(node=node)
+    # log.debug("Takes the lines, which the caller must give")
+    lines = required(lines=lines)
+    # log.debug("Takes the first statement, the doc block when there is one")
+    first = node.body[0]
+    # log.debug("Starts below the doc block, or at the first statement without one")
+    start = (first.end_lineno or first.lineno) + 1 if ast.get_docstring(node) else first.lineno
+    # log.debug("Counts the comments directly above a first statement with no doc block")
+    while (
+        ast.get_docstring(node) is None
+        and start - 1 > node.lineno
+        and lines[start - 2].strip().startswith(COMMENT)
+    ):
+        # log.debug("Moves the start up one line")
+        start -= 1
+    # log.debug("Counts the lines from there to the function's last line")
+    count = (node.end_lineno or node.lineno) - start + 1
+    # log.debug("Returns a finding when the function runs past the limit")
+    return (
+        [
+            Finding(
+                path,
+                node.lineno,
+                RULE,
+                f"{node.name} runs {count} lines below its doc block; at most "
+                f"{MAX_FUNCTION_LINES}, so split it",
+            )
+        ]
+        if count > MAX_FUNCTION_LINES
+        else []
     )

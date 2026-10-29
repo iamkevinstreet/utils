@@ -10,7 +10,7 @@
 
 [project]
 name = "kds-settings"
-version = "0.4.1"
+version = "0.4.2"
 description = "Typed, read-only settings: values from config/config.toml, secrets from config/.env, masked in logs."
 readme = "README.md"
 requires-python = ">=3.12"

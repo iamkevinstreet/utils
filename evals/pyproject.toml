@@ -9,7 +9,7 @@
 
 [project]
 name = "kds-evals"
-version = "0.4.1"
+version = "0.4.2"
 description = "Evaluation cases, metrics, a runner that writes results tables, a model judge with calibration, and run comparison."
 readme = "README.md"
 requires-python = ">=3.12"

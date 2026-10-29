@@ -4,6 +4,16 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.4.2, Oct 29, 2026
+
+Pin: (the commit this release lands on)
+
+- **standards:** the `functions` rule now flags a Python function that runs more than 60 lines
+  below its doc block, counting every line: logger lines, comments and blanks too. With no doc
+  block, the count starts at the comments above the first statement. The README's table lists
+  every rule the checker has. Two tests cover it; 124 tests in all.
+- **All packages** move to 0.4.2 together.
+
 ## v0.4.1, Oct 29, 2026
 
 Pin: `a8e96e31d30b98415cd842a5fa4bbc96f259bc07`
