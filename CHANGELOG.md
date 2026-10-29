@@ -6,7 +6,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.4.2, Oct 29, 2026
 
-Pin: (the commit this release lands on)
+Pin: `62a38c5a3ecf667e3e227b18412abd77759c38d5`
 
 - **standards:** the `functions` rule now flags a Python function that runs more than 60 lines
   below its doc block, counting every line: logger lines, comments and blanks too. With no doc
