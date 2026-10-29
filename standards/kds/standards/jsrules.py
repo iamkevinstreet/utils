@@ -280,13 +280,13 @@ def _kind(
     Returns:
         The bracket's kind: block, type or literal.
     """
-    # log.debug("Takes the char, which the caller must give")
+    # log.debug("Takes the bracket, which the caller must give")
     char = required(char=char)
-    # log.debug("Takes the before, which the caller must give")
+    # log.debug("Takes the text before it, which the caller must give")
     before = required(before=before)
     # log.debug("Takes the line, which the caller must give")
     line = required(line=line)
-    # log.debug("Takes the inside, which the caller must give")
+    # log.debug("Takes whether it sits inside a value, which the caller must give")
     inside = required(inside=inside)
     # log.debug("Treats [ and ( as value brackets")
     if char != "{":
@@ -334,7 +334,7 @@ def check_logger_lines(path: str | None = None, source: str | None = None) -> li
             # log.debug("Moves to the next statement")
             continue
         # log.debug("Matches the line above against the logger form")
-        match = LOGGER_RE.match(by_number.get(number - 1, ""))
+        match = LOGGER_RE.match(by_number.get(_above_doc(by_number, number), ""))
         # log.debug("Measures the statement's indent")
         indent = len(raw) - len(raw.lstrip())
         # log.debug("Records a missing or misplaced logger line")
@@ -369,3 +369,33 @@ def check_live(path: str | None = None, source: str | None = None) -> list[Findi
         for number, text in script_lines(path, source)
         if LIVE_RE.match(text)
     ]
+
+
+# log.debug("Defines which line holds a statement's logger line")
+def _above_doc(by_number: dict[int, str] | None = None, number: int = 1) -> int:
+    """Returns the number of the line a statement's logger line sits on.
+
+    It is the line directly above the statement, or, when a TSDoc block
+    sits there, the line directly above the block.
+
+    Args:
+        by_number: The file's lines by number. Required.
+        number: The statement's first line, counted from 1.
+
+    Returns:
+        The number of the line to read the logger line from.
+    """
+    # log.debug("Takes the lines, which the caller must give")
+    by_number = required(by_number=by_number)
+    # log.debug("Starts at the line directly above the statement")
+    above = number - 1
+    # log.debug("Returns that line unless it closes a doc block")
+    if not by_number.get(above, "").strip().endswith("*/"):
+        # log.debug("Returns the line above")
+        return above
+    # log.debug("Walks up to the line that opens the block")
+    while above > 0 and not by_number.get(above, "").strip().startswith("/**"):
+        # log.debug("Moves up one line")
+        above -= 1
+    # log.debug("Returns the line above the block")
+    return above - 1

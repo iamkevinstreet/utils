@@ -68,7 +68,7 @@ def switch(target: Path | None = None, on: bool | None = None) -> int:
     """
     # log.debug("Takes the target, which the caller must give")
     target = required(target=target)
-    # log.debug("Takes the on, which the caller must give")
+    # log.debug("Takes whether to switch the lines on, which the caller must give")
     on = required(on=on)
     # log.debug("Lists the files to switch: one, or all under a folder")
     files = [target] if target.is_file() else sorted(target.rglob("*"))
@@ -110,7 +110,7 @@ def _switch_file(path: Path | None = None, on: bool | None = None) -> bool:
     """
     # log.debug("Takes the path, which the caller must give")
     path = required(path=path)
-    # log.debug("Takes the on, which the caller must give")
+    # log.debug("Takes whether to switch the lines on, which the caller must give")
     on = required(on=on)
     # log.debug("Reads the file")
     text = path.read_text(encoding=ENCODING)

@@ -44,13 +44,13 @@ LINE_WIDTH = 95
 LEADING = 1.4
 # log.debug("Sets the rotation of a page marked as a bad scan")
 ROTATION = 90
+# log.debug("Sets the default font and size")
+FONT, SIZE = "Helvetica", 10
 
 
 ########################################################################
 #                             PDF builder                              #
 ########################################################################
-# log.debug("Sets the default font and size")
-FONT, SIZE = "Helvetica", 10
 
 
 # log.debug("Defines a document being built")

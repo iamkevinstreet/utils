@@ -218,9 +218,9 @@ def _exempt(stmt: Statement | None = None, after_decorator: bool | None = None) 
         creation, and for each decorator after the first and the def
         or class they wrap.
     """
-    # log.debug("Takes the stmt, which the caller must give")
+    # log.debug("Takes the statement, which the caller must give")
     stmt = required(stmt=stmt)
-    # log.debug("Takes the after decorator, which the caller must give")
+    # log.debug("Takes whether a decorator came just before, which the caller must give")
     after_decorator = required(after_decorator=after_decorator)
     # log.debug("Exempts imports, docstrings, clauses, logger creation")
     if stmt.first in IMPORTS or stmt.only_string or stmt.clause or CREATE_RE.match(stmt.text):
@@ -248,7 +248,7 @@ def _check_above(
     """
     # log.debug("Takes the path, which the caller must give")
     path = required(path=path)
-    # log.debug("Takes the stmt, which the caller must give")
+    # log.debug("Takes the statement, which the caller must give")
     stmt = required(stmt=stmt)
     # log.debug("Reports a missing logger line")
     if not match:

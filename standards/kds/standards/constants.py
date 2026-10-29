@@ -209,7 +209,13 @@ def _assigned(stmt: ast.stmt | None = None) -> list[tuple[str, ast.expr]]:
     # log.debug("Reads a plain assignment's name targets")
     if isinstance(stmt, ast.Assign):
         # log.debug("Returns each name target with the value")
-        return [(t.id, stmt.value) for t in stmt.targets if isinstance(t, ast.Name)]
+        return [
+            pair
+            for t in stmt.targets
+            for pair in (
+                [(t.id, stmt.value)] if isinstance(t, ast.Name) else _unpacked(t, stmt.value)
+            )
+        ]
     # log.debug("Returns nothing for other statements")
     return []
 
@@ -428,3 +434,37 @@ def _matches(path: str = "", source: str = "") -> bool:
     return bool(source) and (
         stem == source or dotted.endswith(f".{source}") or dotted.endswith(f".{source}.__init__")
     )
+
+
+# log.debug("Defines how a tuple of names set to a tuple of values pairs up")
+def _unpacked(
+    target: ast.expr | None = None, value: ast.expr | None = None
+) -> list[tuple[str, ast.expr]]:
+    """Returns each name in a tuple target paired with its value.
+
+    Args:
+        target: The assignment's target. Required.
+        value: The assignment's value. Required.
+
+    Returns:
+        Each name with the value in the same place, or nothing when the
+        target and the value are not tuples of the same length.
+    """
+    # log.debug("Takes the target, which the caller must give")
+    target = required(target=target)
+    # log.debug("Takes the value, which the caller must give")
+    value = required(value=value)
+    # log.debug("Returns nothing unless both are tuples of the same length")
+    if not (
+        isinstance(target, ast.Tuple)
+        and isinstance(value, ast.Tuple)
+        and len(target.elts) == len(value.elts)
+    ):
+        # log.debug("Returns no pairs")
+        return []
+    # log.debug("Returns each plain name with its value")
+    return [
+        (name.id, item)
+        for name, item in zip(target.elts, value.elts, strict=True)
+        if isinstance(name, ast.Name)
+    ]

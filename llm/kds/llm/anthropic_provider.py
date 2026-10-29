@@ -20,7 +20,7 @@ import inspect
 import json
 import logging
 import time
-from typing import Any
+from typing import Any, Final
 
 # Third-party
 import anthropic
@@ -36,6 +36,18 @@ from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 log = logging.getLogger(__name__)
 # log.debug("Takes the milliseconds in a second, for latency, from the config")
 MS = config.MS
+# log.debug("Takes the key that says who speaks, from the config")
+ROLE: Final = config.ROLE
+# log.debug("Takes the key that holds what a message says, from the config")
+CONTENT: Final = config.CONTENT
+# log.debug("Takes the key that says a block's kind, from the config")
+TYPE: Final = config.TYPE
+# log.debug("Takes the key that holds a tool's name, from the config")
+NAME: Final = config.NAME
+# log.debug("Takes the asking role's name, from the config")
+USER: Final = config.USER
+# log.debug("Takes the answering role's name, from the config")
+ASSISTANT: Final = config.ASSISTANT
 
 ########################################################################
 #                           Local constants                            #
@@ -44,17 +56,15 @@ MS = config.MS
 JSON_INSTRUCTION = "\n\nRespond with a single JSON object and nothing else."
 # log.debug("Names the sampling setting not every SDK version takes")
 TEMPERATURE = "temperature"
+# log.debug("Names the content block type that holds text")
+TEXT = "text"
+# log.debug("Names the content block type that calls a tool")
+TOOL_USE = "tool_use"
 
 
 ########################################################################
 #                        Anthropic Messages API                        #
 ########################################################################
-# log.debug("Names the keys of a message and a content block")
-ROLE, CONTENT, TYPE, NAME, TEXT = "role", "content", "type", "name", "text"
-
-
-# log.debug("Names the two speakers and the tool-call block type")
-USER, ASSISTANT, TOOL_USE = "user", "assistant", "tool_use"
 
 
 # log.debug("Defines the Anthropic provider")
@@ -72,9 +82,9 @@ class AnthropicProvider:
             api_key: The Anthropic API key. Required.
             timeout_s: The most seconds one call may take. Required.
         """
-        # log.debug("Takes the api key, which the caller must give")
+        # log.debug("Takes the API key, which the caller must give")
         api_key = required(api_key=api_key)
-        # log.debug("Takes the timeout s, which the caller must give")
+        # log.debug("Takes the timeout in seconds, which the caller must give")
         timeout_s = required(timeout_s=timeout_s)
         # log.debug("Opens the client with a timeout and no SDK retries")
         self._client = anthropic.Anthropic(api_key=api_key, timeout=timeout_s, max_retries=0)
@@ -159,11 +169,11 @@ class AnthropicProvider:
         model = required(model=model)
         # log.debug("Takes the messages, which the caller must give")
         messages = required(messages=messages)
-        # log.debug("Takes the max tokens, which the caller must give")
+        # log.debug("Takes the token limit, which the caller must give")
         max_tokens = required(max_tokens=max_tokens)
         # log.debug("Takes the temperature, which the caller must give")
         temperature = required(temperature=temperature)
-        # log.debug("Takes the json mode, which the caller must give")
+        # log.debug("Takes whether to ask for JSON, which the caller must give")
         json_mode = required(json_mode=json_mode)
         # log.debug("Starts the request with the model, limit and turns")
         request: dict[str, Any] = {

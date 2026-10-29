@@ -100,7 +100,7 @@ class FakeProvider:
         """
         # log.debug("Takes the messages, which the caller must give")
         messages = required(messages=messages)
-        # log.debug("Takes the json mode, which the caller must give")
+        # log.debug("Takes whether to ask for JSON, which the caller must give")
         json_mode = required(json_mode=json_mode)
         # log.debug("Takes the next queued answer first")
         if self._queue:
@@ -148,11 +148,11 @@ class FakeProvider:
         model = required(model=model)
         # log.debug("Takes the messages, which the caller must give")
         messages = required(messages=messages)
-        # log.debug("Takes the max tokens, which the caller must give")
+        # log.debug("Takes the token limit, which the caller must give")
         max_tokens = required(max_tokens=max_tokens)
         # log.debug("Takes the temperature, which the caller must give")
         temperature = required(temperature=temperature)
-        # log.debug("Takes the json mode, which the caller must give")
+        # log.debug("Takes whether to ask for JSON, which the caller must give")
         json_mode = required(json_mode=json_mode)
         # log.debug("Starts the clock")
         started = time.perf_counter()

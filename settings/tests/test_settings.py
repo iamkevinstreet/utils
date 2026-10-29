@@ -58,7 +58,7 @@ def _write(
             objects. Required.
         text: The TOML to write. Required.
     """
-    # log.debug("Takes the tmp path, which the caller must give")
+    # log.debug("Takes the test's temporary folder, which the caller must give")
     tmp_path = required(tmp_path=tmp_path)
     # log.debug("Takes the monkeypatch, which the caller must give")
     monkeypatch = required(monkeypatch=monkeypatch)

@@ -116,9 +116,9 @@ def field_accuracy(
         The per_field matches, the correct and total counts, and the
         accuracy: correct over total, or 0.0 for no fields.
     """
-    # log.debug("Takes the predicted, which the caller must give")
+    # log.debug("Takes the predicted values, which the caller must give")
     predicted = required(predicted=predicted)
-    # log.debug("Takes the expected, which the caller must give")
+    # log.debug("Takes the expected values, which the caller must give")
     expected = required(expected=expected)
     # log.debug("Takes the fields, which the caller must give")
     fields = required(fields=fields)
@@ -156,9 +156,9 @@ def null_metrics(
         guesses) with precision and recall, each 1.0 when it has
         nothing to divide by.
     """
-    # log.debug("Takes the predicted, which the caller must give")
+    # log.debug("Takes the predicted values, which the caller must give")
     predicted = required(predicted=predicted)
-    # log.debug("Takes the expected, which the caller must give")
+    # log.debug("Takes the expected values, which the caller must give")
     expected = required(expected=expected)
     # log.debug("Takes the fields, which the caller must give")
     fields = required(fields=fields)
@@ -200,9 +200,9 @@ def precision_recall(
         Precision, recall and f1, with tp (the items in both) and the
         sizes of the predicted and expected sets.
     """
-    # log.debug("Takes the predicted, which the caller must give")
+    # log.debug("Takes the predicted values, which the caller must give")
     predicted = required(predicted=predicted)
-    # log.debug("Takes the expected, which the caller must give")
+    # log.debug("Takes the expected values, which the caller must give")
     expected = required(expected=expected)
     # log.debug("Normalises the predicted items into a set")
     got = {_norm_key(item) for item in predicted}
@@ -240,7 +240,7 @@ def percentile(values: Sequence[float] | None = None, pct: float | None = None) 
     """
     # log.debug("Takes the values, which the caller must give")
     values = required(values=values)
-    # log.debug("Takes the pct, which the caller must give")
+    # log.debug("Takes the percentile, which the caller must give")
     pct = required(pct=pct)
     # log.debug("Returns zero for no values")
     if not values:

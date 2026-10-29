@@ -59,6 +59,10 @@ ALLOWED = {
     ALIAS: (sec.GLOBALS, sec.LOCALS, sec.LOGIC),
     CODE: (sec.LOGIC,),
 }
+# log.debug("Sets the text every commented logger line holds")
+LOGGER_LINE = "# log.debug("
+# log.debug("Sets the message for logger lines with no logger to call")
+NO_LOGGER_MESSAGE = "create the module's logger first in its Global constants"
 # log.debug("Lists the functions that create a module's logger")
 LOGGER_CALLS = frozenset({"get_logger", "getLogger"})
 # log.debug("Sets the package whose names count as the config")
@@ -112,6 +116,10 @@ def check_module(
     found = [f for stmt, kind in kinds for f in _check_place(path, stmt, kind, banners)]
     # log.debug("Adds the findings for the logger's place")
     found += _check_logger_first(path, kinds, banners)
+    # log.debug("Flags logger lines in a module that never creates its logger")
+    if any(LOGGER_LINE in line for line in lines) and not any(k == LOGGER for _, k in kinds):
+        # log.debug("Records the missing logger")
+        found.append(Finding(path, 1, sec.RULE, NO_LOGGER_MESSAGE))
     # log.debug("Lists the sections the module's statements call for")
     needs = tuple(dict.fromkeys(_needed(kind) for _, kind in kinds if _needed(kind)))
     # log.debug("Adds a finding for each section with no banner")
@@ -220,7 +228,7 @@ def _assignment_kind(
     """
     # log.debug("Takes the names, which the caller must give")
     targets = required(targets=targets)
-    # log.debug("Takes the used names, which the caller must give")
+    # log.debug("Takes the names the value uses, which the caller must give")
     used = required(used=used)
     # log.debug("Sorts a value built on the module's own functions as code")
     if used & (defined or set()):
@@ -281,10 +289,12 @@ def _targets(stmt: ast.stmt | None = None) -> list[str]:
     if isinstance(stmt, ast.TypeAlias):
         # log.debug("Returns its name")
         return [stmt.name.id]
-    # log.debug("Reads a plain assignment's targets, which must all be names")
-    if isinstance(stmt, ast.Assign) and all(isinstance(t, ast.Name) for t in stmt.targets):
+    # log.debug("Reads a plain assignment's targets, unpacking a tuple of names")
+    names = [n for t in getattr(stmt, "targets", []) for n in _names(t)]
+    # log.debug("Returns the names when every target is a name or a tuple of names")
+    if isinstance(stmt, ast.Assign) and names and all(_names(t) for t in stmt.targets):
         # log.debug("Returns the names")
-        return [t.id for t in stmt.targets if isinstance(t, ast.Name)]
+        return names
     # log.debug("Returns nothing for any other statement")
     return []
 
@@ -420,3 +430,28 @@ def _needed(kind: str = CODE) -> str:
     needs = {IMPORT: sec.IMPORTS, LOGGER: sec.GLOBALS, GLOBAL: sec.GLOBALS, LOCAL: sec.LOCALS}
     # log.debug("Returns the section, the logic for code, nothing for an alias")
     return needs.get(kind, sec.LOGIC if kind == CODE else "")
+
+
+# log.debug("Defines how a target's plain names are read")
+def _names(target: ast.expr | None = None) -> list[str]:
+    """Returns the names a target binds, or nothing if it is not plain.
+
+    Args:
+        target: One target of an assignment. Required.
+
+    Returns:
+        The name of a plain name, the names of a tuple of plain names,
+        or an empty list for anything else.
+    """
+    # log.debug("Takes the target, which the caller must give")
+    target = required(target=target)
+    # log.debug("Returns a plain name's name")
+    if isinstance(target, ast.Name):
+        # log.debug("Returns it")
+        return [target.id]
+    # log.debug("Returns each name of a tuple of plain names, or nothing")
+    if isinstance(target, ast.Tuple) and all(isinstance(e, ast.Name) for e in target.elts):
+        # log.debug("Returns them")
+        return [e.id for e in target.elts if isinstance(e, ast.Name)]
+    # log.debug("Returns nothing for any other target")
+    return []

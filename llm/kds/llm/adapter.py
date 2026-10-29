@@ -33,7 +33,7 @@ from pydantic import BaseModel
 
 # Local
 from kds.args import missing, required
-from kds.llm import structured
+from kds.llm import config, structured
 from kds.llm.base import Provider
 from kds.llm.errors import BudgetExceededError, StructuredOutputError, is_transient
 from kds.llm.pricing import estimate_cost
@@ -46,6 +46,8 @@ from kds.settings import Settings, get_settings
 #                           Global constants                           #
 ########################################################################
 log = logging.getLogger(__name__)
+# log.debug("Takes the asking role's name, from the config")
+USER: Final = config.USER
 
 ########################################################################
 #                           Local constants                            #
@@ -56,8 +58,6 @@ BACKOFF_BASE_S = 0.5
 BACKOFF_CAP_S = 8.0
 # log.debug("Sets the decimal places spend is logged with")
 SPEND_PLACES = 6
-# log.debug("Names the speaker of a prompt")
-USER: Final = "user"
 # log.debug("Names the request key that holds the model")
 MODEL: Final = "model"
 # log.debug("Sets the request the repair turn sends after a bad answer")

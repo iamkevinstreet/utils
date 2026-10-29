@@ -19,7 +19,7 @@ from __future__ import annotations
 import json
 import logging
 import time
-from typing import Any
+from typing import Any, Final
 
 # Third-party
 import openai
@@ -35,27 +35,29 @@ from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 log = logging.getLogger(__name__)
 # log.debug("Takes the milliseconds in a second, for latency, from the config")
 MS = config.MS
+# log.debug("Takes the key that says who speaks, from the config")
+ROLE: Final = config.ROLE
+# log.debug("Takes the key that holds what a message says, from the config")
+CONTENT: Final = config.CONTENT
+# log.debug("Takes the key that says a part's kind, from the config")
+TYPE: Final = config.TYPE
+# log.debug("Takes the key that holds a tool's name, from the config")
+NAME: Final = config.NAME
+# log.debug("Takes the answering role's name, from the config")
+ASSISTANT: Final = config.ASSISTANT
 
 ########################################################################
 #                           Local constants                            #
 ########################################################################
 # log.debug("Names the key a tool's details sit under")
 FUNCTION = "function"
+# log.debug("Names the role a tool result is sent back under")
+TOOL = "tool"
 
 
 ########################################################################
 #                      OpenAI chat and embeddings                      #
 ########################################################################
-# log.debug("Names the keys every chat message carries")
-ROLE, CONTENT = "role", "content"
-
-
-# log.debug("Names the keys for a part's type and a tool's name")
-TYPE, NAME = "type", "name"
-
-
-# log.debug("Names the tool and assistant roles")
-TOOL, ASSISTANT = "tool", "assistant"
 
 
 # log.debug("Defines the OpenAI provider, which also serves Azure")
@@ -84,9 +86,9 @@ class OpenAIProvider:
             azure_api_version: The Azure OpenAI API version, used only
                 with an endpoint.
         """
-        # log.debug("Takes the api key, which the caller must give")
+        # log.debug("Takes the API key, which the caller must give")
         api_key = required(api_key=api_key)
-        # log.debug("Takes the timeout s, which the caller must give")
+        # log.debug("Takes the timeout in seconds, which the caller must give")
         timeout_s = required(timeout_s=timeout_s)
         # log.debug("Opens an Azure client when an endpoint is given")
         if azure_endpoint:
@@ -177,11 +179,11 @@ class OpenAIProvider:
         model = required(model=model)
         # log.debug("Takes the messages, which the caller must give")
         messages = required(messages=messages)
-        # log.debug("Takes the max tokens, which the caller must give")
+        # log.debug("Takes the token limit, which the caller must give")
         max_tokens = required(max_tokens=max_tokens)
         # log.debug("Takes the temperature, which the caller must give")
         temperature = required(temperature=temperature)
-        # log.debug("Takes the json mode, which the caller must give")
+        # log.debug("Takes whether to ask for JSON, which the caller must give")
         json_mode = required(json_mode=json_mode)
         # log.debug("Starts the request with the model, turns and limits")
         request: dict[str, Any] = {

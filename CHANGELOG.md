@@ -4,13 +4,39 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
-## Unreleased
+## v0.4.0, Oct 29, 2026
 
+Pin: (the commit this release lands on)
+
+Every package now follows the code standard's new file layout, and one package joins them.
+
+- **The file layout.** Each file opens with a box that holds only its path, then a doc block (the
+  module docstring in Python) with the author, the dates and a description. After it come the
+  Imports (standard library, third-party and local, each under a label), the Global constants (the
+  logger, then the values the file takes from its package's config), the Local constants, and one
+  section for the file's own job, each under a banner. Values two modules of a package share live in
+  that package's `config.py`.
+- **Functions show their whole contract.** Every parameter has a type and a default, `None` where
+  there is no natural one; a function that cannot work without a value takes it with `required()`
+  (or, for a union type, a guard that raises `missing()`), and every function's doc block lists each
+  argument and what comes back. Library overrides keep their library's signature.
+- **New: `kds-args`.** `required()` and `missing()`: the arguments a function cannot do without,
+  named in the error the way Python names a missing argument.
+- **settings:** values come from `config/config.toml` and secrets from `config/.env`, so everything a
+  project configures lives in one folder. `config/.env.example` lists the secret names.
+- **standards:** `kds-standards check` enforces the new layout: the title box and doc block, the
+  banners and their order, the import labels, every function's defaults and doc block (and that
+  `Required.` in a doc block matches `required()` in the body), and constants that two files of one
+  project share. `stamp` also recentres every banner and puts the import labels back in place after
+  a sort. A TypeScript doc block may sit between a function and its logger line.
+- **llm:** the first retry waits up to the 0.5 s the docs promise, not 1 s. A missing key's message
+  points at `config/.env`.
 - **Docs:** the README describes the repository as the workshop every project draws from: tools
   collected over time, of which each project takes what it needs. Its flow diagram shows how a
   project uses them. Everything specific to model calls (the steps of a call, its settings, its log
   lines and what is next) is in the llm package's README, and each package's README lists the
-  settings it reads. Package docstrings say "project" where they said "prototype". No code changed.
+  settings it reads. Package docstrings say "project" where they said "prototype".
+- **All packages** move to 0.4.0 together and name each other as `>=0.4,<0.5`. 122 tests.
 
 ## v0.3.0, Oct 29, 2026
 

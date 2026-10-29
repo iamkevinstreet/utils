@@ -98,7 +98,7 @@ class Diagram:
             rule: Who may touch what runs there, shown after the title;
                 empty for none.
         """
-        # log.debug("Takes the at, which the caller must give")
+        # log.debug("Takes the position, which the caller must give")
         at = required(at=at)
         # log.debug("Takes the title, which the caller must give")
         title = required(title=title)
@@ -121,7 +121,7 @@ class Diagram:
             details: Up to three short lines under the name. Required.
             note: A muted marker after the name; empty for none.
         """
-        # log.debug("Takes the at, which the caller must give")
+        # log.debug("Takes the position, which the caller must give")
         at = required(at=at)
         # log.debug("Takes the name, which the caller must give")
         name = required(name=name)
@@ -150,7 +150,7 @@ class Diagram:
         points = required(points=points)
         # log.debug("Takes the label, which the caller must give")
         label = required(label=label)
-        # log.debug("Takes the at, which the caller must give")
+        # log.debug("Takes the position, which the caller must give")
         at = required(at=at)
         # log.debug("Adds the arrow's drawing")
         self.parts.append(svg.arrow(points, label, at, accent))
@@ -166,7 +166,7 @@ class Diagram:
             title: The band's heading. Required.
             lines: What every zone shares, one line each. Required.
         """
-        # log.debug("Takes the at, which the caller must give")
+        # log.debug("Takes the position, which the caller must give")
         at = required(at=at)
         # log.debug("Takes the title, which the caller must give")
         title = required(title=title)

@@ -118,7 +118,7 @@ def calibrate(
     """
     # log.debug("Takes the adapter, which the caller must give")
     adapter = required(adapter=adapter)
-    # log.debug("Takes the graded, which the caller must give")
+    # log.debug("Takes the graded answers, which the caller must give")
     graded = required(graded=graded)
     # log.debug("Takes the rubric, which the caller must give")
     rubric = required(rubric=rubric)

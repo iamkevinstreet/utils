@@ -129,7 +129,7 @@ def skipped(path: str | None = None, generated: list[str] | None = None) -> bool
     """
     # log.debug("Takes the path, which the caller must give")
     path = required(path=path)
-    # log.debug("Takes the generated, which the caller must give")
+    # log.debug("Takes the generated-file patterns, which the caller must give")
     generated = required(generated=generated)
     # log.debug("Skips anything under a skipped folder")
     if any(path.startswith(d) or f"/{d}" in path for d in SKIP_DIRS):

@@ -166,3 +166,21 @@ def test_code_with_no_logic_banner_is_a_finding() -> None:
     bare = GOOD.replace("\n".join(hdr.box("Thing maker")) + "\n", "")
     # log.debug("Checks a finding asks for the banner")
     assert any(f.message == sec.LOGIC_MESSAGE for f in findings(bare))
+
+
+# log.debug("Defines the test: constants set by unpacking are constants")
+def test_unpacked_constants_are_constants() -> None:
+    """TP, FN = 1, 2 under the logic's banner is out of place."""
+    # log.debug("Adds an unpacked pair of constants at the end of the module")
+    late = GOOD + '# log.debug("Names two counts")\nTP, FN = "tp", "fn"\n'
+    # log.debug("Checks the finding names the Local constants")
+    assert any("Local constants" in f.message for f in findings(late))
+
+
+# log.debug("Defines the test: logger lines need a logger")
+def test_logger_lines_need_a_logger() -> None:
+    """A module with logger lines must create its logger."""
+    # log.debug("Removes the logger's creation")
+    loggerless = GOOD.replace("log = logging.getLogger(__name__)\n", "")
+    # log.debug("Checks a finding asks for the logger")
+    assert any(f.message == pysections.NO_LOGGER_MESSAGE for f in findings(loggerless))

@@ -87,9 +87,9 @@ def compare(
     Returns:
         The table as Markdown, ending in a newline.
     """
-    # log.debug("Takes the before, which the caller must give")
+    # log.debug("Takes the earlier run, which the caller must give")
     before = required(before=before)
-    # log.debug("Takes the after, which the caller must give")
+    # log.debug("Takes the later run, which the caller must give")
     after = required(after=after)
     # log.debug("Uses the given measures, or every one either run has")
     keys = keys or sorted(set(before.summary) | set(after.summary))

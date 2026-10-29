@@ -182,9 +182,9 @@ def text(
     Returns:
         The element as a string.
     """
-    # log.debug("Takes the x, which the caller must give")
+    # log.debug("Takes the left edge, which the caller must give")
     x = required(x=x)
-    # log.debug("Takes the y, which the caller must give")
+    # log.debug("Takes the top edge, which the caller must give")
     y = required(y=y)
     # log.debug("Takes the value, which the caller must give")
     value = required(value=value)
@@ -223,11 +223,11 @@ def rect(
     Returns:
         The rect element as a string.
     """
-    # log.debug("Takes the at, which the caller must give")
+    # log.debug("Takes the position, which the caller must give")
     at = required(at=at)
-    # log.debug("Takes the fill, which the caller must give")
+    # log.debug("Takes the fill colour, which the caller must give")
     fill = required(fill=fill)
-    # log.debug("Takes the stroke, which the caller must give")
+    # log.debug("Takes the outline colour, which the caller must give")
     stroke = required(stroke=stroke)
     # log.debug("Adds a dash pattern for zones")
     dash = ' stroke-dasharray="5 4"' if dashed else ""
@@ -250,7 +250,7 @@ def zone(at: Box | None = None, title: str | None = None, rule: str | None = Non
     Returns:
         The zone's dashed outline and its label as one string.
     """
-    # log.debug("Takes the at, which the caller must give")
+    # log.debug("Takes the position, which the caller must give")
     at = required(at=at)
     # log.debug("Takes the title, which the caller must give")
     title = required(title=title)
@@ -284,7 +284,7 @@ def component(
     Returns:
         The component's elements as one string.
     """
-    # log.debug("Takes the at, which the caller must give")
+    # log.debug("Takes the position, which the caller must give")
     at = required(at=at)
     # log.debug("Takes the name, which the caller must give")
     name = required(name=name)
@@ -347,7 +347,7 @@ def arrow(
     points = required(points=points)
     # log.debug("Takes the label, which the caller must give")
     label = required(label=label)
-    # log.debug("Takes the at, which the caller must give")
+    # log.debug("Takes the position, which the caller must give")
     at = required(at=at)
     # log.debug("Picks the colour, weight and head for plain or accent")
     colour, width, head = (ACCENT, 2, ACCENT_HEAD) if accent else (MUTED, 1.2, PLAIN_HEAD)
@@ -380,7 +380,7 @@ def band(at: Box | None = None, title: str | None = None, lines: list[str] | Non
     Returns:
         The band's box, heading and lines as one string.
     """
-    # log.debug("Takes the at, which the caller must give")
+    # log.debug("Takes the position, which the caller must give")
     at = required(at=at)
     # log.debug("Takes the title, which the caller must give")
     title = required(title=title)

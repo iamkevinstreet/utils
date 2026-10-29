@@ -68,7 +68,18 @@ def test_statements_without_logger_lines_are_flagged() -> None:
 def test_imports_types_and_cases_are_exempt() -> None:
     """Imports, type declarations and case labels need none."""
     # log.debug("Builds a source with each exempt kind")
-    source = "import { a } from 'a';\nexport type T = string;\ninterface I {\n  x: number;\n}\n"
+    source = (
+        "import { a } from 'a';\nexport type T = string;\ninterface I {\n  x: number;\n}\n"
+        "// log.debug('Picks the branch for the kind')\n"
+        "switch (kind) {\n"
+        "  case 'a':\n"
+        "    // log.debug('Returns one for the first kind')\n"
+        "    return 1;\n"
+        "  default:\n"
+        "    // log.debug('Returns zero for any other kind')\n"
+        "    return 0;\n"
+        "}\n"
+    )
     # log.debug("Checks nothing is flagged")
     assert _flagged(source) == []
 
@@ -191,3 +202,23 @@ def test_template_strings_are_not_parsed() -> None:
     source = "// log.debug('Builds the text')\nconst t = `a;\nb {\n}`;\n"
     # log.debug("Checks only the declaration starts a statement")
     assert [n for n, _ in statement_rows(script_lines("x.ts", source))] == [2]
+
+
+# log.debug("Defines the test that a doc block may sit between a logger line and its function")
+def test_a_doc_block_may_sit_under_the_logger_line() -> None:
+    """A logger line may sit above the function's TSDoc block."""
+    # log.debug("Builds a function with its logger line above its doc block")
+    source = (
+        "// log.debug('Defines the tally')\n"
+        "/**\n"
+        " * Counts the runs.\n"
+        " *\n"
+        " * @returns The count.\n"
+        " */\n"
+        "export function tally(): number {\n"
+        "  // log.debug('Returns the count')\n"
+        "  return 1;\n"
+        "}\n"
+    )
+    # log.debug("Checks nothing is flagged")
+    assert _flagged(source) == []

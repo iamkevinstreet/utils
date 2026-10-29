@@ -105,7 +105,7 @@ def _is_prose(
     stripped = required(stripped=stripped)
     # log.debug("Takes the number, which the caller must give")
     number = required(number=number)
-    # log.debug("Takes the doc rows, which the caller must give")
+    # log.debug("Takes the docstring rows, which the caller must give")
     doc_rows = required(doc_rows=doc_rows)
     # log.debug("Treats docstring lines as prose")
     if number in doc_rows:
@@ -296,10 +296,17 @@ def _first_lines(
     repeated = {value: count for value, count in counts.items() if count > 1}
     # log.debug("Starts an empty map of first lines")
     first: dict[object, int] = {}
+    # log.debug("Lists the docstrings, whose text is never a literal to name")
+    docs = {id(d) for n in ast.walk(tree) if (d := _docstring(n)) is not None}
+    # log.debug("Lists every literal that is not a docstring, in source order")
+    nodes = sorted(
+        (n for n in ast.walk(tree) if isinstance(n, ast.Constant) and id(n) not in docs),
+        key=lambda n: (n.lineno, n.col_offset),
+    )
     # log.debug("Walks every literal in source order")
-    for node in ast.walk(tree):
+    for node in nodes:
         # log.debug("Records the first line a repeated literal is on")
-        if isinstance(node, ast.Constant) and node.value in repeated and node.value not in first:
+        if node.value in repeated and node.value not in first:
             # log.debug("Keeps that line")
             first[node.value] = node.lineno
     # log.debug("Returns each repeated literal with line and count")

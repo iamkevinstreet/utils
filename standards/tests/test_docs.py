@@ -17,10 +17,16 @@ link.
 # Standard library
 from __future__ import annotations
 
+import logging
 from pathlib import Path
 
 # Local
 from kds.standards.docs import check_docs, check_links, published
+
+########################################################################
+#                           Global constants                           #
+########################################################################
+log = logging.getLogger(__name__)
 
 ########################################################################
 #                           Local constants                            #

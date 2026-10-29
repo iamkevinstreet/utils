@@ -207,7 +207,7 @@ def _record(
     alias = required(alias=alias)
     # log.debug("Takes the parts, which the caller must give")
     parts = required(parts=parts)
-    # log.debug("Takes the when, which the caller must give")
+    # log.debug("Takes the commit's time, which the caller must give")
     when = required(when=when)
     # log.debug("Reads the status letter: A, M, D or R")
     status = parts[0][0]
