@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                 standards/kds/standards/pyimports.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks a Python module's imports sit in their three groups, each under
 its label: # Standard library (Python's own modules and __future__),
@@ -13,7 +15,9 @@ its label: # Standard library (Python's own modules and __future__),
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,21 +34,27 @@ from kds.standards import sections as sec
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the name of the rule every import-label finding belongs to, from the config")
 IMPORT_RULE = config.IMPORT_RULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the prefix of a label line")
 LABEL_PREFIX = "# "
 
 
 ########################################################################
+#                                                                      #
 #                            Import groups                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the checks on the import groups' labels")
 def check_labels(

@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                         llm/kds/llm/types.py                         #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The provider-neutral request and response types every provider converts
 to and from.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -23,19 +27,25 @@ from typing import Any, Literal
 from pydantic import BaseModel, Field
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists who can speak in a conversation")
 Role = Literal["user", "assistant", "tool"]
 
 
 ########################################################################
+#                                                                      #
 #                        Provider-neutral types                        #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a tool the model may call")
 class ToolSpec(BaseModel):

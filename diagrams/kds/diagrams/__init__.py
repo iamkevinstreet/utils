@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  diagrams/kds/diagrams/__init__.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Builds an at-a-glance diagram from zones, components, arrows and a
 foundation, as one SVG.
@@ -19,7 +21,9 @@ Usage:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -35,14 +39,18 @@ from kds.diagrams import config, svg
 from kds.diagrams.svg import Box
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding the SVG is written in, from the config")
 ENCODING = config.ENCODING
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the margin around the title block")
 MARGIN = 28
@@ -57,7 +65,9 @@ TITLE_ROW, SUBTITLE_ROW, CAPTION_ROW = 64, 100, 122
 
 
 ########################################################################
+#                                                                      #
 #                           Diagram building                           #
+#                                                                      #
 ########################################################################
 
 

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  settings/kds/settings/__init__.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Typed, read-only settings for every project: values from
 config/config.toml, secrets from config/.env.
@@ -24,7 +26,9 @@ Usage, in a project's one config module:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,12 +47,16 @@ from kds.args import required
 from kds.settings.toml import TomlSource, is_secret
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets where the secrets file lives, from the working folder")
 ENV_FILE = "config/.env"
@@ -67,7 +75,9 @@ __all__ = ["Level", "Provider", "Settings", "describe", "get_settings"]
 
 
 ########################################################################
+#                                                                      #
 #                           Shared settings                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the settings every project shares")
 class Settings(BaseSettings):

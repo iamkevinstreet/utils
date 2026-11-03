@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                      logs/kds/logs/__init__.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Structured logs: one JSON object per line, a request id on each,
 redaction, trace lines.
@@ -19,7 +21,9 @@ then in any module:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -42,12 +46,16 @@ from kds.logs.trace import TraceFormatter, elapsed, trace_to_stderr
 from kds.settings import Settings, get_settings
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Holds the request id of whatever is running now")
 _REQUEST_ID: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
@@ -75,7 +83,9 @@ __all__ = [
 
 
 ########################################################################
+#                                                                      #
 #                          Structured logging                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the lookup of the current request id")
 def current_request_id() -> str:

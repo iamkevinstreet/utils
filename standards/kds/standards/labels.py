@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/labels.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Puts each import group's label back above its first import. Sorting
 imports moves a label with the import it sat on, so after ruff or
@@ -14,7 +16,9 @@ import of its group, after a blank line.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from kds.standards import header, jssections, pyimports
 from kds.standards import sections as sec
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the prefix of a Python label line")
 HASH_PREFIX = "# "
@@ -48,7 +56,9 @@ IMPORT_STARTS = ("import ", "from ")
 
 
 ########################################################################
+#                                                                      #
 #                            Import labels                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how a Python module's labels are put back in place")
 def relabel_python(

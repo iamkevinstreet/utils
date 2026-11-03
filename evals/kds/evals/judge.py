@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                       evals/kds/evals/judge.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Grades answers that exact match cannot score, with a model as judge,
 and checks the judge against human grades.
@@ -15,7 +17,9 @@ often they agree. That rate belongs beside any judged metric.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,12 +35,16 @@ from kds.args import required
 from kds.llm.adapter import ModelAdapter
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the judge's standing instructions")
 JUDGE_SYSTEM = (
@@ -53,7 +61,9 @@ JUDGE_PROMPT = (
 
 
 ########################################################################
+#                                                                      #
 #                             Model judge                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the judge's verdict")
 class Verdict(BaseModel):

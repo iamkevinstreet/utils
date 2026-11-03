@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/pyrules.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks every Python statement has a logger line directly above it,
 indented like it and saying what it does, and that no logger line sits
@@ -13,7 +15,9 @@ above a clause, where it would break the code. The line-by-line rules
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,7 +34,9 @@ from kds.standards import config
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the fewest words a logger description may have, from the config")
@@ -39,7 +45,9 @@ MIN_WORDS = config.MIN_WORDS
 RULE = config.LOGGER_RULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a commented logger line; captures indent, text")
 LOGGER_RE = re.compile(r'^(?P<indent>\s*)# log\.debug\("(?P<desc>[^"%]+)"\)$')
@@ -58,7 +66,9 @@ CLAUSE_MSG = "a logger line above else/elif/except/finally/case breaks the code;
 
 
 ########################################################################
+#                                                                      #
 #                             Logger lines                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines one logical line: where it starts and how")
 @dataclass(frozen=True)

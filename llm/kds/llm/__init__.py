@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                       llm/kds/llm/__init__.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 One model adapter for Anthropic, OpenAI and Azure OpenAI, with an
 offline stand-in.
@@ -15,7 +17,9 @@ Usage:
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from kds.llm.errors import BudgetExceededError, StructuredOutputError, Transient
 from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists what the package exports")
 __all__ = [

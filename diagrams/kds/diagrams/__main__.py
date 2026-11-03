@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                  diagrams/kds/diagrams/__main__.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The kds-diagrams command: draws every diagram in a spec file, such as
 docs/diagrams.toml.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,13 +28,17 @@ from pathlib import Path
 from kds.diagrams.spec import render_file
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                             Command line                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the command's entry point")
 def main(argv: list[str] | None = None) -> int:

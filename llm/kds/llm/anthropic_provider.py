@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                  llm/kds/llm/anthropic_provider.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Anthropic's Messages API behind the Provider interface: tools, JSON
 mode, usage, latency.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,7 +35,9 @@ from kds.llm import config
 from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the milliseconds in a second, for latency, from the config")
@@ -50,7 +56,9 @@ USER: Final = config.USER
 ASSISTANT: Final = config.ASSISTANT
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the instruction added to the system prompt in JSON mode")
 JSON_INSTRUCTION = "\n\nRespond with a single JSON object and nothing else."
@@ -63,7 +71,9 @@ TOOL_USE = "tool_use"
 
 
 ########################################################################
+#                                                                      #
 #                        Anthropic Messages API                        #
+#                                                                      #
 ########################################################################
 
 

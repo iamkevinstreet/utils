@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                   standards/tests/test_pylines.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the line rules: a logger line left switched on, a line wider than
 its limit, and a literal repeated inside functions are each a finding.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -22,13 +26,17 @@ import logging
 from kds.standards import pylines
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                          Lines and literals                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test: a logger line left on is a finding")
 def test_a_live_logger_line_is_a_finding() -> None:

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    standards/tests/test_header.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the file header: drawn in every style, it reads back with the
 same fields; a file without one says why; and each wrong value is a
@@ -12,7 +14,9 @@ finding.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,14 +28,19 @@ import pytest
 
 # Local
 from kds.standards import header as hdr
+from kds.standards import parsing
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the path the test headers name")
 PATH = "backend/src/grounded_qa/answer.py"
@@ -47,7 +56,9 @@ STYLES = (hdr.PYTHON, hdr.HASH, hdr.SLASH, hdr.BLOCK, hdr.ASTRO, hdr.HTML)
 
 
 ########################################################################
+#                                                                      #
 #                             Header tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test: a drawn header reads back in every style")
 @pytest.mark.parametrize("style", STYLES)
@@ -60,7 +71,7 @@ def test_a_header_reads_back_in_every_style(style: str) -> None:
     # log.debug("Draws the header above one line of code")
     text = "\n".join([*hdr.render(PATH, DAY, DAY, DESCRIPTION, style), "", "code"]) + "\n"
     # log.debug("Reads it back")
-    found, problem = hdr.parse(text, style)
+    found, problem = parsing.parse(text, style)
     # log.debug("Checks it was found")
     assert found is not None, problem
     # log.debug("Checks the fields and the description came back whole")
@@ -80,7 +91,9 @@ def test_a_python_header_is_a_box_then_a_docstring() -> None:
     # log.debug("Checks the box, the fields, the blank line and the description")
     assert lines == [
         hdr.BORDER,
+        hdr.BUFFER,
         hdr.title_line(PATH),
+        hdr.BUFFER,
         hdr.BORDER,
         '"""',
         "Author:            Kevin Street",
@@ -95,7 +108,7 @@ def test_a_python_header_is_a_box_then_a_docstring() -> None:
 # log.debug("Defines the test: every box line is 72 characters")
 def test_every_box_line_is_72_wide() -> None:
     """The title box fits PEP 8's width for comments."""
-    # log.debug("Checks the three box lines")
+    # log.debug("Checks the five box lines")
     assert all(len(line) == hdr.WIDTH for line in hdr.box(PATH, hdr.PYTHON))
 
 
@@ -103,7 +116,7 @@ def test_every_box_line_is_72_wide() -> None:
 def test_a_file_with_no_header_says_why() -> None:
     """A file without the box parses to None and a reason."""
     # log.debug("Reads a file that starts with code")
-    found, problem = hdr.parse("import os\n", hdr.PYTHON)
+    found, problem = parsing.parse("import os\n", hdr.PYTHON)
     # log.debug("Checks the reason names the box")
     assert found is None and "box" in problem
 
@@ -113,10 +126,17 @@ def test_the_old_box_is_refused() -> None:
     """A box with the fields inside it is the old form, and fails."""
     # log.debug("Builds an old-form box")
     old = "\n".join(
-        [hdr.BORDER, hdr.title_line(PATH), hdr.BORDER, "#  Author:  Kevin Street" + " " * 46 + "#"]
+        [
+            hdr.BORDER,
+            hdr.BUFFER,
+            hdr.title_line(PATH),
+            hdr.BUFFER,
+            hdr.BORDER,
+            "#  Author:  Kevin Street" + " " * 46 + "#",
+        ]
     )
     # log.debug("Checks it does not read as a header")
-    assert hdr.parse(old + "\n", hdr.PYTHON)[0] is None
+    assert parsing.parse(old + "\n", hdr.PYTHON)[0] is None
 
 
 # log.debug("Defines the test: each wrong value is a finding")
@@ -125,11 +145,11 @@ def test_each_wrong_value_is_a_finding() -> None:
     # log.debug("Draws a header for the old path, dated wrongly, with no description")
     text = "\n".join(hdr.render("old/name.py", DAY, "2026-01-01", "", hdr.PYTHON)) + "\n"
     # log.debug("Reads it back")
-    found, _ = hdr.parse(text, hdr.PYTHON)
+    found, _ = parsing.parse(text, hdr.PYTHON)
     # log.debug("Checks it was found")
     assert found is not None
     # log.debug("Lists the messages of the findings against the true values")
-    messages = [f.message for f in hdr.check_fields(found, PATH, DAY, DAY)]
+    messages = [f.message for f in parsing.check_fields(found, PATH, DAY, DAY)]
     # log.debug("Checks the title, the modified date and the description are named")
     assert len(messages) == 3 and "path" in messages[0] and "describe" in messages[-1]
 
@@ -140,12 +160,23 @@ def test_an_off_centre_title_is_a_finding() -> None:
     # log.debug("Draws a header and shifts its title one space left")
     lines = hdr.render(PATH, DAY, DAY, "Answers questions.", hdr.PYTHON)
     # log.debug("Moves the title one space towards the left wall")
-    lines[1] = "#" + lines[1][2:-1] + " #"
+    lines[hdr.TITLE_AT] = "#" + lines[hdr.TITLE_AT][2:-1] + " #"
     # log.debug("Reads it back")
-    found, _ = hdr.parse("\n".join(lines) + "\n", hdr.PYTHON)
+    found, _ = parsing.parse("\n".join(lines) + "\n", hdr.PYTHON)
     # log.debug("Checks it was found")
     assert found is not None
     # log.debug("Checks the one finding asks for the title to be centred")
-    assert [f.message for f in hdr.check_fields(found, PATH, DAY, DAY)] == [
+    assert [f.message for f in parsing.check_fields(found, PATH, DAY, DAY)] == [
         "centre the path; run kds-standards stamp"
     ]
+
+
+# log.debug("Defines the test: a box without its buffers is not a header")
+def test_a_box_without_its_buffers_is_refused() -> None:
+    """The three-line box, border, title, border, is the old form."""
+    # log.debug("Builds the old three-line box above a doc block")
+    old = "\n".join(
+        [hdr.BORDER, hdr.title_line(PATH), hdr.BORDER, *hdr.doc_block(DAY, DAY, "Old.")]
+    )
+    # log.debug("Checks it does not read as a header")
+    assert parsing.parse(old + "\n", hdr.PYTHON)[0] is None

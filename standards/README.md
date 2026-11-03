@@ -15,15 +15,15 @@ pip install "kds-standards @ git+https://github.com/iamkevinstreet/utils@<commit
 
 ```sh
 kds-standards check .                # every rule below
-kds-standards stamp [files]          # rewrite header titles and dates from git
-kds-standards header <file> --purpose "What the file is for."   # add a header box
+kds-standards stamp [files]          # rewrite header titles, dates, banners and import labels
+kds-standards header <file> --description "What the file is for."   # add a header
 kds-standards trace on <path>        # turn the logger lines on in a working copy
 kds-standards trace off <path>       # and off again before committing
 ```
 
 ```text
-backend/grounded_qa/answer.py:42: logger-line: needs a logger line directly above it
-backend/grounded_qa/answer.py:1: header: Last modified on must be 2026-10-29; run kds-standards stamp
+backend/src/grounded_qa/answer.py:42: logger-line: needs a logger line directly above it
+backend/src/grounded_qa/answer.py:1: header: Last modified on must be 2026-10-29; run kds-standards stamp
 .gitignore:0: layout: must ignore *.pfx
 ```
 

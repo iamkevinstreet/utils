@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                    llm/kds/llm/openai_provider.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 OpenAI and Azure OpenAI chat completions behind the Provider interface,
 plus embeddings.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,7 +34,9 @@ from kds.llm import config
 from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the milliseconds in a second, for latency, from the config")
@@ -47,7 +53,9 @@ NAME: Final = config.NAME
 ASSISTANT: Final = config.ASSISTANT
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the key a tool's details sit under")
 FUNCTION = "function"
@@ -56,7 +64,9 @@ TOOL = "tool"
 
 
 ########################################################################
+#                                                                      #
 #                      OpenAI chat and embeddings                      #
+#                                                                      #
 ########################################################################
 
 

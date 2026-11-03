@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                standards/kds/standards/jssections.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks what each section of a script holds: TypeScript, JavaScript and
 an Astro component's frontmatter. Imports sit under the Imports banner,
@@ -15,7 +17,9 @@ CSS, an @import sits under the Imports banner.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,7 +35,9 @@ from kds.standards import sections as sec
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the last segment of a config module's path, from the config")
@@ -40,7 +46,9 @@ CONFIG_MODULE = config.CONFIG_MODULE
 IMPORT_RULE = config.IMPORT_RULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a statement that imports or re-exports from a module")
 IMPORT_RE = re.compile(r"^(?:import\b|export (?:type )?(?:\*|\{[^}]*\}) from\b)")
@@ -89,7 +97,9 @@ TYPE_MESSAGE = "a type goes with the constants or the logic"
 
 
 ########################################################################
+#                                                                      #
 #                           Script sections                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the section checks for one script")
 def check_script(

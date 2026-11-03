@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                       llm/kds/llm/providers.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Builds the provider the settings name, and stops early with a clear
 message when a key is missing. This is the one place a concrete
@@ -12,7 +14,9 @@ provider is chosen; everything else talks to the Provider interface.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,19 +32,25 @@ from kds.llm.openai_provider import OpenAIProvider
 from kds.settings import Settings
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the advice every missing-key error ends with")
 FIX = "add it to config/.env (see config/.env.example)"
 
 
 ########################################################################
+#                                                                      #
 #                           Provider choice                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the error for a provider chosen without its key")
 class MissingKeyError(RuntimeError):

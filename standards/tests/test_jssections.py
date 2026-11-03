@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/tests/test_jssections.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the section rules for scripts and stylesheets: imports under their
 labels, constants from the config under Global constants, code under the
@@ -12,7 +14,9 @@ logic's banner, and a stylesheet's @import under the Imports banner.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -21,17 +25,21 @@ import logging
 
 # Local
 from kds.standards import header as hdr
-from kds.standards import jssections
+from kds.standards import jssections, parsing
 from kds.standards import sections as sec
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a script that follows every section rule")
 GOOD = "\n".join(
@@ -71,7 +79,9 @@ GOOD = "\n".join(
 
 
 ########################################################################
+#                                                                      #
 #                           Script sections                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how a script's section findings are worked out")
 def findings(source: str = "", path: str = "src/lib/tally.ts") -> list[Finding]:
@@ -87,7 +97,7 @@ def findings(source: str = "", path: str = "src/lib/tally.ts") -> list[Finding]:
     # log.debug("Splits the script into lines")
     lines = source.splitlines()
     # log.debug("Reads the header, to look for banners after it")
-    header, _ = hdr.parse(source, hdr.SLASH)
+    header, _ = parsing.parse(source, hdr.SLASH)
     # log.debug("Finds the banners after the header")
     banners = sec.find_banners(lines, header.last + 1 if header else 0, hdr.SLASH)
     # log.debug("Returns the banner findings, then the section findings")

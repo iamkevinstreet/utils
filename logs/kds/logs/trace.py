@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                        logs/kds/logs/trace.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The time since the process started as HH:MM:SS, and the trace output the
 logger lines print.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -21,12 +25,16 @@ import sys
 import time
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Notes when this module loaded, as the process start")
 _STARTED = time.monotonic()
@@ -39,7 +47,9 @@ TRACE_FORMAT = "%(elapsed)s - %(message)s"
 
 
 ########################################################################
+#                                                                      #
 #                             Trace lines                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the clock every trace line reads")
 def elapsed() -> str:

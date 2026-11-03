@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      evals/kds/evals/report.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Compares two runs as a before-and-after table and writes the changelog
 line a case study needs.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,13 +30,17 @@ from kds.evals.runner import RunResult
 from kds.evals.summary import fmt
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                            Run comparison                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how a saved run is read back")
 def load_run(path: Path | str | None = None) -> RunResult:

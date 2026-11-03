@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                   standards/kds/standards/docs.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks the docs a repository publishes: README.md files, a root
 CHANGELOG.md and a root SECURITY.md, and no other Markdown. Markdown
@@ -17,7 +19,9 @@ local path.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -34,14 +38,18 @@ from kds.standards import config
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding every file is read in, from the config")
 ENCODING = config.ENCODING
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the rule")
 RULE = "docs"
@@ -64,7 +72,9 @@ EXTERNAL = ("http://", "https://", "mailto:", "#")
 
 
 ########################################################################
+#                                                                      #
 #                            Published docs                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the published-docs check of a repository")
 def check_docs(root: Path | None = None, files: list[str] | None = None) -> list[Finding]:

@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                  synthetic/kds/synthetic/pdftext.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Reads a PDF back into page text, and checks a quoted span really appears
 on its cited page.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,13 +30,17 @@ from pypdf import PdfReader
 from kds.args import missing, required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                               PDF text                               #
+#                                                                      #
 ########################################################################
 # log.debug("Defines reading a PDF's text page by page")
 def pages_text(path: Path | str | None = None) -> list[str]:

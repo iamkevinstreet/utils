@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                   diagrams/tests/test_diagrams.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests that diagrams render as valid SVG, escape their text and refuse
 text that would overflow.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,19 +32,25 @@ from kds.diagrams import Box, Diagram
 from kds.diagrams.spec import render_file
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the SVG namespace ElementTree prefixes every tag with")
 NS = "{http://www.w3.org/2000/svg}"
 
 
 ########################################################################
+#                                                                      #
 #                            Diagram tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a small diagram every test starts from")
 def _diagram() -> Diagram:

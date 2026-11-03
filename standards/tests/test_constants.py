@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/tests/test_constants.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the shared-constant rule: a constant one file imports from
 another, and one name set to the same value in two files, belong in the
@@ -12,7 +14,9 @@ config; the config module itself, tests and data are left out.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -23,12 +27,16 @@ import logging
 from kds.standards import constants
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a module that names a constant")
 STATE = 'PREFIX = "/api/v1"\n'
@@ -37,7 +45,9 @@ APP = "from pkg.api.state import PREFIX\n"
 
 
 ########################################################################
+#                                                                      #
 #                           Shared constants                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test: an imported constant is a finding")
 def test_an_imported_constant_is_a_finding() -> None:

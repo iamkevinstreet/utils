@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                   standards/tests/test_pyfuncs.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the function rules: every parameter has a default unless a
 framework fills it; the doc block opens with a sentence, lists every
@@ -13,7 +15,9 @@ matches required() or a missing() guard in the body.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,12 +31,16 @@ from kds.standards import pyfuncs
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a function that follows every rule")
 GOOD = textwrap.dedent(
@@ -54,7 +62,9 @@ GOOD = textwrap.dedent(
 
 
 ########################################################################
+#                                                                      #
 #                            Function tests                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how a source's function findings are worked out")
 def messages(source: str = "") -> list[str]:

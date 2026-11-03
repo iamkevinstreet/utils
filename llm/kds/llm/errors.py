@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                        llm/kds/llm/errors.py                         #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The errors the adapter raises, and the test that says whether a failed
 call is worth retrying.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,12 +30,16 @@ import openai
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the HTTP statuses that can succeed if tried again")
 RETRY_STATUSES = frozenset({408, 409, 429})
@@ -40,7 +48,9 @@ SERVER_ERROR = 500
 
 
 ########################################################################
+#                                                                      #
 #                          Errors and retries                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the error for a run that has spent its budget")
 class BudgetExceededError(RuntimeError):

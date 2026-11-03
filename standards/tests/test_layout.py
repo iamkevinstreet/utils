@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    standards/tests/test_layout.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the repository rules: how deep a file may sit and how long a
 source file may run. It also tests the script rules' statement finder,
@@ -12,7 +14,9 @@ which skips the lines inside an object.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -23,13 +27,17 @@ import logging
 from kds.standards import jsrules, layout
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                           Repository shape                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test for the folder-depth rule")
 def test_depth_allows_one_more_in_an_area() -> None:

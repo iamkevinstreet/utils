@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    standards/tests/test_stamp.py                     #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests header writing: a refresh gives a moved file its new path and
 git's dates and recentres every banner; an insert adds a whole header,
@@ -12,7 +14,9 @@ and refuses a Python file whose docstring would become a second one.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -22,16 +26,20 @@ from pathlib import Path
 
 # Local
 from kds.standards import header as hdr
-from kds.standards import stamp
+from kds.standards import parsing, stamp
 from kds.standards.gitdates import History
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the path the moved file now lives at")
 PATH = "src/pkg/moved.py"
@@ -42,7 +50,9 @@ MODIFIED = "2026-10-20"
 
 
 ########################################################################
+#                                                                      #
 #                             Stamp tests                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test: a refresh fixes the path, the dates and the banners")
 def test_a_refresh_fixes_the_path_dates_and_banners(tmp_path: Path) -> None:
@@ -54,7 +64,13 @@ def test_a_refresh_fixes_the_path_dates_and_banners(tmp_path: Path) -> None:
     # log.debug("Draws a header for the file's old path and old dates")
     header = hdr.render("old/place.py", "2026-01-01", "2026-01-02", "Does one job.", hdr.PYTHON)
     # log.debug("Draws a banner whose name sits off centre")
-    banner = [hdr.BORDER, "#" + "Imports".ljust(hdr.INNER) + "#", hdr.BORDER]
+    banner = [
+        hdr.BORDER,
+        hdr.BUFFER,
+        "#" + "Imports".ljust(hdr.INNER) + "#",
+        hdr.BUFFER,
+        hdr.BORDER,
+    ]
     # log.debug("Writes the file where it now lives")
     target = tmp_path / PATH
     # log.debug("Makes its folders")
@@ -66,13 +82,48 @@ def test_a_refresh_fixes_the_path_dates_and_banners(tmp_path: Path) -> None:
         tmp_path, PATH, History(created={PATH: CREATED}, modified={PATH: MODIFIED})
     )
     # log.debug("Reads the file back")
-    found, _ = hdr.parse(target.read_text(encoding="utf-8"), hdr.PYTHON)
+    found, _ = parsing.parse(target.read_text(encoding="utf-8"), hdr.PYTHON)
     # log.debug("Checks the file changed and reads back with the true values")
     assert changed and found is not None
     # log.debug("Checks the path and both dates")
     assert (found.title, found.created, found.modified) == (PATH, CREATED, MODIFIED)
     # log.debug("Checks the banner's name is centred")
     assert hdr.title_line("Imports") in target.read_text(encoding="utf-8")
+
+
+# log.debug("Defines the test: a refresh brings old three-line boxes to the current form")
+def test_a_refresh_widens_old_boxes(tmp_path: Path) -> None:
+    """A header and a banner drawn without buffers get them.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
+    # log.debug("Draws the header and a banner in the old three-line form, with // prefixes")
+    old = [
+        f"// {hdr.BORDER}",
+        f"// {hdr.title_line('tally.ts')}",
+        f"// {hdr.BORDER}",
+        *hdr.doc_block(CREATED, MODIFIED, "Counts.", hdr.SLASH),
+        "",
+        f"// {hdr.BORDER}",
+        f"// {hdr.title_line('Counting')}",
+        f"// {hdr.BORDER}",
+        "export const ONE = 1;",
+    ]
+    # log.debug("Writes the script")
+    (tmp_path / "tally.ts").write_text("\n".join(old) + "\n", encoding="utf-8")
+    # log.debug("Refreshes it")
+    changed = stamp.refresh(
+        tmp_path,
+        "tally.ts",
+        History(created={"tally.ts": CREATED}, modified={"tally.ts": MODIFIED}),
+    )
+    # log.debug("Reads it back")
+    text = (tmp_path / "tally.ts").read_text(encoding="utf-8")
+    # log.debug("Checks both boxes now have their buffers")
+    assert changed and text.count(f"// {hdr.BUFFER}") == 4
+    # log.debug("Checks the header reads back")
+    assert parsing.parse(text, hdr.SLASH)[0] is not None
 
 
 # log.debug("Defines the test: an insert adds a whole header")
@@ -87,7 +138,7 @@ def test_an_insert_adds_a_whole_header(tmp_path: Path) -> None:
     # log.debug("Adds the header")
     error = stamp.insert(tmp_path, "tally.ts", "Counts the saved runs.", History(today=MODIFIED))
     # log.debug("Reads the script back")
-    found, _ = hdr.parse((tmp_path / "tally.ts").read_text(encoding="utf-8"), hdr.SLASH)
+    found, _ = parsing.parse((tmp_path / "tally.ts").read_text(encoding="utf-8"), hdr.SLASH)
     # log.debug("Checks it worked and the description came through")
     assert error == "" and found is not None and found.description == "Counts the saved runs."
 

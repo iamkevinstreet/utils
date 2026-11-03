@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/pydocs.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks a Python function's doc block: one first line that ends a
 sentence and stands alone, an Args section listing every parameter in
@@ -13,7 +15,9 @@ something back, and no TODO left where a description belongs.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,14 +33,18 @@ from kds.standards import config
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the name of the rule every doc block finding belongs to, from the config")
 RULE = config.FUNCTIONS_RULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists what a doc block's first line may end with")
 STOPS = (".", "?", "!")
@@ -59,7 +67,9 @@ SCOPES = (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef, ast.Lambda)
 
 
 ########################################################################
+#                                                                      #
 #                         Function doc blocks                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the checks on a function's doc block")
 def check_doc(

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                      args/kds/args/__init__.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Takes a function's arguments the way the code standard asks. Every
 parameter has a default, None where there is no natural one, so a
@@ -21,7 +23,9 @@ argument from the keyword, so no string can drift from the parameter.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,19 +33,25 @@ from __future__ import annotations
 import logging
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the names the package exports")
 __all__ = ["missing", "required"]
 
 
 ########################################################################
+#                                                                      #
 #                          Required arguments                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the step that takes an argument the caller must give")
 def required[T](**argument: T | None) -> T:

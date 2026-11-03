@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                 standards/kds/standards/findings.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 One finding from a check: the rule broken, the file and line, and what
 to do about it. Findings sort by file and then by line, so a report
@@ -12,7 +14,9 @@ reads in file order.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -21,13 +25,17 @@ import logging
 from dataclasses import dataclass
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                            Finding record                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines one finding: a rule broken at one place")
 @dataclass(frozen=True, order=True)

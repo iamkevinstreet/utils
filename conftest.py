@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                             conftest.py                              #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Keeps every test offline and isolated: the fake provider, a temporary
 log folder, no cache.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,13 +31,17 @@ import pytest
 from kds import settings as config
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                            Test isolation                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the isolation every test in this folder gets")
 @pytest.fixture(autouse=True)

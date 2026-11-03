@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    standards/kds/standards/cli.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The kds-standards command: checks a repository against the code
 standard, stamps headers with their paths and dates, adds a header to a
@@ -12,7 +14,9 @@ new file, and switches the logger lines on and off.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -33,6 +37,7 @@ from kds.standards import (
     jsrules,
     jssections,
     layout,
+    parsing,
     pyfuncs,
     pylines,
     pyrules,
@@ -46,7 +51,9 @@ from kds.standards.findings import Finding
 from kds.standards.gitdates import History, read_history, repo_files
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding every file is read in, from the config")
@@ -57,7 +64,9 @@ PYTHON = config.PYTHON_SUFFIX
 SCRIPTS = config.SCRIPTS
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets how bytes that are not UTF-8 are read: replaced, not fatal")
 ERRORS = "replace"
@@ -80,7 +89,9 @@ PATH = "path"
 
 
 ########################################################################
+#                                                                      #
 #                             Command line                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the checks on one file")
 def check_file(
@@ -118,13 +129,15 @@ def check_file(
         # log.debug("Returns them")
         return found
     # log.debug("Finds and reads the header")
-    header, problem = hdr.parse(text, style)
+    header, problem = parsing.parse(text, style)
     # log.debug("Reports a missing or broken header, then stops: sections start after it")
     if header is None:
         # log.debug("Returns the problem with the layout findings")
-        return [*found, Finding(path, 1, hdr.RULE, problem)]
+        return [*found, Finding(path, 1, parsing.RULE, problem)]
     # log.debug("Adds the findings about the header's values")
-    found += hdr.check_fields(header, path, history.created_on(path), history.modified_on(path))
+    found += parsing.check_fields(
+        header, path, history.created_on(path), history.modified_on(path)
+    )
     # log.debug("Adds the section and language rules")
     return found + _check_body(path, text, style, header.last + 1, local_names)
 

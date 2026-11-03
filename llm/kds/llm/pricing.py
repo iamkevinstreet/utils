@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                        llm/kds/llm/pricing.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Prices each call at list price from a dated table, so every report says
 which prices it used. The table, pricing.json, ships inside this
@@ -12,7 +14,9 @@ package and gives USD per million tokens.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from kds.args import required
 from kds.llm.types import Usage
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the price table shipped inside this package")
 TABLE = "pricing.json"
@@ -44,7 +52,9 @@ COST_PLACES = 6
 
 
 ########################################################################
+#                                                                      #
 #                             Call pricing                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the one read of the price table")
 @lru_cache(maxsize=1)

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                        llm/kds/llm/adapter.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The one object every project calls a model through. It uses the
 provider the settings name, or one passed in (tests pass the offline
@@ -16,7 +18,9 @@ and cost, and a run stops at its budget.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -43,14 +47,18 @@ from kds.logs import current_request_id, log_event
 from kds.settings import Settings, get_settings
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the asking role's name, from the config")
 USER: Final = config.USER
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the first retry's longest wait, in seconds")
 BACKOFF_BASE_S = 0.5
@@ -65,7 +73,9 @@ REPAIR = "That did not validate: {error}. Return the corrected JSON object only.
 
 
 ########################################################################
+#                                                                      #
 #                            Model adapter                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the wait before a given retry")
 def backoff(attempt: int | None = None) -> float:

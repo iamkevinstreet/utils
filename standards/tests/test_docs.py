@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                     standards/tests/test_docs.py                     #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the published-docs rules: which Markdown a repository may hold,
 which links resolve and which break, and that code is never read as a
@@ -12,7 +14,9 @@ link.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,19 +28,25 @@ from pathlib import Path
 from kds.standards.docs import check_docs, check_links, published
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the files a small repository holds")
 FILES = {"README.md", "LICENSE", "docs/flow.svg", "backend/README.md", "backend/app/main.py"}
 
 
 ########################################################################
+#                                                                      #
 #                            Published docs                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test of which Markdown is published")
 def test_only_readmes_changelog_security_and_data_are_published() -> None:

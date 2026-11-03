@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                               Makefile                               #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # One command for each routine task; CI runs the same targets, so local
 # and CI checks match.

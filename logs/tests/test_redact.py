@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      logs/tests/test_redact.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests that redaction removes each identifier, named terms and nested
 values, and nothing else.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -22,12 +26,16 @@ import logging
 from kds.logs.redact import redact, redact_obj
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a made-up sentence holding one of each identifier")
 SENTENCE = (
@@ -37,7 +45,9 @@ SENTENCE = (
 
 
 ########################################################################
+#                                                                      #
 #                           Redaction tests                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test that each identifier is replaced")
 def test_redacts_common_identifiers() -> None:

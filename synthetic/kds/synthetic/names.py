@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                   synthetic/kds/synthetic/names.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Made-up people, companies and places, and the near-duplicate company
 names a careless intake produces, for testing fuzzy matching.
@@ -13,7 +15,9 @@ nothing here is drawn from real records.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,12 +30,16 @@ import re
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists made-up first names")
 FIRST = (
@@ -81,7 +89,9 @@ DEFAULT_SEED = 7
 
 
 ########################################################################
+#                                                                      #
 #                            Made-up names                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the seeded name generator")
 class NameGen:

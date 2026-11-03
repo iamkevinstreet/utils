@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                 standards/kds/standards/constants.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Finds constants two files share, which belong in the config: a constant
 one file imports from another, and the same name set to the same value
@@ -16,7 +18,9 @@ support module, and content is data.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -33,14 +37,18 @@ from kds.standards import config
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the extension of Python files, from the config")
 PYTHON = config.PYTHON_SUFFIX
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the stem of a config module, where shared values go")
 CONFIG_STEM = "config"
@@ -66,7 +74,9 @@ RULE = "constants"
 
 
 ########################################################################
+#                                                                      #
 #                           Shared constants                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the shared-constant check over a whole repository")
 def check_shared(

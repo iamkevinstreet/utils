@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    settings/kds/settings/toml.py                     #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Reads config/config.toml as a settings source: its sections become
 flat field names, and a secret written into it stops startup, naming
@@ -12,7 +14,9 @@ the key but never printing its value.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -32,12 +36,16 @@ from pydantic_settings import BaseSettings, PydanticBaseSettingsSource
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the variable that points at another settings file")
 FILE_VARIABLE = "SETTINGS_FILE"
@@ -48,7 +56,9 @@ ENCODING = "utf-8"
 
 
 ########################################################################
+#                                                                      #
 #                            Settings file                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how the settings file is found")
 def settings_path() -> Path:

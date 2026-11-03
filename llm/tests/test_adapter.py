@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      llm/tests/test_adapter.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the adapter offline: calls, JSON repair, budget stop, retries and
 the price table.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -32,12 +36,16 @@ from kds.llm.pricing import estimate_cost
 from kds.llm.types import Message, ToolCall, Usage
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the model name the offline price table lists at zero")
 FAKE_MODEL = "fake-model"
@@ -46,7 +54,9 @@ PROMPT = "extract"
 
 
 ########################################################################
+#                                                                      #
 #                            Adapter tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the schema the JSON tests ask for")
 class Record(BaseModel):

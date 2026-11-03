@@ -1,23 +1,25 @@
 ########################################################################
+#                                                                      #
 #                       settings/pyproject.toml                        #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Packages kds-settings: typed settings from config/config.toml and
 # config/.env.
 
 [project]
 name = "kds-settings"
-version = "0.4.2"
+version = "0.5.0"
 description = "Typed, read-only settings: values from config/config.toml, secrets from config/.env, masked in logs."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-args>=0.4,<0.5",
+  "kds-args>=0.5,<0.6",
   "pydantic>=2.8",
   "pydantic-settings>=2.4",
 ]

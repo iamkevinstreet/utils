@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/pylines.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks a Python file's lines and literals: no logger line left switched
 on, code within 99 characters and prose within 72, and no literal
@@ -14,7 +16,9 @@ one character and the numbers -1 to 2 never need a name.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,12 +33,16 @@ from kds.standards.findings import Finding
 from kds.standards.pyrules import LIVE_RE, LOGGER_RE
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the widest a line of code or logger line may be")
 CODE_WIDTH = 99
@@ -45,7 +53,9 @@ TRIVIAL = frozenset({-1, 0, 1, 2})
 
 
 ########################################################################
+#                                                                      #
 #                          Lines and literals                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the checks on lines left on and line widths")
 def check_lines(path: str | None = None, source: str | None = None) -> list[Finding]:

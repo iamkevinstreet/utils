@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                         llm/kds/llm/base.py                          #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 The interface every model provider implements, so any one can stand in
 for another.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -23,13 +27,17 @@ from typing import Protocol
 from kds.llm.types import Completion, Message, ToolSpec
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                          Provider interface                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines what every provider must offer")
 class Provider(Protocol):

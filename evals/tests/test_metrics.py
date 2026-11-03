@@ -1,16 +1,20 @@
 ########################################################################
+#                                                                      #
 #                     evals/tests/test_metrics.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests each metric against values worked out by hand.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,13 +31,17 @@ from kds.evals.metrics import (
 )
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                             Metric tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test that matching ignores case and spacing")
 def test_exact_match_normalises() -> None:

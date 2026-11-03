@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      llm/kds/llm/structured.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Finds the JSON object in a model's answer and validates it against a
 pydantic schema.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from kds.args import required
 from kds.llm.errors import StructuredOutputError
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a fenced code block, with or without a json tag")
 JSON_FENCE = re.compile(r"```(?:json)?\s*(.*?)```", re.DOTALL)
@@ -42,7 +50,9 @@ SCHEMA_INTRO = "\n\nReturn only a JSON object that validates against this schema
 
 
 ########################################################################
+#                                                                      #
 #                          Structured output                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the system prompt that asks for the schema")
 def schema_prompt(system: str | None = None, schema: type[BaseModel] | None = None) -> str:

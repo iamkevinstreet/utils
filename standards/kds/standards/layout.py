@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/layout.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks a repository's shape: how deep each file sits, how long each
 source file runs, the files its root and main folders must hold, where
@@ -14,7 +16,9 @@ those .gitattributes marks as generated.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,14 +33,18 @@ from kds.standards import config
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding every file is read in, from the config")
 ENCODING = config.ENCODING
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the most folders a file may sit under")
 MAX_DEPTH = 3
@@ -113,7 +121,9 @@ GITIGNORE = ".gitignore"
 
 
 ########################################################################
+#                                                                      #
 #                           Repository shape                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test for a file the checks skip")
 def skipped(path: str | None = None, generated: list[str] | None = None) -> bool:

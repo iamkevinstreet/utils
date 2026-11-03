@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                       tests/test_packaging.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests that every package ships a py.typed marker, so mypy checks its
 callers, and that all the packages share one version.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,12 +28,16 @@ from pathlib import Path
 import pytest
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Points at the repository root, above this tests folder")
 ROOT = Path(__file__).resolve().parents[1]
@@ -38,7 +46,9 @@ PACKAGES = ("args", "settings", "logs", "llm", "evals", "synthetic", "standards"
 
 
 ########################################################################
+#                                                                      #
 #                           Packaging tests                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test that each package is marked as typed")
 @pytest.mark.parametrize("name", PACKAGES)

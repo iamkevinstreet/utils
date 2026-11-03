@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                   settings/tests/test_settings.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the defaults, the config.toml source, source priority and that
 secrets never leak.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,19 +33,25 @@ from kds.settings import Settings, describe
 from kds.settings.toml import flatten
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a key that looks real enough to catch a leak")
 FAKE_KEY = "sk-test-not-a-real-key"
 
 
 ########################################################################
+#                                                                      #
 #                            Test settings                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a helper that writes a settings file")
 def _write(

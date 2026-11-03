@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                 standards/kds/standards/sections.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Finds the section banners that cut a file after its header, and checks
 they come in the code standard's order: Imports, Global constants,
@@ -14,7 +16,9 @@ checks on what each section may hold live with each language's rules.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from kds.standards import header as hdr
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the imports section")
 IMPORTS = "Imports"
@@ -60,7 +68,9 @@ RULE = "sections"
 
 
 ########################################################################
+#                                                                      #
 #                           Section banners                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines one banner found in a file")
 @dataclass(frozen=True)
@@ -133,7 +143,7 @@ def find_banners(
     # log.debug("Draws an empty banner to learn the style's shape")
     shape = hdr.box("", style)
     # log.debug("Finds where the label line sits in that shape")
-    at = next(i for i, line in enumerate(shape) if line.endswith(hdr.title_line("")))
+    at = hdr.title_at(style)
     # log.debug("Starts with no banners")
     found: list[Banner] = []
     # log.debug("Tries every line as the start of a banner")

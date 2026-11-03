@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                   standards/tests/test_jsrules.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the logger-line rule for scripts. A statement with no logger line
 above it is a finding, and so are a one-word description and a logger
@@ -15,7 +17,9 @@ read only in its frontmatter.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,13 +34,17 @@ from kds.args import required
 from kds.standards.jsrules import check_live, check_logger_lines, script_lines, statement_rows
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                         Script logger lines                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a helper that lists the lines flagged in a source")
 def _flagged(source: str | None = None, path: str = "x.ts") -> list[int]:

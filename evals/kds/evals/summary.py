@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      evals/kds/evals/summary.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Averages a run's scores, adds time and cost figures, and writes the
 Markdown results table.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,14 +33,18 @@ if TYPE_CHECKING:
     from kds.evals.runner import CaseResult, RunResult
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the decimal places the cost per case is kept to, from the config")
 COST_PLACES = config.COST_PLACES
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the decimal places averaged scores are kept to")
 SCORE_PLACES = 4
@@ -49,7 +57,9 @@ SEP, END = " | ", " |"
 
 
 ########################################################################
+#                                                                      #
 #                            Run summaries                             #
+#                                                                      #
 ########################################################################
 
 

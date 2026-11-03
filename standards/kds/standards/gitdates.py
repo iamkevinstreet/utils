@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                 standards/kds/standards/gitdates.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Reads from git which files a repository holds, and when each was
 created and last changed. Dates follow a file through renames; a file
@@ -13,7 +15,9 @@ changes was last modified today.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -28,12 +32,16 @@ from pathlib import Path
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the marker that starts each commit in the log")
 COMMIT_MARK = "@@"
@@ -44,7 +52,9 @@ GIT = "git"
 
 
 ########################################################################
+#                                                                      #
 #                              Git dates                               #
+#                                                                      #
 ########################################################################
 # log.debug("Defines what git says about the repository's files")
 @dataclass

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    synthetic/kds/synthetic/pdf.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Builds simple PDFs and records the exact text placed on each page.
 That text is the ground truth for span checks: a model's quoted span
@@ -13,7 +15,9 @@ scan" case needs no image processing.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -31,12 +35,16 @@ from reportlab.pdfgen import canvas
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the characters a paragraph line may hold")
 LINE_WIDTH = 95
@@ -49,7 +57,9 @@ FONT, SIZE = "Helvetica", 10
 
 
 ########################################################################
+#                                                                      #
 #                             PDF builder                              #
+#                                                                      #
 ########################################################################
 
 

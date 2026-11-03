@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                       logs/tests/test_logs.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the JSON lines, request ids, one-time setup and the HH:MM:SS trace
 format.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -38,19 +42,25 @@ from kds.logs import (
 from kds.settings import Settings
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the pattern every trace line must match")
 TRACE_LINE = re.compile(r"\d{2}:\d{2}:\d{2} - Splits the question")
 
 
 ########################################################################
+#                                                                      #
 #                            Logging tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a fixture that removes this module's handlers")
 @pytest.fixture

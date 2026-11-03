@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                       logs/kds/logs/redact.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Removes emails, phone numbers, SSNs, card numbers, birth dates and named
 terms from text.
@@ -15,7 +17,9 @@ the names of real people as `extra_terms` if a dataset ever has any.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,12 +33,16 @@ from typing import Any
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists each kind of identifier and the pattern that finds it")
 PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
@@ -49,7 +57,9 @@ NAME_LABEL = "[NAME]"
 
 
 ########################################################################
+#                                                                      #
 #                       Personal data redaction                        #
+#                                                                      #
 ########################################################################
 # log.debug("Defines redaction of one string")
 def redact(text: str | None = None, extra_terms: Iterable[str] = ()) -> str:

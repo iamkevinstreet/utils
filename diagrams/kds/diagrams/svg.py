@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                     diagrams/kds/diagrams/svg.py                     #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Draws the at-a-glance diagram style as SVG: zones, components, arrows
 and the foundation.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,12 +28,16 @@ from typing import NamedTuple
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the canvas colour")
 CANVAS = "#121212"
@@ -95,7 +103,9 @@ ATTRIBUTES = {
 
 
 ########################################################################
+#                                                                      #
 #                             SVG drawing                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines a rectangle on the canvas")
 class Box(NamedTuple):

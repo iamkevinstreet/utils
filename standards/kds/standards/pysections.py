@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                standards/kds/standards/pysections.py                 #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks what each section of a Python module holds. Imports sit under
 the Imports banner (pyimports checks their groups' labels). The logger
@@ -14,7 +16,9 @@ logic.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -29,14 +33,18 @@ from kds.standards import sections as sec
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the last segment of a project's config module, from the config")
 CONFIG_MODULE = config.CONFIG_MODULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the kind of a statement that imports")
 IMPORT = "import"
@@ -74,7 +82,9 @@ ID = "id"
 
 
 ########################################################################
+#                                                                      #
 #                           Module sections                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the section checks for one Python module")
 def check_module(

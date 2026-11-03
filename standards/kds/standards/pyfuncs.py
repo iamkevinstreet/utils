@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/pyfuncs.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks every Python function shows its whole contract where it is
 defined: each parameter has a default (None where there is no natural
@@ -18,7 +20,9 @@ signature a comment starting "fixed:" says a library sets.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -33,14 +37,18 @@ from kds.standards import config, pydocs
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the name of the rule every function finding belongs to, from the config")
 RULE = config.FUNCTIONS_RULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the decorator names a framework uses to fill parameters")
 FRAMEWORK = frozenset(
@@ -82,7 +90,9 @@ COMMENT = "#"
 
 
 ########################################################################
+#                                                                      #
 #                            Function rules                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the function checks for one module")
 def check_functions(

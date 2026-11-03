@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                   standards/tests/test_sections.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the section rules for Python: banners come in order, centred and
 once each; each statement sits in its section; the logger opens the
@@ -12,7 +14,9 @@ Global constants; and each import sits under its group's label.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -27,12 +31,16 @@ from kds.standards import sections as sec
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the names the test repository's own modules go by")
 LOCAL = frozenset({"pkg"})
@@ -75,7 +83,9 @@ GOOD = "\n".join(
 
 
 ########################################################################
+#                                                                      #
 #                            Section tests                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how a module's section findings are worked out")
 def findings(source: str = "") -> list[Finding]:

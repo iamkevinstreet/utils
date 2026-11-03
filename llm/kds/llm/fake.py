@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                         llm/kds/llm/fake.py                          #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 A scripted, offline provider for tests and CI. Answers come from a
 queue, in order, and then from a function of the conversation, when
@@ -13,7 +15,9 @@ pipeline can run in CI with no key.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -32,14 +36,18 @@ from kds.llm import config
 from kds.llm.types import Completion, Message, ToolCall, ToolSpec, Usage
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the milliseconds in a second, for latency, from the config")
 MS = config.MS
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists what a scripted answer may be")
 Scripted = str | dict[str, Any] | Completion
@@ -56,7 +64,9 @@ TOOL_CALLS = "tool_calls"
 
 
 ########################################################################
+#                                                                      #
 #                           Offline stand-in                           #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the offline provider")
 class FakeProvider:

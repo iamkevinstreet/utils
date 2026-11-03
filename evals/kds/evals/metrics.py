@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      evals/kds/evals/metrics.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Small metrics plain enough to check by hand: matches, field accuracy,
 abstention, percentiles.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -25,12 +29,16 @@ from typing import Any
 from kds.args import required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Lists the values that count as no answer")
 EMPTY: tuple[Any, ...] = (None, "", [])
@@ -41,7 +49,9 @@ TP, PRECISION, RECALL = "tp", "precision", "recall"
 
 
 ########################################################################
+#                                                                      #
 #                          Evaluation metrics                          #
+#                                                                      #
 ########################################################################
 
 

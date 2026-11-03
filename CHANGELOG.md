@@ -4,12 +4,23 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
-## Unreleased
+## v0.5.0, Nov 3, 2026
 
+Pin: (the commit this release lands on)
+
+The box every file opens with, and every section banner, is five lines tall now: a border, a blank
+walled line, the title, another blank walled line, and a border. The old three-line box is no
+longer accepted.
+
+- **standards:** `kds-standards check` asks for the five-line box in the header and in every
+  banner. `kds-standards stamp` brings a file's old three-line boxes to the new form, so one run
+  over a repository migrates it. The header code is split in two: `header` draws, `parsing`
+  reads and checks.
 - **standards:** a TypeScript import written over more than nine lines, one name per line as
   Prettier writes a long one, is read to its end, so its source is known: its label is checked and
   the names it takes from the config count as config values. Before, it was cut off after nine
   lines.
+- **All packages** move to 0.5.0 together and name each other as `>=0.5,<0.6`. 127 tests.
 
 ## v0.4.2, Oct 29, 2026
 

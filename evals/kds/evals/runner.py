@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                      evals/kds/evals/runner.py                       #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Runs a system over evaluation cases and writes the results as JSON and
 Markdown.
@@ -20,7 +22,9 @@ record), failures, the summary and the report files.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -47,14 +51,18 @@ from kds.llm.pricing import prices_as_of
 from kds.logs import log_event, new_request_id
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the decimal places a case's cost is kept to, from the config")
 COST_PLACES = config.COST_PLACES
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the milliseconds in a second, for latency")
 MS = 1000
@@ -69,7 +77,9 @@ TIMESPEC = "seconds"
 
 
 ########################################################################
+#                                                                      #
 #                           Evaluation runs                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the result of one case")
 class CaseResult(BaseModel):

@@ -1,9 +1,11 @@
 ########################################################################
+#                                                                      #
 #                          config/config.toml                          #
+#                                                                      #
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-10-29
+# Last modified on:  2026-11-03
 #
 # Every shared setting at its default; a project copies the sections it
 # changes into its own config/config.toml. Each key's name is its section

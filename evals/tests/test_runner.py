@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                      evals/tests/test_runner.py                      #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests a whole run offline: scores, a failing case, the report, duplicate
 ids, comparison.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -34,19 +38,25 @@ from kds.llm.adapter import ModelAdapter
 from kds.llm.fake import FakeProvider
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the model name the price table lists at zero")
 FAKE_MODEL = "fake-model"
 
 
 ########################################################################
+#                                                                      #
 #                         Evaluation run tests                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines three cases, two of them tagged hard")
 def _cases() -> list[EvalCase]:

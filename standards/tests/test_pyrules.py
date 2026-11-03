@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                   standards/tests/test_pyrules.py                    #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests the logger-line rule: every statement has one directly above it,
 except the statements exempt from it, and none sits above a clause.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -23,12 +27,16 @@ import textwrap
 from kds.standards import pyrules
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets a file that follows every logger-line rule")
 GOOD = textwrap.dedent('''\
@@ -57,7 +65,9 @@ GOOD = textwrap.dedent('''\
 
 
 ########################################################################
+#                                                                      #
 #                             Logger lines                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test that a correct file has no findings")
 def test_good_file_has_no_findings() -> None:

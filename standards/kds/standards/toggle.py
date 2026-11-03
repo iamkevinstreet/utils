@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/toggle.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Turns the logger lines on to trace a run, and off again before a
 commit, by uncommenting or commenting them in place. It reaches Python
@@ -12,7 +14,9 @@ files and scripts, and leaves dependency, build and git folders alone.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,7 +30,9 @@ from kds.args import required
 from kds.standards import config
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding every file is read and written in, from the config")
@@ -35,7 +41,9 @@ ENCODING = config.ENCODING
 SCRIPTS = config.SCRIPTS
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a commented Python logger line")
 PY_OFF = re.compile(r'^(\s*)# (log\.debug\(")', re.MULTILINE)
@@ -52,7 +60,9 @@ SKIP = ("node_modules", ".venv", "dist", ".git")
 
 
 ########################################################################
+#                                                                      #
 #                             Trace switch                             #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the switch over a file or folder")
 def switch(target: Path | None = None, on: bool | None = None) -> int:

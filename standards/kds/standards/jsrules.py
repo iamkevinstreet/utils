@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                  standards/kds/standards/jsrules.py                  #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Checks each statement of a TypeScript or JavaScript file, or of an
 Astro component's frontmatter, has a logger line directly above it,
@@ -16,7 +18,9 @@ or a type's body, whose lines are not statements.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -30,7 +34,9 @@ from kds.standards import config
 from kds.standards.findings import Finding
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the fence that opens and closes Astro frontmatter, from the config")
@@ -41,7 +47,9 @@ MIN_WORDS = config.MIN_WORDS
 RULE = config.LOGGER_RULE
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Matches a commented logger line; captures indent, text")
 LOGGER_RE = re.compile(r"^(?P<indent>\s*)// log\.debug\('(?P<desc>[^']+)'\)$")
@@ -86,7 +94,9 @@ TYPE = "type"
 
 
 ########################################################################
+#                                                                      #
 #                         Script logger lines                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines which lines of a file hold script code")
 def script_lines(path: str | None = None, source: str | None = None) -> list[tuple[int, str]]:

@@ -1,10 +1,12 @@
 ########################################################################
+#                                                                      #
 #                    diagrams/kds/diagrams/spec.py                     #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Reads diagrams written as data in a TOML file and builds each one, so
 layouts stay reviewable.
@@ -28,7 +30,9 @@ arrows and bands, so the order inside the file does not matter.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -44,14 +48,18 @@ from kds.diagrams import Diagram, config
 from kds.diagrams.svg import Box
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding the spec file is read in, from the config")
 ENCODING = config.ENCODING
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Names the key that holds a part's rectangle")
 BOX = "box"
@@ -62,7 +70,9 @@ FILE = "file"
 
 
 ########################################################################
+#                                                                      #
 #                              Spec files                              #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how one diagram is built from its table")
 def build(table: dict[str, Any] | None = None) -> Diagram:

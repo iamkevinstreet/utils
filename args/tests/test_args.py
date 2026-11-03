@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                       args/tests/test_args.py                        #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests that required() hands back a value the caller gave and stops,
 naming the argument, when the caller left it out.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -26,13 +30,17 @@ import pytest
 from kds.args import missing, required
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 
 ########################################################################
+#                                                                      #
 #                          Required arguments                          #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test: a given value comes back unchanged")
 def test_a_given_value_comes_back() -> None:

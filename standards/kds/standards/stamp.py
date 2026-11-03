@@ -1,19 +1,25 @@
 ########################################################################
+#                                                                      #
 #                   standards/kds/standards/stamp.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Writes headers: adds a whole header to a file that has none, and
 refreshes an existing header's title and dates from git, so a moved
 file's box names its new path and every date matches the history. A
-refresh also recentres every section banner's name.
+refresh also recentres every section banner's name, and brings a box
+drawn in the old three-line form (no blank walled line above and below
+its title) to the current form.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -24,29 +30,37 @@ from pathlib import Path
 
 # Local
 from kds.args import required
-from kds.standards import config, labels
+from kds.standards import config, labels, parsing
 from kds.standards import header as hdr
 from kds.standards import sections as sec
 from kds.standards.gitdates import History
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 # log.debug("Takes the encoding every file is read and written in, from the config")
 ENCODING = config.ENCODING
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the extension of an Astro component")
 ASTRO_SUFFIX = ".astro"
 # log.debug("Sets how many fences a component's frontmatter has")
 FENCES = 2
+# log.debug("Sets how many lines the old form of the box took: border, title, border")
+OLD_BOX_LINES = 3
 
 
 ########################################################################
+#                                                                      #
 #                            Header writing                            #
+#                                                                      #
 ########################################################################
 # log.debug("Defines how a header is added to a file")
 def insert(
@@ -85,7 +99,7 @@ def insert(
     # log.debug("Reads the file")
     text = (root / path).read_text(encoding=ENCODING)
     # log.debug("Refuses a file that already has a header")
-    if hdr.parse(text, style)[0] is not None:
+    if parsing.parse(text, style)[0] is not None:
         # log.debug("Returns why")
         return f"{path}: already has a header"
     # log.debug("Refuses a Python file whose docstring would become a second one")
@@ -184,14 +198,16 @@ def refresh(
         return False
     # log.debug("Reads the file")
     text = target.read_text(encoding=ENCODING)
+    # log.debug("Brings any old three-line box to the current form")
+    widened = _widened(text, style)
     # log.debug("Finds the header")
-    found, _ = hdr.parse(text, style)
+    found, _ = parsing.parse(widened, style)
     # log.debug("Leaves alone a file whose header cannot be read")
     if found is None:
         # log.debug("Returns unchanged")
         return False
     # log.debug("Splits the file into lines")
-    lines = text.splitlines()
+    lines = widened.splitlines()
     # log.debug("Redraws the title line, keeping the style's prefix")
     lines[found.title_line] = _prefixed(hdr.title_line(path), lines[found.title_line])
     # log.debug("Rewrites the Created on line with git's date")
@@ -216,6 +232,82 @@ def refresh(
     target.write_text(new_text, encoding=ENCODING)
     # log.debug("Returns changed")
     return True
+
+
+# log.debug("Defines how old three-line boxes are brought to the current form")
+def _widened(text: str = "", style: str = hdr.PYTHON) -> str:
+    """Returns the text with every old three-line box given its buffers.
+
+    The old form was a border, the title and a border. The current form
+    puts a blank walled line between the title and each border.
+
+    Args:
+        text: The file's text.
+        style: The file's header style.
+
+    Returns:
+        The text, each old box rewritten; unchanged when there is none.
+    """
+    # log.debug("Reads the prefix the style puts before each box line")
+    prefix = hdr.SLASH_PREFIX if style in (hdr.SLASH, hdr.ASTRO) else ""
+    # log.debug("Draws the border and the buffer as the style writes them")
+    border, buffer = f"{prefix}{hdr.BORDER}", f"{prefix}{hdr.BUFFER}"
+    # log.debug("Splits the file into lines")
+    lines = text.splitlines()
+    # log.debug("Starts with no lines rewritten")
+    out: list[str] = []
+    # log.debug("Starts at the first line")
+    index = 0
+    # log.debug("Walks the lines, looking for the start of an old box")
+    while index < len(lines):
+        # log.debug("Takes the three lines an old box would occupy")
+        window = lines[index : index + OLD_BOX_LINES]
+        # log.debug("Rewrites an old box as the current one")
+        if len(window) == OLD_BOX_LINES and _is_old_box(window, border, buffer, prefix):
+            # log.debug("Adds the border, a buffer, the title, a buffer and the border")
+            out += [border, buffer, window[1], buffer, border]
+            # log.debug("Skips past the old box")
+            index += OLD_BOX_LINES
+        else:
+            # log.debug("Keeps the line as it is")
+            out.append(lines[index])
+            # log.debug("Moves to the next line")
+            index += 1
+    # log.debug("Returns the text, keeping the final newline")
+    return "\n".join(out) + ("\n" if text.endswith("\n") else "")
+
+
+# log.debug("Defines the test for the old form of the box")
+def _is_old_box(
+    window: list[str] | None = None, border: str = "", buffer: str = "", prefix: str = ""
+) -> bool:
+    """Returns whether three lines are a box in the old form.
+
+    Args:
+        window: Three lines of the file. Required.
+        border: The border as the style writes it.
+        buffer: The blank walled line as the style writes it.
+        prefix: The prefix the style puts before each box line.
+
+    Returns:
+        True for a border, a walled title line that is not a buffer,
+        and a border.
+    """
+    # log.debug("Takes the window, which the caller must give")
+    window = required(window=window)
+    # log.debug("Reads the middle line without its prefix")
+    middle = window[1].removeprefix(prefix) if prefix else window[1]
+    # log.debug("Returns whether the lines are border, walled title, border")
+    return (
+        window[0] == border
+        and window[2] == border
+        and window[1] != buffer
+        and window[1].startswith(prefix)
+        and len(middle) == hdr.WIDTH
+        and middle.startswith("#")
+        and middle.endswith("#")
+        and set(middle) != {"#"}
+    )
 
 
 # log.debug("Defines how a new line keeps the old line's prefix")

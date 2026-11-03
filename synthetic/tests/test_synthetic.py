@@ -1,17 +1,21 @@
 ########################################################################
+#                                                                      #
 #                  synthetic/tests/test_synthetic.py                   #
+#                                                                      #
 ########################################################################
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-10-29
+Last modified on:  2026-11-03
 
 Tests repeatable names, the classic near-duplicate traps, and a PDF's
 text round trip.
 """
 
 ########################################################################
+#                                                                      #
 #                               Imports                                #
+#                                                                      #
 ########################################################################
 # Standard library
 from __future__ import annotations
@@ -25,19 +29,25 @@ from kds.synthetic.pdf import PdfDoc
 from kds.synthetic.pdftext import pages_text, span_in_page
 
 ########################################################################
+#                                                                      #
 #                           Global constants                           #
+#                                                                      #
 ########################################################################
 log = logging.getLogger(__name__)
 
 ########################################################################
+#                                                                      #
 #                           Local constants                            #
+#                                                                      #
 ########################################################################
 # log.debug("Sets the charge line the PDF test places on page one")
 CHARGE = "Charge No. 510-2026-01234"
 
 
 ########################################################################
+#                                                                      #
 #                         Synthetic data tests                         #
+#                                                                      #
 ########################################################################
 # log.debug("Defines the test that a seed repeats its names")
 def test_namegen_is_deterministic() -> None:
