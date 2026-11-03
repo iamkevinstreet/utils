@@ -15,7 +15,9 @@ longer accepted.
 - **standards:** `kds-standards check` asks for the five-line box in the header and in every
   banner. `kds-standards stamp` brings a file's old three-line boxes to the new form, so one run
   over a repository migrates it. The header code is split in two: `header` draws, `parsing`
-  reads and checks.
+  reads and checks. The dotfiles that take `#` comments (`.editorconfig`, `.gitattributes`,
+  `.gitignore`, `.gitleaksignore`, `.prettierignore`, `.dockerignore`) carry a header like a
+  Makefile, and are checked and stamped like one.
 - **standards:** a TypeScript import written over more than nine lines, one name per line as
   Prettier writes a long one, is read to its end, so its source is known: its label is checked and
   the names it takes from the config count as config values. Before, it was cut off after nine

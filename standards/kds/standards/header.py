@@ -81,8 +81,17 @@ STYLES = {
     ASTRO: (".astro",),
     HTML: (".html", ".htm"),
 }
-# log.debug("Lists file names with no extension that use # comments")
-HASH_NAMES = ("Dockerfile", "Makefile")
+# log.debug("Lists file names with no extension that use # comments: build files and dotfiles")
+HASH_NAMES = (
+    "Dockerfile",
+    "Makefile",
+    ".editorconfig",
+    ".gitattributes",
+    ".gitignore",
+    ".gitleaksignore",
+    ".prettierignore",
+    ".dockerignore",
+)
 # log.debug("Sets the prefix // styles put before each box line")
 SLASH_PREFIX = "// "
 # log.debug("Sets the lines that wrap the box in the wrapped styles")
