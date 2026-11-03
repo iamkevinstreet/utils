@@ -148,7 +148,7 @@ def test_arrow_function_bodies_inside_calls_are_blocks() -> None:
 
 # log.debug("Defines the test that a return type after the signature still opens a block")
 def test_a_signature_ending_in_a_return_type_opens_a_block() -> None:
-    """Statements in a function whose signature wraps need logger lines."""
+    """Statements in a function whose signature wraps are checked."""
     # log.debug("Builds a function whose last signature line is ): void {")
     source = (
         "// log.debug('Defines the tally')\n"
