@@ -9,7 +9,7 @@
 ########################################################################
 # Compile with: uv pip compile requirements-dev.in --generate-hashes
 #   --python-version 3.12 -o requirements-dev.txt
-pydantic>=2.8
+pydantic>=2.14.2
 pydantic-settings>=2.4
 anthropic>=0.40
 openai>=1.50
