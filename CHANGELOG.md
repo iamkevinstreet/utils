@@ -6,7 +6,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.5.0, Nov 3, 2026
 
-Pin: (the commit this release lands on)
+Pin: `fcac0477e1caadccf1e2d7580ce648258c5a79fa`
 
 The box every file opens with, and every section banner, is five lines tall now: a border, a blank
 walled line, the title, another blank walled line, and a border. The old three-line box is no
