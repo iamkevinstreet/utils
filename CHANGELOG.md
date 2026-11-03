@@ -4,6 +4,15 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.5.1, Nov 3, 2026
+
+Pin: (the commit this release lands on)
+
+- **standards:** the TypeScript logger-line rule now sees the statements inside a function whose
+  signature wraps and ends `): Type {`, and inside a bare `catch {`; both read as values before.
+  Two tests cover them.
+- **All packages** move to 0.5.1 together.
+
 ## v0.5.0, Nov 3, 2026
 
 Pin: `fcac0477e1caadccf1e2d7580ce648258c5a79fa`

@@ -146,6 +146,41 @@ def test_arrow_function_bodies_inside_calls_are_blocks() -> None:
     assert _flagged(source) == [5]
 
 
+# log.debug("Defines the test that a return type after the signature still opens a block")
+def test_a_signature_ending_in_a_return_type_opens_a_block() -> None:
+    """Statements in a function whose signature wraps need logger lines."""
+    # log.debug("Builds a function whose last signature line is ): void {")
+    source = (
+        "// log.debug('Defines the tally')\n"
+        "function tally(\n"
+        "  a: number | null = null,\n"
+        "): void {\n"
+        "  // log.debug('Takes a')\n"
+        "  a = required({ a });\n"
+        "  count(a);\n"
+        "}\n"
+    )
+    # log.debug("Checks the bare statement inside the body is flagged")
+    assert _flagged(source) == [7]
+
+
+# log.debug("Defines the test that a bare catch opens a block")
+def test_a_bare_catch_opens_a_block() -> None:
+    """Statements inside catch { } need logger lines."""
+    # log.debug("Builds a try with a bare catch holding one bare statement")
+    source = (
+        "// log.debug('Tries the read')\n"
+        "try {\n"
+        "  // log.debug('Reads the file')\n"
+        "  read();\n"
+        "} catch {\n"
+        "  fallback();\n"
+        "}\n"
+    )
+    # log.debug("Checks the statement in the catch is flagged")
+    assert _flagged(source) == [6]
+
+
 # log.debug("Defines the test that JSX inside return needs no logger lines")
 def test_jsx_inside_return_is_one_statement() -> None:
     """The lines of a returned JSX tree are one statement."""

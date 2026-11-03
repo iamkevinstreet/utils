@@ -35,4 +35,4 @@ log = logging.getLogger(__name__)
 #                                                                      #
 ########################################################################
 # log.debug("Sets the package's version")
-__version__ = "0.5.0"
+__version__ = "0.5.1"

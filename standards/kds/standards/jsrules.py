@@ -77,12 +77,14 @@ EXEMPT = (
 )
 # log.debug("Lists line starts whose braces hold types, not code")
 TYPE_STARTS = ("interface ", "export interface ", "type ", "export type ", "enum ", "export enum ")
-# log.debug("Matches code before a { that opens a block, not a value")
+# log.debug("Matches code before a { that opens a block, a ) with or without a return type")
 BLOCK_BEFORE = re.compile(
-    r"(\)|=>|\belse|\btry|\bfinally|\bdo|^)\s*$|^(export\s+)?(class|async|function)\b"
+    r"(\)|=>|\belse|\btry|\bfinally|\bdo|\bcatch|^)\s*$"
+    r"|\)\s*:\s*[^{};]*$"
+    r"|^(export\s+)?(class|async|function)\b"
 )
-# log.debug("Matches code before a { that opens a function body inside a call")
-CALLBACK_BEFORE = re.compile(r"(\)|=>)\s*$")
+# log.debug("Matches code before a { that opens a function body inside a call or a literal")
+CALLBACK_BEFORE = re.compile(r"(\)|=>)\s*$|\)\s*:\s*[^{};]*$")
 # log.debug("Sets the marker that starts a line comment")
 COMMENT = "//"
 # log.debug("Names a bracket that opens a block of code")
