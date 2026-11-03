@@ -6,7 +6,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.5.1, Nov 3, 2026
 
-Pin: (the commit this release lands on)
+Pin: `e57de0e97d1c41616af1a98873f6beeecc74c99f`
 
 - **standards:** the TypeScript logger-line rule now sees the statements inside a function whose
   signature wraps and ends `): Type {`, and inside a bare `catch {`; both read as values before.
