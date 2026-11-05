@@ -4,6 +4,15 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## Unreleased
+
+- **Dependency updates land by themselves.** Dependabot groups each week's updates into one pull
+  request per kind, and the new `dependency-updates` workflow lands them every weekday: it applies the
+  oldest open one to `main` as an ordinary commit, refreshes the dates in the headers it changes, runs
+  the whole of CI on that commit, and moves `main` to it only when every check passes. One whose checks
+  fail is labelled "needs a person" and waits. CI can now be called for a given commit, which is how the
+  workflow checks one before it lands.
+
 ## v0.5.2, Nov 5, 2026
 
 Pin: `4cff45d3fb22d2359ee61de49c652b04cae1c246`

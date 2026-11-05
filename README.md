@@ -155,7 +155,7 @@ utils/
 ├── diagrams/      kds.diagrams: the kds-diagrams renderer
 ├── config/        config.toml: every shared setting at its default; .env.example
 ├── docs/          diagrams.toml and the two SVGs it draws
-└── .github/       CI, CodeQL, Dependabot, CODEOWNERS
+└── .github/       CI, CodeQL, Dependabot and the workflow that lands its updates, CODEOWNERS
 ```
 
 Each package folder holds its own `pyproject.toml`, `README.md`, `kds/<name>/` and `tests/`. All of

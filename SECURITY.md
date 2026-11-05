@@ -26,7 +26,7 @@ compromised developer machine.
 | A committed secret | gitleaks before every commit and over the whole history in CI; secrets live only in `config/.env` |
 | A secret in config | `kds.settings` refuses to start when `config/config.toml` holds a secret |
 | Personal data in logs | `kds.logs` redacts emails, phone numbers, SSNs, card numbers and birth dates by default |
-| A vulnerable dependency | a lockfile with hashes, `pip-audit` in CI, Dependabot every week |
+| A vulnerable dependency | a lockfile with hashes, `pip-audit` in CI, Dependabot every week, its updates landed only once CI passes |
 | A tampered Action or tool | Actions pinned to commit SHAs; the gitleaks download checked against its published SHA-256 |
 | A flaw in the code | CodeQL and ruff's security rules (bandit) on every push; least-privilege workflow permissions |
 
