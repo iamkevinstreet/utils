@@ -4,6 +4,16 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.5.2, Nov 5, 2026
+
+Pin: (the commit this release lands on)
+
+- **Dependencies:** `requirements-dev.txt`, the hashed lockfile every package is tested against,
+  moves to pydantic 2.14.2 (with pydantic-core 2.50.2) and openai 3.42.1. Nothing had to change
+  for them: the tests, strict mypy, the code standard and the audit pass as they were. The
+  packages still ask a project for `pydantic>=2.8` and `openai>=1.50`, so no project has to move.
+- **All packages** move to 0.5.2 together.
+
 ## v0.5.1, Nov 3, 2026
 
 Pin: `e57de0e97d1c41616af1a98873f6beeecc74c99f`

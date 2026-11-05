@@ -5,14 +5,14 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-05
 #
 # Packages kds-logs: JSON-lines logs with request ids, redaction and
 # traces.
 
 [project]
 name = "kds-logs"
-version = "0.5.1"
+version = "0.5.2"
 description = "JSON-lines logging with request ids, redaction of personal data, and HH:MM:SS trace lines."
 readme = "README.md"
 requires-python = ">=3.12"
