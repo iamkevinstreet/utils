@@ -6,7 +6,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.5.2, Nov 5, 2026
 
-Pin: (the commit this release lands on)
+Pin: `4cff45d3fb22d2359ee61de49c652b04cae1c246`
 
 - **Dependencies:** `requirements-dev.txt`, the hashed lockfile every package is tested against,
   moves to pydantic 2.14.2 (with pydantic-core 2.50.2) and openai 3.42.1. Nothing had to change
