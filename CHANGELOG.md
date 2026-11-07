@@ -35,7 +35,9 @@ tracing tool. Spans stay off, at no cost, until they have somewhere to go.
   recorded only with `[spans] content`.
 - **evals:** each case runs in its own `eval <case id>` span that records its scores, also as GenAI
   evaluation results; a run's cases share one session, and with `[spans] keep` the run writes
-  `<name>-<time>.spans.jsonl` beside its results.
+  `<name>-<time>.spans.jsonl` beside its results. A score is a number, a yes or no, or a word: a list
+  or a table a scorer returns beside its scores is the case's detail, which the results file keeps
+  and the span leaves off, since it may hold what the documents say.
 - **settings:** `[spans] keep`, `content` and `public`, `[langfuse] base_url`, and the two Langfuse
   keys as secrets.
 - **standards:** an MCP server's tools, resources and prompts keep parameters without defaults, as
@@ -44,7 +46,7 @@ tracing tool. Spans stay off, at no cost, until they have somewhere to go.
   `opentelemetry-exporter-otlp-proto-http` 1.45 or later; `kds-llm` and `kds-evals` need the API.
   `requirements-dev.txt` is recompiled with uv, the command its header names.
 - **All packages** move to 0.6.0 together and name each other as `>=0.6,<0.7`; a project moves its
-  kds requirements to `>=0.6.0,<0.7` with the new pin. 149 tests.
+  kds requirements to `>=0.6.0,<0.7` with the new pin. 150 tests.
 
 ## v0.5.2, Nov 5, 2026
 

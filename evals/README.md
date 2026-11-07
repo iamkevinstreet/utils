@@ -40,7 +40,9 @@ run.summary  # also in results/extraction-v0.2-latest.md
 - Each case runs under its own request id, `<run name>:<case id>`, and in its own span, `eval <case
   id>`, which holds the case's model calls, tools and searches and records each score, both as an
   attribute and as an OpenTelemetry GenAI evaluation result. In Langfuse each case is one trace, and
-  a run's cases share one session, `<run name>-<time>`.
+  a run's cases share one session, `<run name>-<time>`. A score on a span is a number, a yes or no,
+  or a word; a list or a table among the scores is the case's detail, kept in the results file and
+  left off the span.
 - With `[spans] keep = true` the run also writes its spans to `<run name>-<time>.spans.jsonl`, one
   per line, beside its results, so a published run keeps its traces after a tracing tool lets them
   go.

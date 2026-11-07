@@ -11,6 +11,9 @@ Last modified on:  2026-11-07
 Spans for evaluation runs. Each case runs as one span that records the
 run and case, whether the case ran, and each score, both as attributes
 and as an evaluation result in the OpenTelemetry GenAI conventions.
+A score is a number, a yes or no, or a word; a list or a table in the
+scores is the case's detail, kept in the results file and never put on
+a span, since it may hold what the documents say.
 
 In Langfuse each case is then one trace, holding the case's model
 calls, tools and searches, and a run's cases share one session.
@@ -56,6 +59,8 @@ log = logging.getLogger(__name__)
 SCOPE = "kds.evals"
 # log.debug("Starts the name of every attribute an evaluation adds")
 PREFIX = "kds.eval."
+# log.debug("Lists the kinds of value a span records as a score")
+SCORE_TYPES = (bool, int, float, str)
 
 
 ########################################################################
@@ -91,26 +96,28 @@ def scored(
 ) -> None:
     """Records whether the case ran, its scores, and any failure.
 
+    Only numbers, yes or no answers and words are recorded; a list or a
+    table among the scores is the case's detail and is left off.
+
     Args:
         span: The case's span. Required.
-        scores: The case's scores, a flat dict of numbers and booleans.
-            Required.
+        scores: The case's scores by name. Required.
         failure: The type of the error that stopped the case, if any.
     """
     # log.debug("Takes the span, which the caller must give")
     span = required(span=span)
     # log.debug("Takes the scores, which the caller must give")
     scores = required(scores=scores)
+    # log.debug("Keeps the scores, leaving the case's detail off")
+    kept = {key: value for key, value in scores.items() if isinstance(value, SCORE_TYPES)}
     # log.debug("Names each score as an attribute, beside whether it ran")
-    named = {f"{PREFIX}score.{key}": value for key, value in scores.items()}
+    named = {f"{PREFIX}score.{key}": value for key, value in kept.items()}
     # log.debug("Sets them on the span")
     set_values(span, {f"{PREFIX}ok": failure is None, **named})
     # log.debug("Adds each score as an evaluation result")
-    for key, value in scores.items():
-        # log.debug("Adds the result, unless the score is empty")
-        if value is not None:
-            # log.debug("Adds the event")
-            span.add_event(config.GEN_AI_EVALUATION, result(key, value))
+    for key, value in kept.items():
+        # log.debug("Adds the event")
+        span.add_event(config.GEN_AI_EVALUATION, result(key, value))
     # log.debug("Marks the case as failed when it did not run")
     if failure is not None:
         # log.debug("Records the error's type")

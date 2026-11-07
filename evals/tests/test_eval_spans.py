@@ -99,7 +99,7 @@ def _run(out_dir: Path | None = None) -> RunResult:
         cases=[EvalCase(id="c1", input={}, tags=["clean"]), EvalCase(id="c2", input={})],
         adapter=adapter,
         system_fn=system_fn,
-        scorer_fn=lambda c, o: {"right": o == "ok", "words": 1},
+        scorer_fn=lambda c, o: {"right": o == "ok", "words": 1, "said": {"text": o}, "seen": [o]},
         out_dir=out_dir,
     )
 
@@ -131,6 +131,26 @@ def test_each_case_is_a_span_with_its_scores(spans: InMemorySpanExporter, tmp_pa
         "right",
         "words",
     ]
+
+
+# log.debug("Defines the test that a case's detail stays off its span")
+def test_a_cases_detail_stays_off_its_span(spans: InMemorySpanExporter, tmp_path: Path) -> None:
+    """A list or a table among the scores stays off the span.
+
+    Args:
+        spans: The spans this test records.
+        tmp_path: A temporary folder pytest makes for this test.
+    """
+    # log.debug("Runs the two cases")
+    run = _run(tmp_path)
+    # log.debug("Takes the first case's span")
+    (case,) = [s for s in spans.get_finished_spans() if s.name == "eval c1"]
+    # log.debug("Lists the scores the span records")
+    shown = [k for k in (case.attributes or {}) if k.startswith("kds.eval.score.")]
+    # log.debug("Checks the table and the list were left off")
+    assert shown == ["kds.eval.score.right", "kds.eval.score.words"]
+    # log.debug("Checks the results keep them")
+    assert run.results[0].scores["said"] == {"text": "ok"}
 
 
 # log.debug("Defines the test that a failing case is marked failed")
