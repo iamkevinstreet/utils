@@ -5,22 +5,25 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-05
+# Last modified on:  2026-11-07
 #
 # Packages kds-logs: JSON-lines logs with request ids, redaction and
-# traces.
+# traces, and OpenTelemetry spans.
 
 [project]
 name = "kds-logs"
-version = "0.5.2"
-description = "JSON-lines logging with request ids, redaction of personal data, and HH:MM:SS trace lines."
+version = "0.6.0"
+description = "JSON-lines logging with request ids, redaction of personal data, HH:MM:SS trace lines, and OpenTelemetry spans for Langfuse or any tracing tool."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-args>=0.5,<0.6",
-  "kds-settings>=0.5,<0.6",
+  "kds-args>=0.6,<0.7",
+  "kds-settings>=0.6,<0.7",
+  "opentelemetry-api>=1.45,<2",
+  "opentelemetry-sdk>=1.45,<2",
+  "opentelemetry-exporter-otlp-proto-http>=1.45,<2",
 ]
 
 [project.optional-dependencies]

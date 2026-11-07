@@ -13,6 +13,37 @@ commit of their own: pin v0.3.0 or later.
   fail is labelled "needs a person" and waits. CI can now be called for a given commit, which is how the
   workflow checks one before it lands.
 
+## v0.6.0, Nov 7, 2026
+
+Pin: named in the next commit
+
+Spans: every project's work can now be traced with OpenTelemetry and read in Langfuse or any other
+tracing tool. Spans stay off, at no cost, until they have somewhere to go.
+
+- **logs:** `setup_spans()` turns spans on when Langfuse's keys are set (`LANGFUSE_PUBLIC_KEY` and
+  `LANGFUSE_SECRET_KEY` in `config/.env`), when the standard `OTEL_EXPORTER_OTLP_ENDPOINT` names a
+  tool, or when `[spans] keep` asks for a run's own file. `step()` runs a block as one span, records
+  a failure by its type and never its message, and redacts text as log lines are. Each span carries
+  its request id, and each log line written inside a span carries the span's `trace_id` and
+  `span_id`. `session()`, `collect()` and `write_spans()` let a run share one session and keep its
+  spans. The request id moves to `kds.logs.request`; `kds.logs` still exports it.
+- **llm:** every model call runs in a `chat <model>` span and every embedding call in an
+  `embeddings <model>` span, retries as events, with the provider, models, tokens, cost and stop
+  reason named as the OpenTelemetry GenAI conventions name them (their repository's commit `e6658f1`,
+  Nov 6, 2026; the names live in `config.py`). `agent()`, `tool()` and `retrieval()` open the spans a
+  project's own agents, tools and searches need. Prompts, answers, tool text and queries are
+  recorded only with `[spans] content`.
+- **evals:** each case runs in its own `eval <case id>` span that records its scores, also as GenAI
+  evaluation results; a run's cases share one session, and with `[spans] keep` the run writes
+  `<name>-<time>.spans.jsonl` beside its results.
+- **settings:** `[spans] keep`, `content` and `public`, `[langfuse] base_url`, and the two Langfuse
+  keys as secrets.
+- **Dependencies:** `kds-logs` needs `opentelemetry-api`, `opentelemetry-sdk` and
+  `opentelemetry-exporter-otlp-proto-http` 1.45 or later; `kds-llm` and `kds-evals` need the API.
+  `requirements-dev.txt` is recompiled with uv, the command its header names.
+- **All packages** move to 0.6.0 together and name each other as `>=0.6,<0.7`; a project moves its
+  kds requirements to `>=0.6.0,<0.7` with the new pin. 149 tests.
+
 ## v0.5.2, Nov 5, 2026
 
 Pin: `4cff45d3fb22d2359ee61de49c652b04cae1c246`

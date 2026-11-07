@@ -37,6 +37,12 @@ run.summary  # also in results/extraction-v0.2-latest.md
 
 - A project supplies `system_fn(case)` and `scorer_fn(case, output)`; the runner owns timing, cost,
   failures and reports. A failing case is recorded, never raised.
-- Each case runs under its own request id, `<run name>:<case id>`.
+- Each case runs under its own request id, `<run name>:<case id>`, and in its own span, `eval <case
+  id>`, which holds the case's model calls, tools and searches and records each score, both as an
+  attribute and as an OpenTelemetry GenAI evaluation result. In Langfuse each case is one trace, and
+  a run's cases share one session, `<run name>-<time>`.
+- With `[spans] keep = true` the run also writes its spans to `<run name>-<time>.spans.jsonl`, one
+  per line, beside its results, so a published run keeps its traces after a tracing tool lets them
+  go.
 - Scores are averaged over the cases that ran; failures count in the failure rate, latency and cost.
 - A judged metric is reported beside the judge's agreement with human grades (`calibrate`).

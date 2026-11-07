@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 OpenAI and Azure OpenAI chat completions behind the Provider interface,
 plus embeddings.
@@ -51,14 +51,14 @@ TYPE: Final = config.TYPE
 NAME: Final = config.NAME
 # log.debug("Takes the answering role's name, from the config")
 ASSISTANT: Final = config.ASSISTANT
+# log.debug("Takes the key a tool's details sit under, from the config")
+FUNCTION: Final = config.FUNCTION
 
 ########################################################################
 #                                                                      #
 #                           Local constants                            #
 #                                                                      #
 ########################################################################
-# log.debug("Names the key a tool's details sit under")
-FUNCTION = "function"
 # log.debug("Names the role a tool result is sent back under")
 TOOL = "tool"
 

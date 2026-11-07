@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-07
 #
 # Every shared setting at its default; a project copies the sections it
 # changes into its own config/config.toml. Each key's name is its section
@@ -36,3 +36,11 @@ dir = "logs"                              # one YYYY-MM-DD.jsonl file per day
 level = "INFO"                            # DEBUG | INFO | WARNING | ERROR
 redact = true                             # remove emails, phone numbers and IDs
 trace = false                             # print logger lines as HH:MM:SS traces
+
+[spans]
+keep = false                              # write each evaluation run's spans beside its results
+content = false                           # put prompts, answers and tool text on spans
+public = false                            # let anyone with a trace's link open it in Langfuse
+
+[langfuse]
+base_url = "https://cloud.langfuse.com"   # https://us.cloud.langfuse.com for US data

@@ -6,18 +6,23 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Structured logs: one JSON object per line, a request id on each,
-redaction, trace lines.
+redaction, trace lines; and spans, the timed steps of the work, which
+OpenTelemetry sends to Langfuse or any other tracing tool.
 
 Usage, once when a service starts:
     setup_logging(settings)
+    setup_spans(settings, service="grounded-qa")
 
 then in any module:
     log = get_logger(__name__)
-    with new_request_id():
+    with new_request_id(), step("intake"):
         log_event(log, "intake.start", email="person@example.com")
+
+A line logged inside a span carries the span's trace id, so a log line
+leads to its trace.
 """
 
 ########################################################################
@@ -28,20 +33,23 @@ then in any module:
 # Standard library
 from __future__ import annotations
 
-import contextvars
 import json
 import logging
 import sys
-import uuid
-from collections.abc import Iterator
-from contextlib import contextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+# Third-party
+from opentelemetry.trace import get_current_span
+
 # Local
 from kds.args import required
+from kds.logs.config import ENCODING
 from kds.logs.redact import redact, redact_obj
+from kds.logs.request import current_request_id, new_request_id
+from kds.logs.spans import flush_spans, session, setup_spans
+from kds.logs.steps import collect, set_values, step, write_spans
 from kds.logs.trace import TraceFormatter, elapsed, trace_to_stderr
 from kds.settings import Settings, get_settings
 
@@ -57,28 +65,29 @@ log = logging.getLogger(__name__)
 #                           Local constants                            #
 #                                                                      #
 ########################################################################
-# log.debug("Holds the request id of whatever is running now")
-_REQUEST_ID: contextvars.ContextVar[str] = contextvars.ContextVar("request_id", default="-")
 # log.debug("Names the handlers this module adds, so it adds them once")
 HANDLER_NAME = "kds.logs"
-# log.debug("Sets how many hex characters a new request id has")
-REQUEST_ID_LENGTH = 12
-# log.debug("Sets the encoding log files are written in")
-ENCODING = "utf-8"
 # log.debug("Names the record attribute an event's fields travel in")
 EVENT = "event"
 # log.debug("Lists what the package exports")
 __all__ = [
     "TraceFormatter",
+    "collect",
     "current_request_id",
     "elapsed",
+    "flush_spans",
     "get_logger",
     "log_event",
     "new_request_id",
     "redact",
     "redact_obj",
+    "session",
+    "set_values",
     "setup_logging",
+    "setup_spans",
+    "step",
     "trace_to_stderr",
+    "write_spans",
 ]
 
 
@@ -87,43 +96,6 @@ __all__ = [
 #                          Structured logging                          #
 #                                                                      #
 ########################################################################
-# log.debug("Defines the lookup of the current request id")
-def current_request_id() -> str:
-    """Returns the request id of the work running now, or "-".
-
-    Returns:
-        The id new_request_id set for this context, or "-" outside
-        any request.
-    """
-    # log.debug("Returns the id from the context")
-    return _REQUEST_ID.get()
-
-
-# log.debug("Defines the block that gives its work a request id")
-@contextmanager
-def new_request_id(value: str | None = None) -> Iterator[str]:
-    """Tags everything logged inside the block with one request id.
-
-    Args:
-        value: The id to use, such as one from an incoming header; a new
-            random id when omitted.
-
-    Yields:
-        The id, so it can be returned to the caller or passed on.
-    """
-    # log.debug("Uses the given id or makes a short random one")
-    request_id = value or uuid.uuid4().hex[:REQUEST_ID_LENGTH]
-    # log.debug("Sets it for this context, keeping a token to undo it")
-    token = _REQUEST_ID.set(request_id)
-    # log.debug("Runs the block, restoring the old id however it ends")
-    try:
-        # log.debug("Hands the id to the block")
-        yield request_id
-    finally:
-        # log.debug("Restores the id that was there before")
-        _REQUEST_ID.reset(token)
-
-
 # log.debug("Defines the formatter that writes one JSON object per record")
 class JsonFormatter(logging.Formatter):
     """Formats each record as one line of JSON with its request id."""
@@ -149,6 +121,12 @@ class JsonFormatter(logging.Formatter):
         }
         # log.debug("Adds the structured fields of an event, if any")
         payload |= getattr(record, EVENT, None) or {}
+        # log.debug("Finds the span the line was logged in, if any")
+        span = get_current_span().get_span_context()
+        # log.debug("Adds the trace and span ids, so the line leads to its span")
+        if span.is_valid:
+            # log.debug("Writes both ids as hex, as tracing tools show them")
+            payload |= {"trace_id": f"{span.trace_id:032x}", "span_id": f"{span.span_id:016x}"}
         # log.debug("Adds the traceback when an exception was logged")
         if record.exc_info:
             # log.debug("Formats the traceback into the line")

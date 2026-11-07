@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 The one object every project calls a model through. It uses the
 provider the settings name, or one passed in (tests pass the offline
@@ -37,7 +37,7 @@ from pydantic import BaseModel
 
 # Local
 from kds.args import missing, required
-from kds.llm import config, structured
+from kds.llm import config, spans, structured
 from kds.llm.base import Provider
 from kds.llm.errors import BudgetExceededError, StructuredOutputError, is_transient
 from kds.llm.pricing import estimate_cost
@@ -197,20 +197,24 @@ class ModelAdapter:
             raise BudgetExceededError(msg)
         # log.debug("Turns a plain string into a one-message conversation")
         turns = as_turns(messages)
-        # log.debug("Calls the provider, retrying what can succeed later")
-        completion = self._call_with_retries(
-            {
-                MODEL: model or self.model,
-                "messages": turns,
-                "system": system,
-                "tools": tools,
-                "max_tokens": max_tokens or self.settings.llm_max_tokens,
-                "temperature": self.settings.llm_temperature,
-                "json_mode": json_mode,
-            }
-        )
-        # log.debug("Prices, records and logs the call, then returns it")
-        return self._record(completion)
+        # log.debug("Puts the call's arguments together")
+        request = {
+            MODEL: model or self.model,
+            "messages": turns,
+            "system": system,
+            "tools": tools,
+            "max_tokens": max_tokens or self.settings.llm_max_tokens,
+            "temperature": self.settings.llm_temperature,
+            "json_mode": json_mode,
+        }
+        # log.debug("Runs the call in a chat span, its retries included")
+        with spans.chat(self.provider.name, request) as span:
+            # log.debug("Calls the provider, retrying what can succeed later")
+            completion = self._record(self._call_with_retries(request))
+            # log.debug("Records the answer's tokens and cost on the span")
+            spans.record(span, completion)
+        # log.debug("Returns the priced completion")
+        return completion
 
     # log.debug("Defines the retry loop around one provider call")
     def _call_with_retries(self, request: dict[str, Any] | None = None) -> Completion:
@@ -249,6 +253,8 @@ class ModelAdapter:
                     raise
                 # log.debug("Picks a jittered wait for this attempt")
                 delay = backoff(attempt)
+                # log.debug("Records the retry on the call's span")
+                spans.retried(attempt, delay, type(error).__name__)
                 # log.debug("Logs the retry and the wait")
                 log_event(
                     log,
@@ -385,8 +391,12 @@ class ModelAdapter:
         """
         # log.debug("Takes the texts, which the caller must give")
         texts = required(texts=texts)
-        # log.debug("Returns the provider's vectors")
-        return self.provider.embed(model=model or self.settings.llm_embedding_model, texts=texts)
+        # log.debug("Names the embedding model")
+        chosen = model or self.settings.llm_embedding_model
+        # log.debug("Runs the call in an embeddings span")
+        with spans.embeddings(self.provider.name, chosen, len(texts)):
+            # log.debug("Returns the provider's vectors")
+            return self.provider.embed(model=chosen, texts=texts)
 
 
 # log.debug("Defines the process-wide adapter")

@@ -7,7 +7,7 @@ small Python package that a project installs on its own, so every project takes 
 
 ## Status
 
-Release **v0.5.2**. Every package is in use by the projects below; 129 tests pass offline in CI, with
+Release **v0.6.0**. Every package is in use by the projects below; 149 tests pass offline in CI, with
 strict mypy and no kds-standards findings. Tools are added as projects need them, and each
 package's README says what is next for it.
 
@@ -49,9 +49,9 @@ commits behind each release are in [CHANGELOG.md](CHANGELOG.md).
 | --- | --- | --- | --- |
 | [args](args/) | `kds.args` | `required()` and `missing()`: the arguments a function cannot do without | none |
 | [settings](settings/) | `kds.settings` | typed, frozen settings from `config/config.toml` and `config/.env` | pydantic |
-| [logs](logs/) | `kds.logs` | JSON-lines logs, request ids, redaction, trace lines | settings |
-| [llm](llm/) | `kds.llm` | one adapter for model providers, with an offline stand-in | settings, logs |
-| [evals](evals/) | `kds.evals` | cases, metrics, a runner and reports | llm, logs |
+| [logs](logs/) | `kds.logs` | JSON-lines logs, request ids, redaction, trace lines, and spans sent with OpenTelemetry | settings |
+| [llm](llm/) | `kds.llm` | one adapter for model providers, with an offline stand-in and GenAI spans | settings, logs |
+| [evals](evals/) | `kds.evals` | cases, metrics, a runner and reports, a span per case | llm, logs |
 | [synthetic](synthetic/) | `kds.synthetic` | made-up names, near duplicates, PDFs that record page text | reportlab, pypdf |
 | [standards](standards/) | `kds.standards` | `kds-standards`: holds a repository to one code standard | none |
 | [diagrams](diagrams/) | `kds.diagrams` | `kds-diagrams`: draws these diagrams from TOML | none |

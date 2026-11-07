@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Anthropic's Messages API behind the Provider interface: tools, JSON
 mode, usage, latency.
@@ -54,6 +54,8 @@ NAME: Final = config.NAME
 USER: Final = config.USER
 # log.debug("Takes the answering role's name, from the config")
 ASSISTANT: Final = config.ASSISTANT
+# log.debug("Takes the content block type that holds text, from the config")
+TEXT: Final = config.TEXT
 
 ########################################################################
 #                                                                      #
@@ -64,8 +66,6 @@ ASSISTANT: Final = config.ASSISTANT
 JSON_INSTRUCTION = "\n\nRespond with a single JSON object and nothing else."
 # log.debug("Names the sampling setting not every SDK version takes")
 TEMPERATURE = "temperature"
-# log.debug("Names the content block type that holds text")
-TEXT = "text"
 # log.debug("Names the content block type that calls a tool")
 TOOL_USE = "tool_use"
 

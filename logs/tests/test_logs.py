@@ -6,10 +6,10 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
-Tests the JSON lines, request ids, one-time setup and the HH:MM:SS trace
-format.
+Tests the JSON lines, request ids, one-time setup, the HH:MM:SS trace
+format, and the trace id a line logged inside a span carries.
 """
 
 ########################################################################
@@ -38,6 +38,7 @@ from kds.logs import (
     log_event,
     new_request_id,
     setup_logging,
+    step,
 )
 from kds.settings import Settings
 
@@ -140,3 +141,29 @@ def test_setup_is_idempotent(tmp_path: Path, clean_root: logging.Logger) -> None
     assert setup_logging(settings) == first
     # log.debug("Checks it added no handlers")
     assert len(clean_root.handlers) == count
+
+
+# log.debug("Defines the test that a line names the span it was logged in")
+def test_line_inside_a_span_names_its_trace(tmp_path: Path, clean_root: logging.Logger) -> None:
+    """A line logged inside a step carries its trace and span ids.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        clean_root: The root logger, cleared of the setup's handlers
+            after the test.
+    """
+    # log.debug("Sets up logging into the test's folder")
+    path = setup_logging(Settings(_env_file=None, log_dir=tmp_path))
+    # log.debug("Logs an event inside a step")
+    with step("logged") as span:
+        # log.debug("Logs the event")
+        log_event(get_logger("test"), "intake.start")
+    # log.debug("Reads the last line of the log file")
+    line = json.loads(path.read_text(encoding="utf-8").splitlines()[-1])
+    # log.debug("Reads the step's ids")
+    context = span.get_span_context()
+    # log.debug("Checks the line carries both, as hex")
+    assert (line["trace_id"], line["span_id"]) == (
+        f"{context.trace_id:032x}",
+        f"{context.span_id:016x}",
+    )

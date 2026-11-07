@@ -55,6 +55,33 @@ adapter = ModelAdapter(FakeProvider(['{"charge_number": "1", "respondent": null}
    shows the model its answer and the error once before giving up.
 6. **Price and log.** Each call is priced from a dated table and logged with its tokens, latency
    and cost; the evaluation runner sums them per case and per run.
+7. **Span.** Each call runs in a `chat <model>` span, retries included as events, recording the
+   provider, the models, the tokens, the cost and why the answer stopped. An embedding call runs in
+   an `embeddings <model>` span. See [spans](#spans).
+
+## Spans
+
+Once [kds.logs](../logs/#spans) has turned spans on, the adapter's calls are recorded with nothing
+more to write. A project opens the other GenAI spans around its own work:
+
+```python
+from kds.llm.spans import agent, documents, retrieval, tool, tool_result
+
+with agent("intake", model=adapter.model):  # invoke_agent intake
+    with tool("search_clients", call_id=call.id, arguments=call.arguments) as span:
+        tool_result(span, found)  # execute_tool search_clients
+with retrieval(question, top_k=6, source="approved-sources") as span:
+    documents(span, [(hit.id, hit.score) for hit in hits])  # each passage's id and score
+```
+
+- Names follow the OpenTelemetry GenAI conventions, which are still at Development stability and
+  now live in their own repository; these follow its commit `e6658f1` of Nov 6, 2026. Every name is
+  in `config.py`, so a rename is one edit. Langfuse reads them: a chat span is a generation, a tool
+  call a tool, an agent's run an agent.
+- Prompts, answers, tool arguments and results, and search queries can hold personal data. They
+  are recorded only with `[spans] content = true`, meant for generated or public data, and redacted
+  like log lines even then.
+- The cost is set as `gen_ai.usage.cost`, which the conventions do not name but Langfuse reads.
 
 ## Conventions
 

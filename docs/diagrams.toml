@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-07
 #
 # The README diagrams as data. Redraw them with make diagrams; never
 # edit the SVGs by hand.
@@ -49,7 +49,7 @@ details = ["config.toml + .env", "typed, frozen", "secrets masked"]
 [[diagram.component]]
 box = [280, 312, 208, 96]
 name = "logs"
-details = ["one JSON line per event", "request ids", "redaction, traces"]
+details = ["JSON lines, request ids", "redaction, traces", "spans to Langfuse"]
 
 [[diagram.component]]
 box = [512, 312, 208, 96]
@@ -59,7 +59,7 @@ details = ["one interface for", "model providers", "see its README"]
 [[diagram.component]]
 box = [744, 312, 208, 96]
 name = "evals"
-details = ["cases and metrics", "runner and reports"]
+details = ["cases and metrics", "runner and reports", "a span per case"]
 
 [[diagram.arrow]]
 points = [[280, 360], [256, 360]]

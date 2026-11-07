@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Runs a system over evaluation cases and writes the results as JSON and
 Markdown.
@@ -33,22 +33,24 @@ import json
 import logging
 import time
 import traceback
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 # Third-party
+from opentelemetry.sdk.trace import ReadableSpan
 from pydantic import BaseModel, Field
 
 # Local
 from kds.args import missing, required
 from kds.evals import config
 from kds.evals.case import EvalCase
+from kds.evals.spans import case_span, scored
 from kds.evals.summary import summarise, to_markdown
 from kds.llm.adapter import ModelAdapter
 from kds.llm.pricing import prices_as_of
-from kds.logs import log_event, new_request_id
+from kds.logs import collect, flush_spans, log_event, new_request_id, session, write_spans
 
 ########################################################################
 #                                                                      #
@@ -74,6 +76,8 @@ STAMP = "%Y%m%dT%H%M%SZ"
 ENCODING = "utf-8"
 # log.debug("Sets the precision of the run's start and finish times")
 TIMESPEC = "seconds"
+# log.debug("Ends the name of the file a run's spans are kept in")
+SPANS_SUFFIX = ".spans.jsonl"
 
 
 ########################################################################
@@ -137,8 +141,12 @@ def run_case(
     adapter: ModelAdapter | None = None,
     system_fn: Callable[[EvalCase], Any] | None = None,
     scorer_fn: Callable[[EvalCase, Any], dict[str, Any]] | None = None,
+    *,
+    run: str = "",
 ) -> CaseResult:
     """Runs and scores one case; a failure is recorded, never raised.
+
+    The case runs in its own span, which records its scores.
 
     Args:
         case: The case to run. Required.
@@ -147,6 +155,7 @@ def run_case(
         system_fn: Runs the system on a case and returns its output.
             Required.
         scorer_fn: Scores a case's output as a flat dict. Required.
+        run: The run's name, recorded on the case's span.
 
     Returns:
         The case's scores, output, error, time, cost and call count.
@@ -166,25 +175,31 @@ def run_case(
     # log.debug("Starts the clock")
     started = time.perf_counter()
     # log.debug("Assumes no output, no scores and no error until it runs")
-    output, scores, error = None, {}, None
-    # log.debug("Tries the case; a failing case must not stop the run")
-    try:
-        # log.debug("Runs the system on the case")
-        output = system_fn(case)
-        # log.debug("Scores the output")
-        scores = scorer_fn(case, output)
-    except Exception as exc:  # noqa: BLE001 - one case's failure is a result, not a crash
-        # log.debug("Records the error's type and message")
-        error = f"{type(exc).__name__}: {exc}"
-        # log.debug("Logs the error with the end of its traceback")
-        log_event(
-            log,
-            "eval.case_error",
-            logging.WARNING,
-            case_id=case.id,
-            error=error,
-            trace=traceback.format_exc()[-TRACE_CHARS:],
-        )
+    output, scores, error, failure = None, {}, None, None
+    # log.debug("Runs the case in its own span")
+    with case_span(run, case) as span:
+        # log.debug("Tries the case; a failing case must not stop the run")
+        try:
+            # log.debug("Runs the system on the case")
+            output = system_fn(case)
+            # log.debug("Scores the output")
+            scores = scorer_fn(case, output)
+        except Exception as exc:  # noqa: BLE001 - one case's failure is a result, not a crash
+            # log.debug("Notes the error's type for the span")
+            failure = type(exc).__name__
+            # log.debug("Records the error's type and message")
+            error = f"{failure}: {exc}"
+            # log.debug("Logs the error with the end of its traceback")
+            log_event(
+                log,
+                "eval.case_error",
+                logging.WARNING,
+                case_id=case.id,
+                error=error,
+                trace=traceback.format_exc()[-TRACE_CHARS:],
+            )
+        # log.debug("Records the scores, and the failure if there was one")
+        scored(span, scores, failure)
     # log.debug("Returns the case's result")
     return CaseResult(
         case_id=case.id,
@@ -213,9 +228,11 @@ def run_eval(
     """Runs every case, then writes <name>-<time>.json and .md files.
 
     Each case runs under its own request id, "<name>:<case id>", so
-    its log lines can be found together. Pass keep_output=False when
-    the system saves its outputs itself and the results file should
-    hold only the scores.
+    its log lines can be found together, and in its own span; the run's
+    spans share a session named "<name>-<time>". When spans_keep is on,
+    the spans are also written to <name>-<time>.spans.jsonl. Pass
+    keep_output=False when the system saves its outputs itself and the
+    results file should hold only the scores.
 
     Args:
         name: The run's name, used in file names and request ids.
@@ -249,16 +266,12 @@ def run_eval(
         raise missing(out_dir=out_dir)
     # log.debug("Notes when the run started")
     started = datetime.now(UTC)
-    # log.debug("Starts the list of case results")
-    results: list[CaseResult] = []
-    # log.debug("Runs each case under its own request id")
-    for case in cases:
-        # log.debug("Opens the case's request id")
-        with new_request_id(f"{name}:{case.id}"):
-            # log.debug("Runs and scores the case")
-            result = run_case(case, adapter, system_fn, scorer_fn)
-        # log.debug("Keeps the result, without its output if asked")
-        results.append(result if keep_output else result.model_copy(update={"output": None}))
+    # log.debug("Names the run's files by when it started")
+    stamp = started.strftime(STAMP)
+    # log.debug("Runs the cases as one session, keeping their spans if asked")
+    with session(f"{name}-{stamp}"), collect() as kept:
+        # log.debug("Runs and scores every case")
+        results = _run_all(name, cases, adapter, system_fn, scorer_fn, keep_output=keep_output)
     # log.debug("Assembles the run with its summary")
     run = RunResult(
         name=name,
@@ -272,8 +285,10 @@ def run_eval(
         summary=summarise(results),
         results=results,
     )
-    # log.debug("Writes the run's result files")
-    write_run(run, Path(out_dir), started.strftime(STAMP))
+    # log.debug("Writes the run's result files, and its spans if asked")
+    write_run(run, Path(out_dir), stamp, kept if adapter.settings.spans_keep else ())
+    # log.debug("Sends any spans still waiting to be sent")
+    flush_spans()
     # log.debug("Logs the run's outcome")
     log_event(
         log,
@@ -289,7 +304,10 @@ def run_eval(
 
 # log.debug("Defines how a run is saved")
 def write_run(
-    run: RunResult | None = None, out_dir: Path | None = None, stamp: str | None = None
+    run: RunResult | None = None,
+    out_dir: Path | None = None,
+    stamp: str | None = None,
+    spans: Sequence[ReadableSpan] = (),
 ) -> None:
     """Writes the run as JSON and Markdown; refreshes the latest copy.
 
@@ -299,6 +317,8 @@ def write_run(
             Required.
         stamp: The run's start time as the file names show it.
             Required.
+        spans: The run's spans, written beside the results when there
+            are any.
     """
     # log.debug("Takes the run, which the caller must give")
     run = required(run=run)
@@ -316,6 +336,55 @@ def write_run(
     (out_dir / f"{run.name}-{stamp}.md").write_text(report, ENCODING)
     # log.debug("Writes the report again as the latest")
     (out_dir / f"{run.name}-latest.md").write_text(report, ENCODING)
+    # log.debug("Writes the run's spans beside them, when any were kept")
+    if spans:
+        # log.debug("Writes one span per line")
+        write_spans(spans, out_dir / f"{run.name}-{stamp}{SPANS_SUFFIX}")
+
+
+# log.debug("Defines how every case of a run is run")
+def _run_all(
+    name: str | None = None,
+    cases: list[EvalCase] | None = None,
+    adapter: ModelAdapter | None = None,
+    system_fn: Callable[[EvalCase], Any] | None = None,
+    scorer_fn: Callable[[EvalCase, Any], dict[str, Any]] | None = None,
+    *,
+    keep_output: bool = True,
+) -> list[CaseResult]:
+    """Runs and scores each case under its own request id.
+
+    Args:
+        name: The run's name. Required.
+        cases: The cases to run, in order. Required.
+        adapter: The model adapter the system calls. Required.
+        system_fn: Runs the system on a case. Required.
+        scorer_fn: Scores a case's output. Required.
+        keep_output: Whether the results keep each case's output.
+
+    Returns:
+        Each case's result, in order.
+    """
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
+    # log.debug("Takes the adapter, which the caller must give")
+    adapter = required(adapter=adapter)
+    # log.debug("Takes the system under test, which the caller must give")
+    system_fn = required(system_fn=system_fn)
+    # log.debug("Takes the scorer, which the caller must give")
+    scorer_fn = required(scorer_fn=scorer_fn)
+    # log.debug("Starts the list of case results")
+    results: list[CaseResult] = []
+    # log.debug("Runs each case under its own request id")
+    for case in required(cases=cases):
+        # log.debug("Opens the case's request id")
+        with new_request_id(f"{name}:{case.id}"):
+            # log.debug("Runs and scores the case")
+            result = run_case(case, adapter, system_fn, scorer_fn, run=name)
+        # log.debug("Keeps the result, without its output if asked")
+        results.append(result if keep_output else result.model_copy(update={"output": None}))
+    # log.debug("Returns the results")
+    return results
 
 
 # log.debug("Defines how any output becomes JSON-safe")

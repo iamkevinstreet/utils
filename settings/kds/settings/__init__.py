@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Typed, read-only settings for every project: values from
 config/config.toml, secrets from config/.env.
@@ -131,6 +131,20 @@ class Settings(BaseSettings):
     log_redact: bool = True
     # log.debug("Holds whether logger lines print as HH:MM:SS traces")
     log_trace: bool = False
+
+    # log.debug("Holds whether each evaluation run keeps its spans in a file")
+    spans_keep: bool = False
+    # log.debug("Holds whether spans carry prompts, answers and tool text")
+    spans_content: bool = False
+    # log.debug("Holds whether Langfuse shows each trace to anyone with its link")
+    spans_public: bool = False
+
+    # log.debug("Holds the Langfuse address spans are sent to")
+    langfuse_base_url: str = "https://cloud.langfuse.com"
+    # log.debug("Holds the Langfuse public key, a secret")
+    langfuse_public_key: SecretStr | None = None
+    # log.debug("Holds the Langfuse secret key, a secret")
+    langfuse_secret_key: SecretStr | None = None
 
     # log.debug("Defines the order the sources are read in")
     @classmethod
