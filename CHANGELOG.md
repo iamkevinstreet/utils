@@ -13,6 +13,19 @@ commit of their own: pin v0.3.0 or later.
   fail is labelled "needs a person" and waits. CI can now be called for a given commit, which is how the
   workflow checks one before it lands.
 
+## v0.6.1, Nov 7, 2026
+
+Pin: named in the next commit
+
+- **llm:** the Anthropic SDK's own spans are off. Since version 1.14 the SDK opens a span for every
+  API call, under the adapter's `chat` span. That span repeats the call, tokens included, so
+  Langfuse listed each call twice, and it carries the account's organization and workspace ids, so
+  a kept spans file held them. The client is now built with the SDK's spans off and its trace
+  headers off too, so no trace id leaves with a request. `kds-llm` needs `anthropic>=1.14`, where
+  that option arrived. Two tests cover it: a plain client still records its own span, and the
+  provider records only the chat span.
+- **All packages** move to 0.6.1 together. 153 tests.
+
 ## v0.6.0, Nov 7, 2026
 
 Pin: `ced00794e546f06796e294c82e09d55780fdfb20`

@@ -12,7 +12,7 @@
 
 [project]
 name = "kds-logs"
-version = "0.6.0"
+version = "0.6.1"
 description = "JSON-lines logging with request ids, redaction of personal data, HH:MM:SS trace lines, and OpenTelemetry spans for Langfuse or any tracing tool."
 readme = "README.md"
 requires-python = ">=3.12"

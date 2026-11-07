@@ -7,7 +7,7 @@ small Python package that a project installs on its own, so every project takes 
 
 ## Status
 
-Release **v0.6.0**. Every package is in use by the projects below; 151 tests pass offline in CI, with
+Release **v0.6.1**. Every package is in use by the projects below; 153 tests pass offline in CI, with
 strict mypy and no kds-standards findings. Tools are added as projects need them, and each
 package's README says what is next for it.
 

@@ -9,7 +9,8 @@ Created on:        2026-10-14
 Last modified on:  2026-11-07
 
 Anthropic's Messages API behind the Provider interface: tools, JSON
-mode, usage, latency.
+mode, usage, latency. The SDK's own spans and trace headers are off:
+the adapter's chat span records each call.
 """
 
 ########################################################################
@@ -88,6 +89,11 @@ class AnthropicProvider:
     def __init__(self, api_key: str | None = None, timeout_s: float | None = None) -> None:
         """Opens a client; the adapter, not the SDK, owns retries.
 
+        The SDK's own spans are off too. The adapter's chat span records
+        each call, and the SDK's would repeat it with the account's
+        organization and workspace ids. Its trace headers are off, so no
+        trace id leaves with a request.
+
         Args:
             api_key: The Anthropic API key. Required.
             timeout_s: The most seconds one call may take. Required.
@@ -96,8 +102,13 @@ class AnthropicProvider:
         api_key = required(api_key=api_key)
         # log.debug("Takes the timeout in seconds, which the caller must give")
         timeout_s = required(timeout_s=timeout_s)
-        # log.debug("Opens the client with a timeout and no SDK retries")
-        self._client = anthropic.Anthropic(api_key=api_key, timeout=timeout_s, max_retries=0)
+        # log.debug("Opens the client: a timeout, no SDK retries, no SDK spans or trace headers")
+        self._client = anthropic.Anthropic(
+            api_key=api_key,
+            timeout=timeout_s,
+            max_retries=0,
+            open_telemetry={"traces": False, "propagation": False},
+        )
         # log.debug("Notes whether this SDK version takes a temperature")
         self._accepts_temperature = (
             TEMPERATURE in inspect.signature(self._client.messages.create).parameters

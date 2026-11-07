@@ -82,6 +82,10 @@ with retrieval(question, top_k=6, source="approved-sources") as span:
   are recorded only with `[spans] content = true`, meant for generated or public data, and redacted
   like log lines even then.
 - The cost is set as `gen_ai.usage.cost`, which the conventions do not name but Langfuse reads.
+- The Anthropic SDK's own spans are off. Since version 1.14 the SDK opens a span for every API
+  call, which would repeat the chat span's call, tokens included, and add the account's
+  organization and workspace ids. Its trace headers are off too, so no trace id leaves with a
+  request.
 
 ## Conventions
 
