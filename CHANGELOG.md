@@ -38,6 +38,8 @@ tracing tool. Spans stay off, at no cost, until they have somewhere to go.
   `<name>-<time>.spans.jsonl` beside its results.
 - **settings:** `[spans] keep`, `content` and `public`, `[langfuse] base_url`, and the two Langfuse
   keys as secrets.
+- **standards:** an MCP server's tools, resources and prompts keep parameters without defaults, as
+  FastAPI's routes do, since a tool's signature is the schema its caller sees. A test covers it.
 - **Dependencies:** `kds-logs` needs `opentelemetry-api`, `opentelemetry-sdk` and
   `opentelemetry-exporter-otlp-proto-http` 1.45 or later; `kds-llm` and `kds-evals` need the API.
   `requirements-dev.txt` is recompiled with uv, the command its header names.

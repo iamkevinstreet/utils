@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Checks every Python function shows its whole contract where it is
 defined: each parameter has a default (None where there is no natural
@@ -15,8 +15,9 @@ Required are exactly those the body takes with required(), or with a
 guard that raises missing() for a union-typed one, and the function
 fits on one screen: at most 60 lines below its doc block. Parameters a
 framework fills are left alone: pytest's tests and fixtures, FastAPI's
-routes and middleware, Dash's callbacks and property setters, and any
-signature a comment starting "fixed:" says a library sets.
+routes and middleware, Dash's callbacks and property setters, MCP's
+tools, resources and prompts, whose parameters are their schema, and
+any signature a comment starting "fixed:" says a library sets.
 """
 
 ########################################################################
@@ -69,6 +70,9 @@ FRAMEWORK = frozenset(
         "on_event",
         "callback",
         "setter",
+        "tool",
+        "resource",
+        "prompt",
     }
 )
 # log.debug("Sets the comment that marks a signature a library fixes")

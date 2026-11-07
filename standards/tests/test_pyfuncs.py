@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-07
 
 Tests the function rules: every parameter has a default unless a
 framework fills it; the doc block opens with a sentence, lists every
@@ -100,8 +100,8 @@ def test_a_parameter_with_no_default_is_a_finding() -> None:
 
 # log.debug("Defines the test: framework-filled functions keep their parameters")
 def test_framework_functions_keep_their_parameters() -> None:
-    """Fixtures, routes, tests and fixed signatures need no defaults."""
-    # log.debug("Builds four functions a framework or a library fills")
+    """Framework-filled and fixed signatures need no defaults."""
+    # log.debug("Builds five functions a framework or a library fills")
     source = textwrap.dedent(
         '''\
         @pytest.fixture
@@ -124,6 +124,18 @@ def test_framework_functions_keep_their_parameters() -> None:
 
             Returns:
                 The answer.
+            """
+
+        @server.tool(annotations=READ_ONLY)
+        def search(query: str, k: int = 6) -> list[str]:
+            """Searches.
+
+            Args:
+                query: The query.
+                k: How many.
+
+            Returns:
+                The passages.
             """
 
         def test_it(client: Client) -> None:
