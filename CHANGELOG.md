@@ -21,8 +21,9 @@ Spans: every project's work can now be traced with OpenTelemetry and read in Lan
 tracing tool. Spans stay off, at no cost, until they have somewhere to go.
 
 - **logs:** `setup_spans()` turns spans on when Langfuse's keys are set (`LANGFUSE_PUBLIC_KEY` and
-  `LANGFUSE_SECRET_KEY` in `config/.env`), when the standard `OTEL_EXPORTER_OTLP_ENDPOINT` names a
-  tool, or when `[spans] keep` asks for a run's own file. `step()` runs a block as one span, records
+  `LANGFUSE_SECRET_KEY` in `config/.env`; an empty key, as CI sets a secret it does not have, counts
+  as unset), when the standard `OTEL_EXPORTER_OTLP_ENDPOINT` names a tool, or when `[spans] keep`
+  asks for a run's own file. `step()` runs a block as one span, records
   a failure by its type and never its message, and redacts text as log lines are. Each span carries
   its request id, and each log line written inside a span carries the span's `trace_id` and
   `span_id`. `session()`, `collect()` and `write_spans()` let a run share one session and keep its
@@ -46,7 +47,7 @@ tracing tool. Spans stay off, at no cost, until they have somewhere to go.
   `opentelemetry-exporter-otlp-proto-http` 1.45 or later; `kds-llm` and `kds-evals` need the API.
   `requirements-dev.txt` is recompiled with uv, the command its header names.
 - **All packages** move to 0.6.0 together and name each other as `>=0.6,<0.7`; a project moves its
-  kds requirements to `>=0.6.0,<0.7` with the new pin. 150 tests.
+  kds requirements to `>=0.6.0,<0.7` with the new pin. 151 tests.
 
 ## v0.5.2, Nov 5, 2026
 

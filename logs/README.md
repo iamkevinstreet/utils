@@ -43,8 +43,9 @@ with `kds-standards trace on <path>` and set `[log] trace = true`, and a run pri
 ## Spans
 
 A span is one timed step of the work, nested under the step that called it. Spans stay off, at no
-cost, until they have somewhere to go: Langfuse, when its two keys are in `config/.env`; any tool the
-standard `OTEL_EXPORTER_OTLP_ENDPOINT` variable names; or an evaluation run's own file, with
+cost, until they have somewhere to go: Langfuse, when its two keys are in `config/.env` (an empty key
+counts as unset, as CI sets a secret it does not have); any tool the standard
+`OTEL_EXPORTER_OTLP_ENDPOINT` variable names; or an evaluation run's own file, with
 `[spans] keep = true`.
 
 ```python

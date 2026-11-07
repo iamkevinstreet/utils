@@ -101,6 +101,16 @@ def test_keeping_spans_alone_turns_them_on() -> None:
     assert provider is not None and provider.resource.attributes["service.name"] == "t"
 
 
+# log.debug("Defines the test that empty keys count as unset")
+@pytest.mark.usefixtures("no_endpoint")
+def test_empty_langfuse_keys_count_as_unset() -> None:
+    """Both keys empty, as CI sets missing secrets: no exporter."""
+    # log.debug("Builds the settings with the two keys set to nothing")
+    settings = Settings(_env_file=None, langfuse_public_key="", langfuse_secret_key="")
+    # log.debug("Checks neither Langfuse's exporter nor a provider is built")
+    assert langfuse_exporter(settings) is None and build_provider(settings, service="t") is None
+
+
 # log.debug("Defines the test of the standard endpoint variables")
 def test_standard_variables_add_an_exporter(monkeypatch: pytest.MonkeyPatch) -> None:
     """OTEL_EXPORTER_OTLP_ENDPOINT alone adds one exporter.

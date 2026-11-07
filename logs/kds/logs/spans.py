@@ -249,14 +249,15 @@ def langfuse_exporter(settings: Settings | None = None) -> OTLPSpanExporter | No
             Required.
 
     Returns:
-        The exporter, or None unless both keys are set.
+        The exporter, or None unless both keys are set. An empty key
+        counts as unset: CI sets a secret it does not have to nothing.
     """
     # log.debug("Takes the settings, which the caller must give")
     settings = required(settings=settings)
     # log.debug("Reads the two keys")
     public, secret = settings.langfuse_public_key, settings.langfuse_secret_key
-    # log.debug("Stops unless both are set")
-    if public is None or secret is None:
+    # log.debug("Stops unless both are set and neither is empty")
+    if not public or not secret:
         # log.debug("Returns None, so Langfuse gets nothing")
         return None
     # log.debug("Joins the keys as basic authentication expects")
