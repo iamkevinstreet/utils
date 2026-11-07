@@ -254,9 +254,9 @@ def test_steps_redact_and_record_errors_by_type(spans: InMemorySpanExporter) -> 
 def test_values_hold_what_a_span_cannot() -> None:
     """None is dropped, lists stay, tables and paths become text."""
     # log.debug("Converts one of each kind")
-    found = values({"a": None, "b": [1, 2], "c": {"k": 1}, "d": [1, "x"], "e": Path("x")})
-    # log.debug("Checks each conversion")
-    assert found == {"b": [1, 2], "c": '{"k": 1}', "d": '[1, "x"]', "e": "x"}
+    found = values({"a": None, "b": [1, 2], "c": {"k": 1}, "d": [1, "x"], "e": Path("x"), "f": []})
+    # log.debug("Checks each conversion; an empty list stays a list")
+    assert found == {"b": [1, 2], "c": '{"k": 1}', "d": '[1, "x"]', "e": "x", "f": []}
 
 
 # log.debug("Defines the test of the public flag")

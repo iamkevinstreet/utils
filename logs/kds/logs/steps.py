@@ -184,12 +184,13 @@ def _plain_list(items: Sequence[Any] | None = None) -> bool:
         items: The list to check. Required.
 
     Returns:
-        True when the items are all strings, all numbers or all yes/no.
+        True when the list is empty or its items are all strings, all
+        numbers or all yes/no.
     """
     # log.debug("Takes the items, which the caller must give")
     items = required(items=items)
-    # log.debug("Returns whether there is one plain type among them")
-    return len({type(item) for item in items}) == 1 and isinstance(items[0], PLAIN)
+    # log.debug("Returns whether there is at most one plain type among them")
+    return not items or (len({type(item) for item in items}) == 1 and isinstance(items[0], PLAIN))
 
 
 # log.debug("Defines how a step records what it found")
