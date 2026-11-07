@@ -15,7 +15,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.6.1, Nov 7, 2026
 
-Pin: named in the next commit
+Pin: `97157184471beb28ed129eb52086c36f76ef3e55`
 
 - **llm:** the Anthropic SDK's own spans are off. Since version 1.14 the SDK opens a span for every
   API call, under the adapter's `chat` span. That span repeats the call, tokens included, so
