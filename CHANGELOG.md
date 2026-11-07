@@ -15,7 +15,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.6.0, Nov 7, 2026
 
-Pin: named in the next commit
+Pin: `ced00794e546f06796e294c82e09d55780fdfb20`
 
 Spans: every project's work can now be traced with OpenTelemetry and read in Langfuse or any other
 tracing tool. Spans stay off, at no cost, until they have somewhere to go.
