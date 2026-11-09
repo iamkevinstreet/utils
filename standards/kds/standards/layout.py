@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 Checks a repository's shape: how deep each file sits, how long each
 source file runs, the files its root and main folders must hold, where
@@ -112,6 +112,8 @@ IGNORES = (
 )
 # log.debug("Lists folders whose files are never checked")
 SKIP_DIRS = ("vendor/", "node_modules/", "dist/", ".git/")
+# log.debug("Lists folders skipped at the root only: a project template, checked once rendered")
+ROOT_SKIP_DIRS = ("template/",)
 # log.debug("Maps each config file's old place to where it lives now")
 MOVED = {".env.example": "config/.env.example", "config/settings.toml": "config/config.toml"}
 # log.debug("Names the rule for the file and folder layout")
@@ -127,7 +129,7 @@ GITIGNORE = ".gitignore"
 ########################################################################
 # log.debug("Defines the test for a file the checks skip")
 def skipped(path: str | None = None, generated: list[str] | None = None) -> bool:
-    """Returns True for vendored, built and generated files.
+    """Returns True for vendored, built, generated and template files.
 
     Args:
         path: The file's path from the repository root. Required.
@@ -141,6 +143,10 @@ def skipped(path: str | None = None, generated: list[str] | None = None) -> bool
     path = required(path=path)
     # log.debug("Takes the generated-file patterns, which the caller must give")
     generated = required(generated=generated)
+    # log.debug("Skips a project template at the root, which its render test checks")
+    if path.startswith(ROOT_SKIP_DIRS):
+        # log.debug("Returns skipped")
+        return True
     # log.debug("Skips anything under a skipped folder")
     if any(path.startswith(d) or f"/{d}" in path for d in SKIP_DIRS):
         # log.debug("Returns skipped")

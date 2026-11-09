@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 Reads from git which files a repository holds, and when each was
 created and last changed. Dates follow a file through renames; a file
@@ -133,6 +133,29 @@ def _git(root: Path | None = None, *args: str) -> str:
     return result.stdout
 
 
+# log.debug("Defines the test for a repository with a commit")
+def _has_commits(root: Path | None = None) -> bool:
+    """Returns whether HEAD names a commit; a new repository has none.
+
+    Args:
+        root: The repository root. Required.
+
+    Returns:
+        True once the repository has its first commit.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
+    # log.debug("Asks git whether HEAD names a commit, without failing when it does not")
+    result = subprocess.run(  # noqa: S603 - fixed arguments, no shell
+        [GIT, "rev-parse", "--verify", "--quiet", "HEAD"],
+        cwd=root,
+        capture_output=True,
+        check=False,
+    )
+    # log.debug("Returns whether it does")
+    return result.returncode == 0
+
+
 # log.debug("Defines the list of files a commit would hold")
 def repo_files(root: Path | None = None) -> list[str]:
     """Returns tracked files plus new files that are not ignored.
@@ -166,8 +189,12 @@ def read_history(root: Path | None = None) -> History:
     root = required(root=root)
     # log.debug("Starts an empty history")
     history = History()
-    # log.debug("Reads every commit, newest first, with renames found")
-    out = _git(root, "log", "-M", "--name-status", "--date=short", LOG_FORMAT)
+    # log.debug("Reads every commit, newest first, with renames found; a new repository has none")
+    out = (
+        _git(root, "log", "-M", "--name-status", "--date=short", LOG_FORMAT)
+        if _has_commits(root)
+        else ""
+    )
     # log.debug("Maps older names to the path they have now")
     alias: dict[str, str] = {}
     # log.debug("Holds the date of the commit being read")

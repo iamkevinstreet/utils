@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 The kds-standards command: checks a repository against the code
 standard, stamps headers with their paths and dates, adds a header to a
@@ -302,7 +302,7 @@ def run_check(root: Path | None = None) -> list[Finding]:
     # log.debug("Adds the layout, published-docs and shared-constant findings")
     found += (
         layout.check_repository(root, files)
-        + docs.check_docs(root, files)
+        + docs.check_docs(root, files, kept)
         + constants.check_shared(sources, packages_of(files))
     )
     # log.debug("Returns every finding, sorted")

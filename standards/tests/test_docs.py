@@ -6,11 +6,11 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 Tests the published-docs rules: which Markdown a repository may hold,
-which links resolve and which break, and that code is never read as a
-link.
+which links resolve and which break, that code is never read as a
+link, and that a skipped folder's Markdown is not read.
 """
 
 ########################################################################
@@ -122,3 +122,18 @@ def test_check_docs_flags_unpublished_markdown_and_broken_links(tmp_path: Path) 
         ("docs/plan.md", 0),
         ("README.md", 1),
     ]
+
+
+# log.debug("Defines the test that a skipped folder's docs are not read")
+def test_check_docs_reads_only_the_files_kept(tmp_path: Path) -> None:
+    """A template's README may link to a file it has only unrendered.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+    """
+    # log.debug("Makes the template's folder")
+    (tmp_path / "template").mkdir()
+    # log.debug("Writes a README there linking a file the template renders")
+    (tmp_path / "template/README.md").write_text("[code](code.py)\n", encoding="utf-8")
+    # log.debug("Checks nothing is found when the template is not kept")
+    assert check_docs(tmp_path, ["template/README.md", "template/code.py.jinja"], []) == []

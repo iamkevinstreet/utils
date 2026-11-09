@@ -24,3 +24,7 @@ ruff>=0.17
 mypy>=1.13
 types-reportlab
 pip-audit>=2.7
+# kds-pipelines: dlt, and DuckDB for its load test
+dlt[duckdb]>=1.32,<2
+# The project template's render test
+copier>=9.4

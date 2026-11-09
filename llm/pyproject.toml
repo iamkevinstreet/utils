@@ -12,16 +12,16 @@
 
 [project]
 name = "kds-llm"
-version = "0.6.2"
+version = "0.7.0"
 description = "One model adapter for Anthropic, OpenAI and Azure OpenAI, with an offline stand-in, retries, structured output, cost accounting, a budget stop, and OpenTelemetry GenAI spans."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-args>=0.6,<0.7",
-  "kds-settings>=0.6,<0.7",
-  "kds-logs>=0.6,<0.7",
+  "kds-args>=0.7,<0.8",
+  "kds-settings>=0.7,<0.8",
+  "kds-logs>=0.7,<0.8",
   "anthropic>=1.14",
   "openai>=1.50",
   "httpx>=0.27",
