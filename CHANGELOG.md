@@ -15,6 +15,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.6.2, Nov 9, 2026
 
+Pin: `6758307bdeca745d04ac4e3f21e5782bca3d12dd`
+
 - **evals:** a case's `latency_ms` is the system's time alone. The clock used to stop after the
   scorer, so a scorer that calls a model, such as an LLM judge, added its call to every case: in
   Grounded Q&A's judged run of Nov 9 the run file's median was 4.3 s with keyword search and 3.8 s
