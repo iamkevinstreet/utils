@@ -7,9 +7,10 @@ small Python package that a project installs on its own, so every project takes 
 
 ## Status
 
-Release **v0.6.1**. Every package is in use by the projects below; 153 tests pass offline in CI, with
-strict mypy and no kds-standards findings. Tools are added as projects need them, and each
-package's README says what is next for it.
+Release **v0.7.0**. Every package is in use by the projects below, or is about to be; 172 tests pass
+offline in CI, with strict mypy and no kds-standards findings. Every new project starts from the
+[project template](#starting-a-project). Tools are added as projects need them, and each package's
+README says what is next for it.
 
 ## Quick start
 
@@ -41,6 +42,37 @@ None of these packages is on PyPI. A kds name left to the default index could re
 stranger's package, so `uv.lock` must show every kds package coming from this repository. The
 commits behind each release are in [CHANGELOG.md](CHANGELOG.md).
 
+## Starting a project
+
+Every project starts from the same template, [`template/`](template/), so each has the same layers,
+settings, command, checks and CI, with its packages pinned to one commit of this repository.
+[Copier](https://copier.readthedocs.io/) copies it and asks five questions: the project's name, its
+repository's name, a sentence on what it does, the industry it serves, and the commit to pin, a
+release's from [CHANGELOG.md](CHANGELOG.md).
+
+```sh
+uvx copier copy --vcs-ref <commit> gh:iamkevinstreet/utils <folder>
+```
+
+Copy from GitHub, never a local clone: the project commits `.copier-answers.yml`, which names where
+it came from. Copier then lists what to run in the new folder: `uv lock`, `make install`,
+`make stamp` for the headers' dates, the first commit, then `make check test build docs`.
+
+| Path | What every project gets |
+| --- | --- |
+| `pipelines/` | `python -m pipelines`, from `kds.pipelines`: `load NAME` for each source, and `dbt ...` over the same warehouse |
+| `dbt/` | The dbt project's layers (staging, intermediate, a mart per domain), profiles for DuckDB and Databricks, a surrogate key and two generic tests |
+| `dags/` | The Airflow 3 defaults, and the build DAG, which runs when any raw schema changes |
+| `config/` | Every setting at its default, and the secrets template |
+| `tests/` | The settings file kept equal to the code, the command, and every DAG's safety settings |
+| `.github/` | CI (secrets scan, lint, types, the code standard, tests, audit, the DAGs and the dbt build), CodeQL, Dependabot and the workflow that lands its updates |
+
+An existing project adopts the template the same way, into its own folder: Copier asks before it
+replaces a file, and leaves the README, changelog, security policy, settings file and command alone
+once they exist. `copier update` brings a project to a later release, merging the template's
+changes into the project's own. A test here renders the template, commits it, and runs the code
+standard, ruff and the rendered project's own tests on the result.
+
 ## Architecture at a glance
 
 ![utils at a glance: the tools a project's code imports, test data, and developer tools, all installed from this repository at one commit](docs/architecture.svg)
@@ -53,6 +85,7 @@ commits behind each release are in [CHANGELOG.md](CHANGELOG.md).
 | [llm](llm/) | `kds.llm` | one adapter for model providers, with an offline stand-in and GenAI spans | settings, logs |
 | [evals](evals/) | `kds.evals` | cases, metrics, a runner and reports, a span per case | llm, logs |
 | [synthetic](synthetic/) | `kds.synthetic` | made-up names, near duplicates, PDFs that record page text | reportlab, pypdf |
+| [pipelines](pipelines/) | `kds.pipelines` | the warehouse settings, dlt loads into DuckDB or Databricks, dbt runs, and `python -m pipelines` | settings, logs, dlt |
 | [standards](standards/) | `kds.standards` | `kds-standards`: holds a repository to one code standard | none |
 | [diagrams](diagrams/) | `kds.diagrams` | `kds-diagrams`: draws these diagrams from TOML | none |
 
@@ -125,7 +158,7 @@ There is no service to run here, so there is no runbook; each project that runs 
 ## Testing
 
 ```sh
-make test     # 78 tests, offline, warnings as errors
+make test     # 172 tests, offline, warnings as errors
 make check    # ruff, strict mypy and kds-standards
 make audit    # pip-audit over every locked dependency
 ```
@@ -151,14 +184,17 @@ utils/
 ├── llm/           kds.llm: the model adapter, providers, pricing
 ├── evals/         kds.evals: cases, metrics, runner, reports, judge
 ├── synthetic/     kds.synthetic: made-up names and PDFs
+├── pipelines/     kds.pipelines: warehouse settings, dlt loads, dbt runs, the command
 ├── standards/     kds.standards: the kds-standards checker
 ├── diagrams/      kds.diagrams: the kds-diagrams renderer
 ├── config/        config.toml: every shared setting at its default; .env.example
+├── template/      the project template every project starts from; copier.yml asks its questions
 ├── docs/          diagrams.toml and the two SVGs it draws
 └── .github/       CI, CodeQL, Dependabot and the workflow that lands its updates, CODEOWNERS
 ```
 
-Each package folder holds its own `pyproject.toml`, `README.md`, `kds/<name>/` and `tests/`. All of
+Each package folder holds its own `pyproject.toml`, `README.md`, `kds/<name>/` and `tests/`; the
+root `tests/` holds the packaging and template tests. All of
 them share the `kds` namespace, so a project imports `from kds.logs import get_logger` whichever
 packages it installed. Tests run from the root, where `pyproject.toml` puts every package on the
 path.

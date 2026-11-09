@@ -1,0 +1,35 @@
+########################################################################
+#                                                                      #
+#                          config/config.toml                          #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-11-09
+# Last modified on:  2026-11-09
+#
+# Every setting the loaders, the build and the DAGs read, at its
+# default. No secrets: those go in config/.env.
+#
+# Each key's name is its section and key joined: [warehouse] path is
+# warehouse_path, and the environment variable WAREHOUSE_PATH overrides
+# it. A test keeps this file equal to the defaults in code.
+
+[warehouse]
+destination = "duckdb"                    # duckdb | databricks
+path = "data/generated/warehouse.duckdb"  # the DuckDB file dlt loads and dbt builds in
+state = "data/generated/dlt"              # dlt's pipeline state
+
+[dbt]
+project = "dbt"                           # the dbt project, which also holds profiles.yml
+target = "dev"                            # dev builds in DuckDB, prod in Databricks
+threads = 4                               # models dbt builds at once
+
+[databricks]
+catalog = "kds"                           # the Unity Catalog catalog every schema lives in
+
+[files]
+encoding = "utf-8"                        # every file read or written
+
+[log]
+dir = "logs"                              # one YYYY-MM-DD.jsonl file per day
+level = "INFO"                            # DEBUG | INFO | WARNING | ERROR

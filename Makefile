@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-09
 #
 # One command for each routine task; CI runs the same targets, so local
 # and CI checks match.
@@ -14,7 +14,7 @@
 
 PY ?= .venv/bin/python
 PACKAGES := -p kds.args -p kds.settings -p kds.logs -p kds.llm -p kds.evals -p kds.synthetic \
-            -p kds.standards -p kds.diagrams
+            -p kds.standards -p kds.diagrams -p kds.pipelines
 
 .PHONY: install check test audit diagrams
 

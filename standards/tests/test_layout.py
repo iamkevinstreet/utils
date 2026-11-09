@@ -6,11 +6,11 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
-Tests the repository rules: how deep a file may sit and how long a
-source file may run. It also tests the script rules' statement finder,
-which skips the lines inside an object.
+Tests the repository rules: how deep a file may sit, which folders no
+check reads, and how long a source file may run. It also tests the
+script rules' statement finder, which skips the lines inside an object.
 """
 
 ########################################################################
@@ -48,6 +48,17 @@ def test_depth_allows_one_more_in_an_area() -> None:
     assert layout.check_depth("a/b/c/d/file.py") != []
     # log.debug("Checks four deep under frontend/ is allowed")
     assert layout.check_depth("frontend/src/components/forms/Field.tsx") == []
+
+
+# log.debug("Defines the test for the folders no check reads")
+def test_a_template_is_skipped_at_the_root_only() -> None:
+    """A root template/ holds unrendered files; a nested one is code."""
+    # log.debug("Checks a file of the root template is skipped")
+    assert layout.skipped("template/pipelines/config.py", [])
+    # log.debug("Checks a folder named template deeper down is still checked")
+    assert not layout.skipped("app/template/views.py", [])
+    # log.debug("Checks a vendored file is skipped at any depth")
+    assert layout.skipped("app/vendor/lib.py", [])
 
 
 # log.debug("Defines the test for the file-length rule")

@@ -1,0 +1,131 @@
+########################################################################
+#                                                                      #
+#                       .github/workflows/ci.yml                       #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-11-09
+# Last modified on:  2026-11-09
+#
+# Runs on every push to main and every pull request, and for the
+# dependency-updates workflow on the commit it is about to land: the
+# secrets scan, lint, types, the code standard, the offline tests and
+# the audit; the DAG tests; and the dbt build on DuckDB with its docs.
+
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # By hand, on any branch: before a repository has a main, a branch has no pull request to run on.
+  workflow_dispatch:
+  # From the dependency-updates workflow, on the exact commit it is about to land.
+  workflow_call:
+    inputs:
+      ref:
+        description: The commit to check; blank checks the commit that started the run.
+        type: string
+        default: ""
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      GITLEAKS_VERSION: 8.30.1
+      GITLEAKS_SHA256: 551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb
+      RUNTIME__DLTHUB_TELEMETRY: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          fetch-depth: 0  # the secrets scan and the header dates read all of history
+          persist-credentials: false
+
+      - name: Secrets scan (whole history)
+        run: |
+          archive="gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          curl -sSfL -o "/tmp/${archive}" \
+            "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/${archive}"
+          echo "${GITLEAKS_SHA256}  /tmp/${archive}" | sha256sum --check --strict
+          tar -xzf "/tmp/${archive}" -C /tmp gitleaks
+          /tmp/gitleaks git . --no-banner --redact --exit-code 1
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: "0.13.6"
+
+      - name: Install the locked environment (hashes checked)
+        run: uv sync --locked
+
+      - name: Lint, format, strict types and the code standard
+        run: make check
+
+      - name: Tests, offline
+        run: make test
+
+      - name: Known vulnerabilities in every locked dependency
+        run: make audit
+
+  dags:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: "0.13.6"
+
+      - name: Install the locked environment with Airflow
+        run: uv sync --locked --group airflow
+
+      - name: DAG import and integrity tests
+        run: uv run --no-sync pytest tests/test_dags.py
+
+  warehouse:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RUNTIME__DLTHUB_TELEMETRY: "false"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: "3.12"
+
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2  # v10.3.3
+        with:
+          version: "0.13.6"
+
+      - name: Install the locked environment
+        run: uv sync --locked
+
+      - name: Build and test every model on DuckDB
+        run: make build
+
+      - name: The docs site, with its lineage graph
+        run: make docs

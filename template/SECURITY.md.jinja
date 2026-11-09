@@ -1,0 +1,30 @@
+# Security
+
+## Reporting a vulnerability
+
+Please report it privately, never in a public issue:
+
+- **Preferred:** GitHub's private vulnerability reporting (the repository's **Security** tab, then
+  **Report a vulnerability**).
+- **Otherwise:** email info@kevindstreet.com with "Security" in the subject.
+
+Include what you found, how to reproduce it, and what an attacker could do with it. You will get an
+answer within 3 business days. A confirmed issue is fixed within 30 days, sooner when severe, and you
+are credited in the advisory unless you would rather not be.
+
+## Scope
+
+In scope: the loaders in `pipelines/`, the dbt project, the DAGs and the workflows in `.github/`.
+
+Out of scope: the platform this runs on, which has its own policy; GitHub, AWS and Databricks
+themselves; and findings that need a compromised developer machine.
+
+## How this repository is protected
+
+| Risk | Control |
+| --- | --- |
+| A wrong number reaching a mart | Enforced contracts on every mart, unit tests and data tests, all in `dbt build`, which stops a failed model's children |
+| A committed secret | gitleaks before every commit and over the whole history in CI; secrets live only in `config/.env` and GitHub secrets, and the settings loader refuses one in `config/config.toml` |
+| Usage data leaving the machine | dlt's and dbt's anonymous usage reporting are off, in code and in `dbt_project.yml` |
+| A vulnerable dependency | A lockfile with hashes, `pip-audit` over every group in CI, Dependabot every week, each update landed only after the whole of CI passes on it. Two oauthlib advisories are waived, in the Databricks group only, until dbt-databricks allows a newer SQL connector; the Makefile says why |
+| A tampered Action or tool | Actions pinned to commit SHAs, and the gitleaks download checked against its published SHA-256 |

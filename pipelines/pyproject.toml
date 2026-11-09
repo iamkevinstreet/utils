@@ -1,0 +1,42 @@
+########################################################################
+#                                                                      #
+#                       pipelines/pyproject.toml                       #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-11-09
+# Last modified on:  2026-11-09
+#
+# Packages kds-pipelines: the settings, loads, dbt runs and command a
+# project's data layers share. dlt is the one library it imports; dbt
+# runs as a process from the project's own environment, so the project
+# pins dbt and its adapters.
+
+[project]
+name = "kds-pipelines"
+version = "0.7.0"
+description = "What every project's data layers run on: shared settings, dlt loads into DuckDB or Databricks, dbt runs, and the one pipelines command."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
+dependencies = [
+  "kds-args>=0.7,<0.8",
+  "kds-settings>=0.7,<0.8",
+  "kds-logs>=0.7,<0.8",
+  "dlt>=1.32,<2",
+  "pydantic>=2.8",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.3", "ruff>=0.17", "dlt[duckdb]>=1.32,<2"]
+
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["kds.pipelines"]
+
+[tool.setuptools.package-data]
+"kds.pipelines" = ["py.typed"]

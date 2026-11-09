@@ -1,0 +1,30 @@
+########################################################################
+#                                                                      #
+#                        .github/dependabot.yml                        #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-11-08
+# Last modified on:  2026-11-08
+#
+# Opens weekly pull requests that update the pinned Actions and the uv
+# lockfile, each kind's updates grouped into one pull request. dlt,
+# dbt and Airflow are pinned exactly in pyproject.toml, so a minor
+# release of any of them waits for a reviewed change there.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      python:
+        patterns: ["*"]

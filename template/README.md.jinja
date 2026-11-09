@@ -1,0 +1,70 @@
+# {{ project_name }}
+
+[![ci](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/ci.yml/badge.svg)](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/ci.yml)
+[![codeql](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/codeql.yml/badge.svg)](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/codeql.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+
+{{ description }} For {% if industry == "any" %}businesses{% else %}{{ industry }} businesses{% endif %}.
+
+## In the blueprint
+
+Every project follows the same seven layers, and fills only the ones its problem needs.
+
+| Layer | Here |
+| --- | --- |
+| Sources | Not yet |
+| Ingestion | dlt, one load per source, each run by `python -m pipelines load` |
+| Storage | One DuckDB file on a laptop and in CI; Databricks in production |
+| Modeling | dbt: staging and intermediate views, then a mart per domain with enforced contracts |
+| Serving | The marts, and the dbt docs site with its lineage graph |
+| Intelligence | Not yet |
+| Product | Not yet |
+
+## Status
+
+| | |
+| --- | --- |
+| Works today | The skeleton, from the [utils project template](https://github.com/iamkevinstreet/utils#starting-a-project): the settings, `python -m pipelines`, the dbt project, the build DAG, the checks and CI |
+| Next | The first source |
+
+## Quick start
+
+You need [uv](https://docs.astral.sh/uv/). Nothing else: no key, no account, no server.
+
+```bash
+make install   # the locked environment
+make build     # every seed, model, contract and test, on DuckDB
+make docs      # the dbt docs site with its lineage graph, in dbt/target/static_index.html
+make test      # the tests, offline
+make check     # lint, format, strict types and the code standard
+```
+
+To run the DAGs through Airflow, `make install-airflow` then `make dags-test`.
+
+## Adding a source
+
+1. Write its dlt source and the load that runs it in `pipelines/<source>.py`, with its settings in
+   `pipelines/config.py` and `config/config.toml`, and name the load in `LOADS` in
+   `pipelines/__main__.py`, so `python -m pipelines load <source>` runs it.
+2. Declare its raw tables in `dbt/models/staging/_<source>__sources.yml`, with freshness limits, and
+   give each a staging view, `stg_<source>__<table>`.
+3. Add a DAG in `dags/` that runs the load and updates an asset named for its raw schema, list the
+   asset in `RAW_SCHEMAS` in `dags/defaults.py`, so the build runs after it, and add the DAG's id to
+   `DAGS` in the Makefile.
+4. Test it offline, on fixtures in `tests/`.
+
+## Project layout
+
+| Path | What it holds |
+| --- | --- |
+| `pipelines/` | The dlt sources and `python -m pipelines`, which the Makefile, CI and the DAGs run |
+| `dbt/` | The dbt project: staging, intermediate and mart models, seeds, macros and tests ([`dbt/README.md`](dbt/README.md)) |
+| `dags/` | The Airflow 3 DAGs ([`dags/README.md`](dags/README.md)) |
+| `config/` | Every setting and the secrets template ([`config/README.md`](config/README.md)) |
+| `tests/` | The tests, offline |
+| `data/` | Only `generated/`, ignored: the warehouse, dlt's state, Airflow's home ([`data/README.md`](data/README.md)) |
+
+## Changelog and license
+
+[CHANGELOG.md](CHANGELOG.md). Apache 2.0: see [LICENSE](LICENSE) and [NOTICE](NOTICE). Security
+reports: [SECURITY.md](SECURITY.md).

@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 Tests that every package ships a py.typed marker, so mypy checks its
 callers, and that all the packages share one version.
@@ -42,7 +42,17 @@ log = logging.getLogger(__name__)
 # log.debug("Points at the repository root, above this tests folder")
 ROOT = Path(__file__).resolve().parents[1]
 # log.debug("Lists every package folder in the repository")
-PACKAGES = ("args", "settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams")
+PACKAGES = (
+    "args",
+    "settings",
+    "logs",
+    "llm",
+    "evals",
+    "synthetic",
+    "standards",
+    "diagrams",
+    "pipelines",
+)
 
 
 ########################################################################

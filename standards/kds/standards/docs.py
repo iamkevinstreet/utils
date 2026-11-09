@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 Checks the docs a repository publishes: README.md files, a root
 CHANGELOG.md and a root SECURITY.md, and no other Markdown. Markdown
@@ -77,12 +77,17 @@ EXTERNAL = ("http://", "https://", "mailto:", "#")
 #                                                                      #
 ########################################################################
 # log.debug("Defines the published-docs check of a repository")
-def check_docs(root: Path | None = None, files: list[str] | None = None) -> list[Finding]:
+def check_docs(
+    root: Path | None = None, files: list[str] | None = None, kept: list[str] | None = None
+) -> list[Finding]:
     """Flags Markdown that is not published, and links that break.
 
     Args:
         root: The repository root. Required.
-        files: Every file a commit would hold. Required.
+        files: Every file a commit would hold, which a link may name.
+            Required.
+        kept: The files the checks read, skipped ones left out; every
+            file when None.
 
     Returns:
         A finding for each Markdown file the repository may not
@@ -94,8 +99,8 @@ def check_docs(root: Path | None = None, files: list[str] | None = None) -> list
     files = required(files=files)
     # log.debug("Collects the file set for quick lookups")
     present = set(files)
-    # log.debug("Lists the Markdown files")
-    markdown = [f for f in files if f.endswith(MARKDOWN)]
+    # log.debug("Lists the Markdown files the checks read")
+    markdown = [f for f in (files if kept is None else kept) if f.endswith(MARKDOWN)]
     # log.debug("Flags each Markdown file a repository does not publish")
     found = [
         Finding(f, 0, RULE, "only README.md, CHANGELOG.md and SECURITY.md are published")

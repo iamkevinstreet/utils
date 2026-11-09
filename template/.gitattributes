@@ -1,0 +1,16 @@
+########################################################################
+#                                                                      #
+#                            .gitattributes                            #
+#                                                                      #
+########################################################################
+# Author:            Kevin Street
+# Created on:        2026-11-09
+# Last modified on:  2026-11-09
+#
+# Line endings, and the generated files no review or check reads: the
+# lockfile, and the answers file Copier writes.
+
+* text=auto eol=lf
+
+uv.lock linguist-generated
+.copier-answers.yml linguist-generated

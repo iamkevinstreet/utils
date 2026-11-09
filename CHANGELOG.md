@@ -4,14 +4,35 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
-## Unreleased
+## v0.7.0, Nov 9, 2026
 
+The project template: every project now starts from the same files, and the data layers every
+project shares are a package of their own.
+
+- **Project template:** `copier copy --vcs-ref <commit> gh:iamkevinstreet/utils <folder>` starts a
+  project from `template/` (see [starting a project](README.md#starting-a-project)): the settings,
+  kept equal to their file by a test; `python -m pipelines`; the dbt project's layers, with
+  profiles for DuckDB and Databricks; the Airflow defaults and a build DAG that runs when any raw
+  schema changes; and CI, CodeQL, Dependabot and the workflow that lands its updates. Of its five
+  questions, it refuses a repository name GitHub would change, a description that would break
+  `pyproject.toml`, and a pin that is not a full commit SHA. A test renders it, commits it, and
+  runs the code standard, ruff and the rendered project's own tests on it.
+- **pipelines (new):** `kds-pipelines`, what every project's data layers run on, taken from
+  ai-operations, which moves to it next. `PipelineSettings` holds the warehouse, dlt's state, dbt
+  and Databricks, and refuses Databricks half set up; `load()` runs any dlt source into one DuckDB
+  file or Databricks, with dlt's usage reports off; `run_dbt()` runs dbt over the same warehouse,
+  making the DuckDB file's folder first, so a build before any load starts clean; and
+  `run_command()` is the `python -m pipelines` a project's Makefile, CI and DAGs call.
+- **standards:** `stamp` and `check` work in a repository with no commit yet, where every file is
+  new, so a project copied from the template is stamped before its first commit. A `template/`
+  folder at the root is skipped, and the docs rule no longer reads Markdown in a skipped folder.
 - **Dependency updates land by themselves.** Dependabot groups each week's updates into one pull
   request per kind, and the new `dependency-updates` workflow lands them every weekday: it applies the
   oldest open one to `main` as an ordinary commit, refreshes the dates in the headers it changes, runs
   the whole of CI on that commit, and moves `main` to it only when every check passes. One whose checks
   fail is labelled "needs a person" and waits. CI can now be called for a given commit, which is how the
   workflow checks one before it lands.
+- **All packages** move to 0.7.0 together. 172 tests.
 
 ## v0.6.2, Nov 9, 2026
 

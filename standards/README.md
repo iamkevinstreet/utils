@@ -44,7 +44,12 @@ backend/src/grounded_qa/answer.py:1: header: Last modified on must be 2026-10-29
 | `docs` | a Markdown file other than a README.md, the root CHANGELOG.md and SECURITY.md, or data under `data/` or a site's `src/content/`; a link in a published file to something the repository does not hold |
 
 Dates come from git, following renames: "Created on" is the first commit that held the file, "Last
-modified on" its latest, and a file changed since then must show today.
+modified on" its latest, and a file changed since then must show today. In a repository with no
+commit yet, every file is new, so `stamp` and `check` run before the first commit.
+
+No rule reads vendored or built folders (`vendor/`, `node_modules/`, `dist/`), files `.gitattributes`
+marks `linguist-generated`, or a project template in `template/` at the root, which is checked once
+rendered.
 
 ## Develop
 

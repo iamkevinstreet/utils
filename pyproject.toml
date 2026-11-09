@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-03
+# Last modified on:  2026-11-09
 #
 # Repository-wide tool settings: ruff, mypy and pytest, set to one code
 # standard across every package.
@@ -15,6 +15,8 @@
 [tool.ruff]
 line-length = 99
 target-version = "py312"
+# The project template's files are checked once rendered, with the rendered project's own settings.
+extend-exclude = ["template"]
 
 [tool.ruff.lint]
 select = ["E", "W", "F", "I", "N", "UP", "B", "BLE", "S", "C90", "PL", "RUF", "G", "D", "ANN"]
@@ -40,7 +42,7 @@ known-first-party = ["kds"]
 
 # Tests run from the repository root, so the package folders merge into one `kds` namespace.
 [tool.pytest.ini_options]
-pythonpath = ["args", "settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams"]
+pythonpath = ["args", "settings", "logs", "llm", "evals", "synthetic", "standards", "diagrams", "pipelines"]
 testpaths = [
   "args/tests",
   "settings/tests",
@@ -50,6 +52,7 @@ testpaths = [
   "synthetic/tests",
   "standards/tests",
   "diagrams/tests",
+  "pipelines/tests",
   "tests",
 ]
 addopts = "-q"
@@ -59,4 +62,4 @@ python_version = "3.12"
 strict = true
 explicit_package_bases = true
 namespace_packages = true
-mypy_path = "args:settings:logs:llm:evals:synthetic:standards:diagrams"
+mypy_path = "args:settings:logs:llm:evals:synthetic:standards:diagrams:pipelines"
