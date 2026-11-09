@@ -6,6 +6,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.7.1, Nov 9, 2026
 
+Pin: `28d20c9c817795cb787023f20e4ab99af1b05957`
+
 The template now fits an app's repository too, as the EEOC project needs.
 
 - **Project template:** a sixth question, the folder, puts the data layers in a folder of an app's
