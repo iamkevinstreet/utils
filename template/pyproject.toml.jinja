@@ -14,7 +14,7 @@
 # where it runs.
 
 [project]
-name = "{{ repo }}"
+name = "{{ repo }}{% if folder %}-{{ folder }}{% endif %}"
 version = "0.1.0"
 description = "{{ description }}"
 readme = "README.md"

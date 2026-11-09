@@ -99,6 +99,7 @@ def check_file(
     path: str | None = None,
     history: History | None = None,
     local_names: frozenset[str] = frozenset(),
+    projects: frozenset[str] = frozenset(),
 ) -> list[Finding]:
     """Runs every file-level rule on one file.
 
@@ -108,6 +109,8 @@ def check_file(
         history: The repository's dates, from read_history. Required.
         local_names: The top-level names of the repository's own
             modules, for sorting Python imports into their groups.
+        projects: The top-level folders that are projects of their own,
+            which may nest one folder deeper.
 
     Returns:
         Every finding for the file.
@@ -121,7 +124,7 @@ def check_file(
     # log.debug("Reads the file's text")
     text = (root / path).read_text(encoding=ENCODING, errors=ERRORS)
     # log.debug("Starts with the depth and length rules")
-    found = layout.check_depth(path) + layout.check_length(path, text)
+    found = layout.check_depth(path, projects) + layout.check_length(path, text)
     # log.debug("Finds the file's header style, if it carries one")
     style = hdr.style_for(path)
     # log.debug("Returns the layout findings for a file with no header")
@@ -291,8 +294,10 @@ def run_check(root: Path | None = None) -> list[Finding]:
     kept = [p for p in files if not layout.skipped(p, generated)]
     # log.debug("Learns the names the repository's own modules go by")
     names = local_names_of(files)
+    # log.debug("Finds the top-level folders that are projects of their own")
+    projects = packages_of(files)
     # log.debug("Checks each kept file")
-    found = [f for p in kept for f in check_file(root, p, history, names)]
+    found = [f for p in kept for f in check_file(root, p, history, names, projects)]
     # log.debug("Reads every source file the shared-constant rule looks at")
     sources = {
         p: (root / p).read_text(encoding=ENCODING, errors=ERRORS)
@@ -303,7 +308,7 @@ def run_check(root: Path | None = None) -> list[Finding]:
     found += (
         layout.check_repository(root, files)
         + docs.check_docs(root, files, kept)
-        + constants.check_shared(sources, packages_of(files))
+        + constants.check_shared(sources, projects)
     )
     # log.debug("Returns every finding, sorted")
     return sorted(found)

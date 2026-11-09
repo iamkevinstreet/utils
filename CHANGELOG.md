@@ -4,6 +4,21 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.7.1, Nov 9, 2026
+
+The template now fits an app's repository too, as the EEOC project needs.
+
+- **Project template:** a sixth question, the folder, puts the data layers in a folder of an app's
+  repository, such as `warehouse/` beside `backend/` and `frontend/`. Copier then leaves out the
+  files the repository's root already holds (CI, license, notice, changelog, security policy, and
+  the pre-commit, YAML, editor and git attribute settings), the folder's Makefile leaves the code
+  standard to the root, the package and the DAGs' home variable are named for the folder, and its
+  README links the root's changelog and license. Its closing message lists what the repository
+  then adds. The template's test renders it both ways.
+- **standards:** a top-level folder that is a project of its own, with its own `pyproject.toml`,
+  may nest one folder deeper, as `frontend/` and `backend/` may, so a folder's dbt models fit.
+- **All packages** move to 0.7.1 together. 176 tests.
+
 ## v0.7.0, Nov 9, 2026
 
 Pin: `df52461aacee4b9fb1dee275b209eb73713905de`

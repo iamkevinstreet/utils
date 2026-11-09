@@ -11,13 +11,33 @@
 # with the same layers, settings, command, checks and CI as every
 # other, its packages from this repository pinned to the commit it was
 # copied from; `copier update` brings a project to a later release.
-# Copy from GitHub, never a local clone, so the answers file a project
-# commits names its source by URL.
+# An app's repository takes them in a folder of their own, without the
+# files its root already holds. Copy from GitHub, never a local clone,
+# so the answers file a project commits names its source by URL.
 
 _subdirectory: template
 _templates_suffix: .jinja
 _answers_file: .copier-answers.yml
 _min_copier_version: "9.4"
+# Never copied: editor and Python leftovers; and, in a folder of an app's repository, the files
+# its root already holds.
+_exclude:
+  - "~*"
+  - "*.py[co]"
+  - __pycache__
+  - .DS_Store
+  - |-
+    {%- if folder %}
+    .github
+    .editorconfig
+    .gitattributes
+    .pre-commit-config.yaml
+    .yamllint.yaml
+    LICENSE
+    NOTICE
+    CHANGELOG.md
+    SECURITY.md
+    {%- endif %}
 # Files a project makes its own once written, which an update leaves as they are.
 _skip_if_exists:
   - README.md
@@ -27,6 +47,15 @@ _skip_if_exists:
   - pipelines/__main__.py
   - pipelines/config.py
 _message_after_copy: |
+  {%- if folder %}
+  {{ project_name }} is ready in {{ folder }}/. To finish adopting it, in the repository:
+
+      mark {{ folder }}/uv.lock and {{ folder }}/.copier-answers.yml linguist-generated
+      add a CI job that runs the folder's targets, and /{{ folder }} to Dependabot's uv updates
+      cd {{ folder }} && uv lock && make install
+      stamp the new files from the root with kds-standards, then commit
+      make check test build docs, from {{ folder }}/
+  {%- else %}
   {{ project_name }} is ready. From its folder:
 
       git init -b main
@@ -38,6 +67,7 @@ _message_after_copy: |
       make check test build docs
 
   Then create {{ repo }} on GitHub, push main, and add the first source: its README says how.
+  {%- endif %}
 
 project_name:
   type: str
@@ -52,6 +82,17 @@ repo:
   validator: >-
     {% if not repo | regex_search('^[a-z0-9][a-z0-9-]*$') %}
     Lower-case letters, digits and hyphens only, starting with a letter or a digit
+    {% endif %}
+
+folder:
+  type: str
+  help: >-
+    The folder the data layers go in, in an app's repository whose root holds the app, such as
+    warehouse; blank for a repository of their own
+  default: ""
+  validator: >-
+    {% if folder and not folder | regex_search('^[a-z][a-z0-9-]*$') %}
+    One folder's name, in lower case, or blank
     {% endif %}
 
 description:

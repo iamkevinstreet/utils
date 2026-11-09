@@ -41,13 +41,19 @@ log = logging.getLogger(__name__)
 ########################################################################
 # log.debug("Defines the test for the folder-depth rule")
 def test_depth_allows_one_more_in_an_area() -> None:
-    """Three folders anywhere, four under frontend/ or backend/."""
+    """Three folders anywhere, four in an area or a project folder."""
     # log.debug("Checks three folders deep is allowed")
     assert layout.check_depth("a/b/c/file.py") == []
     # log.debug("Checks four folders deep is refused")
     assert layout.check_depth("a/b/c/d/file.py") != []
     # log.debug("Checks four deep under frontend/ is allowed")
     assert layout.check_depth("frontend/src/components/forms/Field.tsx") == []
+    # log.debug("Checks four deep in a folder that is a project of its own is allowed")
+    assert (
+        layout.check_depth("warehouse/dbt/models/staging/stg.sql", frozenset({"warehouse"})) == []
+    )
+    # log.debug("Checks the same path is refused when the folder is not one")
+    assert layout.check_depth("warehouse/dbt/models/staging/stg.sql") != []
 
 
 # log.debug("Defines the test for the folders no check reads")

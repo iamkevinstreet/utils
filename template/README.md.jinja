@@ -1,10 +1,16 @@
+{% set up = '../' if folder else '' -%}
 # {{ project_name }}
 
 [![ci](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/ci.yml/badge.svg)](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/ci.yml)
 [![codeql](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/codeql.yml/badge.svg)](https://github.com/iamkevinstreet/{{ repo }}/actions/workflows/codeql.yml)
-[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![License: Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-blue.svg)]({{ up }}LICENSE)
 
 {{ description }} For {% if industry == "any" %}businesses{% else %}{{ industry }} businesses{% endif %}.
+{%- if folder %}
+
+These are the repository's data layers, in a folder of their own beside its app. Run every command
+below from this folder.
+{%- endif %}
 
 ## In the blueprint
 
@@ -66,5 +72,5 @@ To run the DAGs through Airflow, `make install-airflow` then `make dags-test`.
 
 ## Changelog and license
 
-[CHANGELOG.md](CHANGELOG.md). Apache 2.0: see [LICENSE](LICENSE) and [NOTICE](NOTICE). Security
-reports: [SECURITY.md](SECURITY.md).
+[CHANGELOG.md]({{ up }}CHANGELOG.md). Apache 2.0: see [LICENSE]({{ up }}LICENSE) and
+[NOTICE]({{ up }}NOTICE). Security reports: [SECURITY.md]({{ up }}SECURITY.md).

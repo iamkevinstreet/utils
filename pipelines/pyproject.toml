@@ -14,7 +14,7 @@
 
 [project]
 name = "kds-pipelines"
-version = "0.7.0"
+version = "0.7.1"
 description = "What every project's data layers run on: shared settings, dlt loads into DuckDB or Databricks, dbt runs, and the one pipelines command."
 readme = "README.md"
 requires-python = ">=3.12"
