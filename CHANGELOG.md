@@ -6,6 +6,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.7.0, Nov 9, 2026
 
+Pin: `df52461aacee4b9fb1dee275b209eb73713905de`
+
 The project template: every project now starts from the same files, and the data layers every
 project shares are a package of their own.
 
