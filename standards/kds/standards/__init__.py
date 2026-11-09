@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-07
+Last modified on:  2026-11-09
 
 The kds-standards package: the checks that hold every repository to one
 code standard.
@@ -35,4 +35,4 @@ log = logging.getLogger(__name__)
 #                                                                      #
 ########################################################################
 # log.debug("Sets the package's version")
-__version__ = "0.6.1"
+__version__ = "0.6.2"

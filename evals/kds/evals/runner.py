@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-07
+Last modified on:  2026-11-09
 
 Runs a system over evaluation cases and writes the results as JSON and
 Markdown.
@@ -101,7 +101,7 @@ class CaseResult(BaseModel):
     output: Any = None
     # log.debug("Holds the error, when the system raised")
     error: str | None = None
-    # log.debug("Holds the case's wall-clock time")
+    # log.debug("Holds the system's wall-clock time on the case, not the scorer's")
     latency_ms: int
     # log.debug("Holds what the case's model calls cost")
     cost_usd: float
@@ -146,7 +146,9 @@ def run_case(
 ) -> CaseResult:
     """Runs and scores one case; a failure is recorded, never raised.
 
-    The case runs in its own span, which records its scores.
+    The case runs in its own span, which records its scores. Its time
+    is the system's alone: a scorer that calls a model, such as an LLM
+    judge, does not add to it.
 
     Args:
         case: The case to run. Required.
@@ -176,12 +178,16 @@ def run_case(
     started = time.perf_counter()
     # log.debug("Assumes no output, no scores and no error until it runs")
     output, scores, error, failure = None, {}, None, None
+    # log.debug("Assumes no time for the system until it returns")
+    elapsed: float | None = None
     # log.debug("Runs the case in its own span")
     with case_span(run, case) as span:
         # log.debug("Tries the case; a failing case must not stop the run")
         try:
             # log.debug("Runs the system on the case")
             output = system_fn(case)
+            # log.debug("Stops the clock before scoring, so the time is the system's")
+            elapsed = time.perf_counter() - started
             # log.debug("Scores the output")
             scores = scorer_fn(case, output)
         except Exception as exc:  # noqa: BLE001 - one case's failure is a result, not a crash
@@ -208,7 +214,7 @@ def run_case(
         scores=scores,
         output=_jsonable(output),
         error=error,
-        latency_ms=int((time.perf_counter() - started) * MS),
+        latency_ms=int((time.perf_counter() - started if elapsed is None else elapsed) * MS),
         cost_usd=round(adapter.spent_usd - spent_before, COST_PLACES),
         calls=len(adapter.calls) - calls_before,
     )

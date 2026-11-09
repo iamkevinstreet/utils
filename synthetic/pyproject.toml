@@ -5,13 +5,13 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-07
+# Last modified on:  2026-11-09
 #
 # Packages kds-synthetic: made-up names and PDFs that record their text.
 
 [project]
 name = "kds-synthetic"
-version = "0.6.1"
+version = "0.6.2"
 description = "Made-up names with near-duplicate variants, and a PDF builder that records page text for span checks."
 readme = "README.md"
 requires-python = ">=3.12"

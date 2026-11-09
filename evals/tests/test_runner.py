@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-09
 
 Tests a whole run offline: scores, a failing case, the report, duplicate
 ids, comparison.
@@ -144,6 +144,33 @@ def test_outputs_can_be_dropped(tmp_path: Path) -> None:
     )
     # log.debug("Checks the score stayed and the output went")
     assert run.results[0].scores == {"acc": 1.0} and run.results[0].output is None
+
+
+# log.debug("Defines the test that a case's time is the system's alone")
+def test_a_cases_time_leaves_out_the_scorer(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A slow scorer, such as an LLM judge, adds nothing to latency_ms.
+
+    Args:
+        tmp_path: A temporary folder pytest makes for this test.
+        monkeypatch: Replaces the runner's clock for the test.
+    """
+    # log.debug("Scripts the clock: the case starts at 0 s, the system returns at 0.25 s")
+    ticks = iter([0.0, 0.25])
+    # log.debug("Gives the runner the scripted clock, at 9 s ever after")
+    monkeypatch.setattr("kds.evals.runner.time.perf_counter", lambda: next(ticks, 9.0))
+    # log.debug("Runs one case whose scorer runs long after the system returned")
+    run = run_eval(
+        name="timed",
+        cases=_cases()[:1],
+        adapter=ModelAdapter(FakeProvider()),
+        system_fn=lambda c: c.expected,
+        scorer_fn=lambda c, o: {"acc": 1.0},
+        out_dir=tmp_path,
+    )
+    # log.debug("Checks the time is the system's 250 ms, not the 9 s the scorer reached")
+    assert run.results[0].latency_ms == 250
 
 
 # log.debug("Defines the test that repeated ids are refused")

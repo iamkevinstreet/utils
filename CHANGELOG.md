@@ -13,6 +13,15 @@ commit of their own: pin v0.3.0 or later.
   fail is labelled "needs a person" and waits. CI can now be called for a given commit, which is how the
   workflow checks one before it lands.
 
+## v0.6.2, Nov 9, 2026
+
+- **evals:** a case's `latency_ms` is the system's time alone. The clock used to stop after the
+  scorer, so a scorer that calls a model, such as an LLM judge, added its call to every case: in
+  Grounded Q&A's judged run of Nov 9 the run file's median was 4.3 s with keyword search and 3.8 s
+  with hybrid, where the answers' own spans show 2.9 s and 2.3 s and the judge's call a median of
+  1.7 s. The case's span still covers the scoring. A test with a scripted clock covers it.
+- **All packages** move to 0.6.2 together. 154 tests.
+
 ## v0.6.1, Nov 7, 2026
 
 Pin: `97157184471beb28ed129eb52086c36f76ef3e55`

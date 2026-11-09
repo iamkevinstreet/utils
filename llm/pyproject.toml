@@ -5,14 +5,14 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-07
+# Last modified on:  2026-11-09
 #
 # Packages kds-llm: one model adapter with retries, JSON, cost and
 # budget.
 
 [project]
 name = "kds-llm"
-version = "0.6.1"
+version = "0.6.2"
 description = "One model adapter for Anthropic, OpenAI and Azure OpenAI, with an offline stand-in, retries, structured output, cost accounting, a budget stop, and OpenTelemetry GenAI spans."
 readme = "README.md"
 requires-python = ">=3.12"
