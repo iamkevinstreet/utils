@@ -10,11 +10,13 @@ Last modified on:  2026-11-09
 
 Tests the project template by rendering it as `copier copy` renders a
 new project, from copier.yml and template/ alone, then committing the
-result as its first commit. The project must meet the code standard,
-pass ruff with its own settings and pass its own tests, run in its own
-folder against this repository's packages, as its pins install them.
-Its pins must name the commit given and admit this release, and a bad
-answer must be refused before anything is written.
+result as its first commit: once as a repository of its own, and once
+into a folder of an app's repository, which keeps the root's files.
+Each must meet the code standard, pass ruff with its own settings and
+pass its own tests, run in its own folder against this repository's
+packages, as its pins install them. Its pins must name the commit
+given and admit this release, and a bad answer must be refused before
+anything is written.
 """
 
 ########################################################################
@@ -71,6 +73,24 @@ IMPORTED: Final = ("args", "settings", "logs", "pipelines")
 GIT: Final = ("git", "-c", "user.name=Template test", "-c", "user.email=test@example.com")
 # log.debug("Sets what the code standard prints when it finds nothing")
 CLEAN: Final = "kds-standards: no findings"
+# log.debug("Sets the answers that put the data layers in a folder of an app's repository")
+IN_FOLDER: Final = {"folder": "warehouse", "project_name": "Sample warehouse"}
+# log.debug("Lists the files a folder leaves to the repository's root")
+ROOT_ONLY: Final = (
+    ".github",
+    ".editorconfig",
+    ".gitattributes",
+    ".pre-commit-config.yaml",
+    ".yamllint.yaml",
+    "LICENSE",
+    "NOTICE",
+    "CHANGELOG.md",
+    "SECURITY.md",
+)
+# log.debug("Sets the lines that mark the folder's generated files, as copier's message asks")
+GENERATED: Final = (
+    "warehouse/uv.lock linguist-generated\nwarehouse/.copier-answers.yml linguist-generated\n"
+)
 
 
 ########################################################################
@@ -98,6 +118,31 @@ def _run(
     return subprocess.run(  # noqa: S603 - fixed arguments, no shell
         args, cwd=folder, env=env, capture_output=True, text=True, check=False
     )
+
+
+# log.debug("Defines a repository's first commit, as copier's message asks for it")
+def _first_commit(repository: Path | None = None) -> None:
+    """Starts git, stamps every new file's header, and commits them.
+
+    Args:
+        repository: The repository's root. Required.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    repository = required(repository=repository)
+    # log.debug("Starts the repository")
+    _run(repository, *GIT, "init", "-q", "-b", "main").check_returncode()
+    # log.debug("Lists the files the first commit will hold")
+    files = _run(repository, "git", "ls-files", "--others", "--exclude-standard").stdout.split()
+    # log.debug("Stamps their headers with today's dates, from the root")
+    with pytest.MonkeyPatch.context() as patch:
+        # log.debug("Moves to the root, which stamp reads as the repository")
+        patch.chdir(repository)
+        # log.debug("Checks the stamp ran")
+        assert standards(["stamp", *files]) == 0
+    # log.debug("Adds every file")
+    _run(repository, *GIT, "add", "-A").check_returncode()
+    # log.debug("Makes the first commit")
+    _run(repository, *GIT, "commit", "-q", "--no-gpg-sign", "-m", "Start").check_returncode()
 
 
 # log.debug("Defines the template as a clone holds it, copied once")
@@ -128,7 +173,7 @@ def source(tmp_path_factory: pytest.TempPathFactory) -> Path:
     return folder
 
 
-# log.debug("Defines the project the tests share, rendered once")
+# log.debug("Defines the project the tests share, rendered once as a repository of its own")
 @pytest.fixture(scope="module")
 def project(source: Path, tmp_path_factory: pytest.TempPathFactory) -> Path:
     """Renders the template and commits it as a project's first commit.
@@ -140,78 +185,158 @@ def project(source: Path, tmp_path_factory: pytest.TempPathFactory) -> Path:
     Returns:
         The rendered project's folder.
     """
-    # log.debug("Renders it with the answers, asking nothing")
+    # log.debug("Makes the project's folder")
     target = tmp_path_factory.mktemp("project")
-    # log.debug("Runs copier")
+    # log.debug("Renders the template with the answers, asking nothing")
     copier.run_copy(str(source), target, data=dict(ANSWERS), defaults=True, quiet=True)
-    # log.debug("Starts the project's repository")
-    _run(target, *GIT, "init", "-q", "-b", "main").check_returncode()
-    # log.debug("Lists the files the first commit will hold")
-    files = _run(target, "git", "ls-files", "--others", "--exclude-standard").stdout.split()
-    # log.debug("Stamps their headers with today's dates, from the project's folder")
-    with pytest.MonkeyPatch.context() as patch:
-        # log.debug("Moves to the project, which stamp reads as the root")
-        patch.chdir(target)
-        # log.debug("Checks the stamp ran")
-        assert standards(["stamp", *files]) == 0
-    # log.debug("Adds every file")
-    _run(target, *GIT, "add", "-A").check_returncode()
     # log.debug("Makes the first commit")
-    _run(target, *GIT, "commit", "-q", "--no-gpg-sign", "-m", "Start").check_returncode()
+    _first_commit(target)
     # log.debug("Returns the project")
     return target
 
 
-# log.debug("Defines the test that the project meets the code standard")
-def test_the_rendered_project_meets_the_code_standard(
-    project: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+# log.debug("Defines an app's repository with the data layers in a folder, rendered once")
+@pytest.fixture(scope="module")
+def app(source: Path, tmp_path_factory: pytest.TempPathFactory) -> Path:
+    """Renders a repository's root, then the data layers into a folder.
+
+    The root render stands in for an app's root files: its CI, license
+    and changelog are what a folder leaves to the root.
+
+    Args:
+        source: The template, as a clone holds it.
+        tmp_path_factory: pytest's maker of temporary folders.
+
+    Returns:
+        The repository's root.
+    """
+    # log.debug("Makes the repository's folder")
+    root = tmp_path_factory.mktemp("app")
+    # log.debug("Renders the root's files")
+    copier.run_copy(str(source), root, data=dict(ANSWERS), defaults=True, quiet=True)
+    # log.debug("Renders the data layers into their folder")
+    copier.run_copy(
+        str(source),
+        root / IN_FOLDER["folder"],
+        data=ANSWERS | IN_FOLDER,
+        defaults=True,
+        quiet=True,
+    )
+    # log.debug("Marks the folder's generated files, as copier's message asks")
+    with (root / ".gitattributes").open("a", encoding="utf-8") as attributes:
+        # log.debug("Adds the lines")
+        attributes.write(GENERATED)
+    # log.debug("Makes the first commit")
+    _first_commit(root)
+    # log.debug("Returns the root")
+    return root
+
+
+# log.debug("Defines the repository each standard test checks")
+@pytest.fixture(params=["own repository", "app's repository"])
+def repository(request: pytest.FixtureRequest) -> Path:
+    """Returns a project's own repository, or the app's with a folder.
+
+    Args:
+        request: pytest's account of the parameter this run has.
+
+    Returns:
+        The repository's root.
+    """
+    # log.debug("Returns the root the parameter names")
+    return Path(request.getfixturevalue("project" if request.param == "own repository" else "app"))
+
+
+# log.debug("Defines the data layers each project test checks")
+@pytest.fixture(params=["own repository", "folder"])
+def layers(request: pytest.FixtureRequest) -> Path:
+    """Returns the data layers: a repository of their own, or a folder.
+
+    Args:
+        request: pytest's account of the parameter this run has.
+
+    Returns:
+        The folder their Makefile and pyproject.toml are in.
+    """
+    # log.debug("Returns the project, or the folder in the app's repository")
+    return (
+        Path(request.getfixturevalue("project"))
+        if request.param == "own repository"
+        else Path(request.getfixturevalue("app")) / IN_FOLDER["folder"]
+    )
+
+
+# log.debug("Defines the test that each repository meets the code standard")
+def test_the_rendered_repository_meets_the_code_standard(
+    repository: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     """kds-standards check finds nothing in the first commit.
 
     Args:
-        project: The rendered project.
+        repository: The repository's root.
         monkeypatch: pytest's helper for patching the environment.
         capsys: pytest's capture of what the check prints.
     """
-    # log.debug("Moves to the project, which check reads as the root")
-    monkeypatch.chdir(project)
+    # log.debug("Moves to the root, which check reads as the repository")
+    monkeypatch.chdir(repository)
     # log.debug("Checks the check passed and said so")
     assert (standards(["check", "."]), capsys.readouterr().out.strip()) == (0, CLEAN)
 
 
 # log.debug("Defines the test that ruff passes with the project's own settings")
-def test_ruff_passes_on_the_rendered_project(project: Path) -> None:
+def test_ruff_passes_on_the_rendered_layers(layers: Path) -> None:
     """Lint and format, as the project's `make check` runs them.
 
     Args:
-        project: The rendered project.
+        layers: The rendered data layers.
     """
-    # log.debug("Lints the project")
-    lint = _run(project, sys.executable, "-m", "ruff", "check", ".")
-    # log.debug("Checks its formatting")
-    form = _run(project, sys.executable, "-m", "ruff", "format", "--check", ".")
+    # log.debug("Lints them")
+    lint = _run(layers, sys.executable, "-m", "ruff", "check", ".")
+    # log.debug("Checks their formatting")
+    form = _run(layers, sys.executable, "-m", "ruff", "format", "--check", ".")
     # log.debug("Checks both passed")
     assert (lint.returncode, form.returncode) == (0, 0), lint.stdout + form.stdout
 
 
-# log.debug("Defines the test that the project's own tests pass")
-def test_the_rendered_projects_own_tests_pass(project: Path) -> None:
-    """Its tests pass in its folder, with nothing of this repository's.
+# log.debug("Defines the test that the layers' own tests pass")
+def test_the_rendered_layers_own_tests_pass(layers: Path) -> None:
+    """Their tests pass in their folder, with none of this repository's.
 
     The environment holds only PATH, HOME and the packages' folders, so
     none of this repository's own test settings reach the project.
 
     Args:
-        project: The rendered project.
+        layers: The rendered data layers.
     """
     # log.debug("Puts this repository's packages where the project's pins would")
     path = os.pathsep.join(str(ROOT / folder) for folder in IMPORTED)
     # log.debug("Builds the project's environment")
     env = {"PATH": os.environ["PATH"], "HOME": os.environ.get("HOME", ""), "PYTHONPATH": path}
-    # log.debug("Runs the project's tests")
-    done = _run(project, sys.executable, "-m", "pytest", "-p", "no:cacheprovider", env=env)
+    # log.debug("Runs their tests")
+    done = _run(layers, sys.executable, "-m", "pytest", "-p", "no:cacheprovider", env=env)
     # log.debug("Checks they passed")
     assert (done.returncode, "passed" in done.stdout) == (0, True), done.stdout + done.stderr
+
+
+# log.debug("Defines the test that a folder leaves the root's files to the repository")
+def test_a_folder_leaves_the_roots_files_and_the_standard_to_the_root(app: Path) -> None:
+    """No CI, license or changelog of its own; the root checks the code.
+
+    Args:
+        app: The app's repository, with the data layers in a folder.
+    """
+    # log.debug("Points at the folder")
+    folder = app / IN_FOLDER["folder"]
+    # log.debug("Reads its Makefile")
+    makefile = (folder / "Makefile").read_text(encoding="utf-8")
+    # log.debug("Checks none of the root's files is there, and the standard is the root's")
+    assert (
+        [f for f in ROOT_ONLY if (folder / f).exists()],
+        "$(UV) kds-standards" in makefile,
+    ) == (
+        [],
+        False,
+    )
 
 
 # log.debug("Defines the test of the project's pins")

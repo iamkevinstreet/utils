@@ -7,7 +7,7 @@ small Python package that a project installs on its own, so every project takes 
 
 ## Status
 
-Release **v0.7.0**. Every package is in use by the projects below, or is about to be; 172 tests pass
+Release **v0.7.1**. Every package is in use by the projects below, or is about to be; 176 tests pass
 offline in CI, with strict mypy and no kds-standards findings. Every new project starts from the
 [project template](#starting-a-project). Tools are added as projects need them, and each package's
 README says what is next for it.
@@ -46,9 +46,10 @@ commits behind each release are in [CHANGELOG.md](CHANGELOG.md).
 
 Every project starts from the same template, [`template/`](template/), so each has the same layers,
 settings, command, checks and CI, with its packages pinned to one commit of this repository.
-[Copier](https://copier.readthedocs.io/) copies it and asks five questions: the project's name, its
-repository's name, a sentence on what it does, the industry it serves, and the commit to pin, a
-release's from [CHANGELOG.md](CHANGELOG.md).
+[Copier](https://copier.readthedocs.io/) copies it and asks six questions: the project's name, its
+repository's name, the folder its data layers go in when the repository is an app's, a sentence on
+what it does, the industry it serves, and the commit to pin, a release's from
+[CHANGELOG.md](CHANGELOG.md).
 
 ```sh
 uvx copier copy --vcs-ref <commit> gh:iamkevinstreet/utils <folder>
@@ -67,11 +68,19 @@ it came from. Copier then lists what to run in the new folder: `uv lock`, `make 
 | `tests/` | The settings file kept equal to the code, the command, and every DAG's safety settings |
 | `.github/` | CI (secrets scan, lint, types, the code standard, tests, audit, the DAGs and the dbt build), CodeQL, Dependabot and the workflow that lands its updates |
 
-An existing project adopts the template the same way, into its own folder: Copier asks before it
-replaces a file, and leaves the README, changelog, security policy, settings file and command alone
-once they exist. `copier update` brings a project to a later release, merging the template's
-changes into the project's own. A test here renders the template, commits it, and runs the code
-standard, ruff and the rendered project's own tests on the result.
+An existing project of its own adopts the template the same way, copied into its repository: Copier
+asks before it replaces a file, and leaves the README, changelog, security policy, settings file and
+command alone once they exist.
+
+An app's repository, whose root holds the app (`backend/`, `frontend/`), takes the data layers in a
+folder of their own: answer the folder question, with `warehouse` say, and copy into that folder.
+Copier leaves out the files the repository's root already holds (CI, license, changelog, security
+policy, and the pre-commit, YAML, editor and git attribute settings), and the folder's Makefile
+leaves the code standard to the root. Copier's closing message lists the rest: the folder's lock and
+answers files marked as generated, a CI job for the folder, and Dependabot. `kds-standards` lets a
+folder with its own `pyproject.toml` nest one level deeper, as `backend/` and `frontend/` do. `copier update` brings a project to a later release, merging the template's
+changes into the project's own. A test here renders the template both ways, commits each, and runs
+the code standard, ruff and the rendered project's own tests on the result.
 
 ## Architecture at a glance
 
@@ -158,7 +167,7 @@ There is no service to run here, so there is no runbook; each project that runs 
 ## Testing
 
 ```sh
-make test     # 172 tests, offline, warnings as errors
+make test     # 176 tests, offline, warnings as errors
 make check    # ruff, strict mypy and kds-standards
 make audit    # pip-audit over every locked dependency
 ```

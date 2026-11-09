@@ -8,9 +8,9 @@
 # Last modified on:  2026-11-09
 #
 # One command for each routine task: install, build, docs, check, test,
-# the DAGs end to end, audit and the headers' dates, and each source's
-# load as it is added. CI runs the same targets. Run them from the
-# repository root, where config/ and dbt/ are found.
+# the DAGs end to end and audit, and each source's load as it is added.
+# CI runs the same targets. Run them from this folder, where config/ and
+# dbt/ are found.
 ########################################################################
 #                                                                      #
 #                           Local constants                            #
@@ -34,7 +34,7 @@ AIRFLOW_ENV := AIRFLOW_HOME=$(CURDIR)/data/generated/airflow AIRFLOW__CORE__LOAD
 #                            Routine tasks                             #
 #                                                                      #
 ########################################################################
-.PHONY: install install-airflow build freshness docs check test dags-test audit stamp
+.PHONY: install install-airflow build freshness docs check test dags-test audit{% if not folder %} stamp{% endif %}
 
 install:  ## The loaders, dbt and the checks, from uv.lock
 	uv sync --locked
@@ -51,11 +51,13 @@ freshness:  ## How long ago each raw table was loaded, against its limits
 docs:  ## The dbt docs site, with the lineage graph, in dbt/target/
 	$(PIPELINES) dbt docs generate --static
 
-check:  ## Lint, format, strict types and the code standard
+check:  ## Lint, format, strict types{% if folder %}; the repository's root runs the code standard{% else %} and the code standard{% endif %}
 	$(UV) ruff check .
 	$(UV) ruff format --check .
 	$(UV) mypy
+{%- if not folder %}
 	$(UV) kds-standards check .
+{%- endif %}
 
 test:  ## Every test, offline: fixtures, not the network; the DAG tests need install-airflow
 	$(UV) pytest
@@ -71,5 +73,8 @@ audit:  ## Known vulnerabilities in every locked dependency, Airflow's included
 	$(UV) pip-audit --strict --require-hashes --disable-pip -r $(AUDIT_FILE) \
 		$(addprefix --ignore-vuln ,$(AUDIT_IGNORES))
 
+{%- if not folder %}
+
 stamp:  ## Every header's title and dates, from git; run once after the template is copied
 	$(UV) kds-standards stamp $$(git ls-files --cached --others --exclude-standard)
+{%- endif %}

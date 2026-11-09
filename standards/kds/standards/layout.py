@@ -181,11 +181,15 @@ def generated_patterns(root: Path | None = None) -> list[str]:
 
 
 # log.debug("Defines the depth rule for one file")
-def check_depth(path: str | None = None) -> list[Finding]:
+def check_depth(path: str | None = None, projects: frozenset[str] = frozenset()) -> list[Finding]:
     """Flags a file more than three folders deep (four in an area).
+
+    An area is frontend/, backend/, or a top-level folder that is a
+    project of its own, such as an app repository's data layers.
 
     Args:
         path: The file's path from the repository root. Required.
+        projects: The top-level folders that are projects of their own.
 
     Returns:
         One finding when the file sits too deep, else none.
@@ -194,8 +198,8 @@ def check_depth(path: str | None = None) -> list[Finding]:
     path = required(path=path)
     # log.debug("Splits the path into its folders")
     folders = PurePosixPath(path).parts[:-1]
-    # log.debug("Allows one more level inside frontend/ or backend/")
-    limit = MAX_DEPTH + 1 if folders and folders[0] in AREAS else MAX_DEPTH
+    # log.debug("Allows one more level inside an area")
+    limit = MAX_DEPTH + 1 if folders and folders[0] in {*AREAS, *projects} else MAX_DEPTH
     # log.debug("Returns a finding when the file sits too deep")
     if len(folders) > limit:
         # log.debug("Returns the depth finding")

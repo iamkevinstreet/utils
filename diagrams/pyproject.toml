@@ -12,7 +12,7 @@
 
 [project]
 name = "kds-diagrams"
-version = "0.7.0"
+version = "0.7.1"
 description = "Architecture and flow diagrams for READMEs, in one dark house style, as plain SVG."
 readme = "README.md"
 requires-python = ">=3.12"
