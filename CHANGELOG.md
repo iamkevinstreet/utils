@@ -6,6 +6,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.8.0, Nov 10, 2026
 
+Pin: `c6acc75155fb1a7350c6e8ccb09a57ce01bba40c`
+
 Snowflake, as a third warehouse beside DuckDB and Databricks, with no stored secret for a GitHub
 job.
 
