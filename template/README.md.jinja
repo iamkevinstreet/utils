@@ -20,7 +20,7 @@ Every project follows the same seven layers, and fills only the ones its problem
 | --- | --- |
 | Sources | Not yet |
 | Ingestion | dlt, one load per source, each run by `python -m pipelines load` |
-| Storage | One DuckDB file on a laptop and in CI; Databricks in production |
+| Storage | One DuckDB file on a laptop and in CI; Databricks or Snowflake in production |
 | Modeling | dbt: staging and intermediate views, then a mart per domain with enforced contracts |
 | Serving | The marts, and the dbt docs site with its lineage graph |
 | Intelligence | Not yet |

@@ -7,7 +7,7 @@ small Python package that a project installs on its own, so every project takes 
 
 ## Status
 
-Release **v0.7.2**. Every package is in use by the projects below, or is about to be; 181 tests pass
+Release **v0.8.0**. Every package is in use by the projects below, or is about to be; 188 tests pass
 offline in CI, with strict mypy and no kds-standards findings. Every new project starts from the
 [project template](#starting-a-project). Tools are added as projects need them, and each package's
 README says what is next for it.
@@ -62,7 +62,7 @@ it came from. Copier then lists what to run in the new folder: `uv lock`, `make 
 | Path | What every project gets |
 | --- | --- |
 | `pipelines/` | `python -m pipelines`, from `kds.pipelines`: `load NAME` for each source, and `dbt ...` over the same warehouse |
-| `dbt/` | The dbt project's layers (staging, intermediate, a mart per domain), profiles for DuckDB and Databricks, a surrogate key and two generic tests |
+| `dbt/` | The dbt project's layers (staging, intermediate, a mart per domain), profiles for DuckDB, Databricks and Snowflake, a surrogate key and two generic tests |
 | `dags/` | The Airflow 3 defaults, and the build DAG, which runs when any raw schema changes |
 | `config/` | Every setting at its default, and the secrets template |
 | `tests/` | The settings file kept equal to the code, the command, and every DAG's safety settings |
@@ -94,7 +94,7 @@ the code standard, ruff and the rendered project's own tests on the result.
 | [llm](llm/) | `kds.llm` | one adapter for model providers, with an offline stand-in and GenAI spans | settings, logs |
 | [evals](evals/) | `kds.evals` | cases, metrics, a runner and reports, a span per case | llm, logs |
 | [synthetic](synthetic/) | `kds.synthetic` | made-up names, near duplicates, PDFs that record page text | reportlab, pypdf |
-| [pipelines](pipelines/) | `kds.pipelines` | the warehouse settings, dlt loads into DuckDB or Databricks, dbt runs, and `python -m pipelines` | settings, logs, dlt |
+| [pipelines](pipelines/) | `kds.pipelines` | the warehouse settings, dlt loads into DuckDB, Databricks or Snowflake, dbt runs, and `python -m pipelines` | settings, logs, dlt |
 | [standards](standards/) | `kds.standards` | `kds-standards`: holds a repository to one code standard | none |
 | [diagrams](diagrams/) | `kds.diagrams` | `kds-diagrams`: draws these diagrams from TOML | none |
 
@@ -167,7 +167,7 @@ There is no service to run here, so there is no runbook; each project that runs 
 ## Testing
 
 ```sh
-make test     # 181 tests, offline, warnings as errors
+make test     # 188 tests, offline, warnings as errors
 make check    # ruff, strict mypy and kds-standards
 make audit    # pip-audit over every locked dependency
 ```

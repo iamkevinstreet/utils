@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-09
-Last modified on:  2026-11-09
+Last modified on:  2026-11-10
 
 Runs dbt over the warehouse the loads filled, with the settings the
 loads used: the dbt project's profiles.yml reads the DuckDB path and
@@ -35,6 +35,8 @@ from pathlib import Path
 # Local
 from kds.args import required
 from kds.logs import get_logger, log_event
+from kds.pipelines.config import SNOWFLAKE
+from kds.pipelines.oidc import snowflake_token
 from kds.pipelines.settings import PipelineSettings
 
 ########################################################################
@@ -55,11 +57,12 @@ def dbt_env(settings: PipelineSettings | None = None) -> dict[str, str]:
     """Returns the variables profiles.yml reads, from the settings.
 
     Args:
-        settings: The warehouse and the Databricks connection.
-            Required.
+        settings: The warehouse and the Databricks and Snowflake
+            connections. Required.
 
     Returns:
-        WAREHOUSE_PATH, and the Databricks variables that are set.
+        WAREHOUSE_PATH, the Databricks and Snowflake variables that
+        are set, and, for Snowflake, a fresh token to sign in with.
     """
     # log.debug("Takes the settings, which the caller must give")
     settings = required(settings=settings)
@@ -72,7 +75,13 @@ def dbt_env(settings: PipelineSettings | None = None) -> dict[str, str]:
         "DATABRICKS_HTTP_PATH": settings.databricks_http_path,
         "DATABRICKS_CATALOG": settings.databricks_catalog,
         "DATABRICKS_TOKEN": token.get_secret_value() if token else None,
+        "SNOWFLAKE_ACCOUNT": settings.snowflake_account,
+        "SNOWFLAKE_DATABASE": settings.snowflake_database,
     }
+    # log.debug("Adds the token Snowflake signs dbt in with, made just before dbt connects")
+    if settings.warehouse_destination == SNOWFLAKE:
+        # log.debug("Asks for it")
+        values["SNOWFLAKE_TOKEN"] = snowflake_token(settings)
     # log.debug("Returns the ones that are set")
     return {k: v for k, v in values.items() if v}
 
