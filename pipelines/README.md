@@ -85,7 +85,10 @@ those users, each trusting one repository's job.
 
 Each load and each dbt run asks GitHub for a fresh token just before it connects, made for the
 account's own address (`snowflake_audience()`); `snowflake_token()` returns `SNOWFLAKE_TOKEN`
-instead when it is set, as for a run outside GitHub. A workflow's job then needs only:
+instead when it is set, as for a run outside GitHub. A GitHub token lasts about five minutes, so a
+load or a dbt run must make its connections within five minutes of asking; one that would open a
+new connection later needs a token per connection, which this does not do yet. A workflow's job
+then needs only:
 
 ```yaml
 permissions:
