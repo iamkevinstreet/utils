@@ -5,14 +5,14 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-09
+# Last modified on:  2026-11-10
 #
 # Packages kds-args: required(), which takes an argument that defaults
 # to None but must be given.
 
 [project]
 name = "kds-args"
-version = "0.7.1"
+version = "0.7.2"
 description = "Takes a function's arguments the code standard's way: required() for a None default that must be given."
 readme = "README.md"
 requires-python = ">=3.12"

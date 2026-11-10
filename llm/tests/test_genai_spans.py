@@ -6,11 +6,12 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-07
-Last modified on:  2026-11-07
+Last modified on:  2026-11-10
 
 Tests the spans the adapter opens for model and embedding calls, and
-the agent, tool and search spans a project opens: their names, their
-GenAI attributes, and content recorded only when asked for.
+the agent, tool, search and evaluator spans a project opens: their
+names, their GenAI attributes, content recorded only when asked for,
+and a judge's model calls marked as its own.
 """
 
 ########################################################################
@@ -34,7 +35,7 @@ from kds.args import required
 from kds.llm.adapter import ModelAdapter
 from kds.llm.errors import TransientError
 from kds.llm.fake import FakeProvider
-from kds.llm.spans import agent, documents, retrieval, tool, tool_result
+from kds.llm.spans import agent, documents, evaluator, retrieval, tool, tool_result
 from kds.llm.types import Completion
 from kds.settings import get_settings
 
@@ -257,3 +258,34 @@ def test_an_embedding_call_is_a_span(spans: InMemorySpanExporter) -> None:
     (span,) = spans.get_finished_spans()
     # log.debug("Checks its name and the number of texts")
     assert (span.name, (span.attributes or {})["texts"]) == ("embeddings vectors", 2)
+
+
+# log.debug("Defines the test that a judge's calls are marked as the judge's")
+def test_a_judge_s_calls_are_marked_and_the_answer_s_are_not(spans: InMemorySpanExporter) -> None:
+    """A call made in an evaluator span carries the judge's purpose.
+
+    Args:
+        spans: The spans this test records.
+    """
+    # log.debug("Builds an adapter on a fake that answers, then grades")
+    adapter = _adapter(FakeProvider(["the answer", "the grade"]))
+    # log.debug("Makes the answer's call")
+    adapter.complete("What is the rule?")
+    # log.debug("Grades the answer")
+    with evaluator("correctness"):
+        # log.debug("Makes the judge's call")
+        adapter.complete("Grade the answer.")
+    # log.debug("Takes the spans: the answer's call, the judge's, then the evaluator's")
+    answered, judged, graded = spans.get_finished_spans()
+    # log.debug("Checks the evaluator's name and kind")
+    assert (graded.name, (graded.attributes or {})["langfuse.observation.type"]) == (
+        "evaluate correctness",
+        "evaluator",
+    )
+    # log.debug("Checks the judge's call sits inside the evaluator's span")
+    assert judged.parent is not None and judged.parent.span_id == graded.context.span_id
+    # log.debug("Checks only the judge's call carries the judge's purpose")
+    assert [(s.attributes or {}).get("kds.llm.purpose") for s in (answered, judged)] == [
+        None,
+        "judge",
+    ]

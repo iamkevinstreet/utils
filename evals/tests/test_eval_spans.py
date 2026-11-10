@@ -6,11 +6,12 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-07
-Last modified on:  2026-11-07
+Last modified on:  2026-11-10
 
 Tests an evaluation run's spans: one per case, holding the case's model
-calls and its scores, a failing case marked failed, and the run's spans
-written beside its results when the settings ask.
+calls and its scores, a failing case marked failed, the run's spans
+written beside its results when the settings ask, and a judge's grading
+in an evaluator span whose model call is marked as the judge's.
 """
 
 ########################################################################
@@ -33,6 +34,7 @@ from opentelemetry.trace import StatusCode
 # Local
 from kds.args import required
 from kds.evals.case import EvalCase
+from kds.evals.judge import judge
 from kds.evals.runner import RunResult, run_eval
 from kds.llm.adapter import ModelAdapter
 from kds.llm.fake import FakeProvider
@@ -197,3 +199,25 @@ def test_a_run_writes_its_spans_when_asked(
     (path,) = (tmp_path / "kept").glob(f"{RUN}-*.spans.jsonl")
     # log.debug("Checks it holds both cases and the model call")
     assert len(path.read_text(encoding="utf-8").splitlines()) == 3
+
+
+# log.debug("Defines the test that a judge grades in an evaluator span")
+def test_a_judge_grades_in_an_evaluator_span(spans: InMemorySpanExporter) -> None:
+    """The judge's call sits in an evaluator span, marked as its own.
+
+    Args:
+        spans: The spans this test records.
+    """
+    # log.debug("Builds an adapter on a fake that grades the answer right")
+    adapter = ModelAdapter(FakeProvider(['{"score": 2, "reason": "right"}']), model="fake-model")
+    # log.debug("Grades one answer")
+    verdict = judge(adapter, {"question": "q", "answer": "a", "reference": "r"}, "Be right.")
+    # log.debug("Takes the spans: the judge's call, then the evaluator's")
+    called, graded = spans.get_finished_spans()
+    # log.debug("Checks the grade, the evaluator, and the judge's call inside it, marked")
+    assert (
+        verdict.score,
+        graded.name,
+        called.parent is not None and called.parent.span_id == graded.context.span_id,
+        (called.attributes or {}).get("kds.llm.purpose"),
+    ) == (2, "evaluate rubric", True, "judge")

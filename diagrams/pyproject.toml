@@ -5,14 +5,14 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-29
-# Last modified on:  2026-11-09
+# Last modified on:  2026-11-10
 #
 # Packages kds-diagrams, which draws README architecture and flow
 # diagrams as SVG.
 
 [project]
 name = "kds-diagrams"
-version = "0.7.1"
+version = "0.7.2"
 description = "Architecture and flow diagrams for READMEs, in one dark house style, as plain SVG."
 readme = "README.md"
 requires-python = ">=3.12"

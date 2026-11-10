@@ -4,6 +4,22 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.7.2, Nov 10, 2026
+
+Two small fixes: one AI operations needs before it counts a cost per answer, and one for the code
+standard.
+
+- **llm and evals:** a trace now tells a model's grading of an answer from the answer itself.
+  `kds.llm.spans.evaluator()` runs a block as an evaluator span, which Langfuse shows as one, and
+  every model call made inside it carries `kds.llm.purpose = "judge"`; `kds.evals.judge.judge()`
+  grades inside one. A judged case's cost and time then split between making the answer and grading
+  it, which AI operations needs before it reports a cost per answer for Grounded's judged runs.
+- **standards:** a file renamed since the last commit keeps the date its old name was created,
+  whether git moved it (`git mv`) or it was moved by hand, its text at least half like the old
+  file's, as git's own rename detection judges. Its Created on had to be the day of the rename, and
+  `kds-standards stamp` wrote that day. A rename already committed was followed as before.
+- **All packages** move to 0.7.2 together. 181 tests.
+
 ## v0.7.1, Nov 9, 2026
 
 Pin: `28d20c9c817795cb787023f20e4ab99af1b05957`

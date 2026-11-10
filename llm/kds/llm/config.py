@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-07
+Last modified on:  2026-11-10
 
 The values the model adapter's modules share, each named once. A library
 cannot read a project's config files, so the values two of its modules
@@ -108,6 +108,10 @@ GEN_AI_DOCUMENTS: Final = "gen_ai.retrieval.documents"
 GEN_AI_DATA_SOURCE: Final = "gen_ai.data_source.id"
 # log.debug("Names the attribute Langfuse reads a span's kind from")
 LANGFUSE_TYPE: Final = "langfuse.observation.type"
+# log.debug("Names the attribute that says what a model call is for, where it is not the answer")
+PURPOSE: Final = "kds.llm.purpose"
+# log.debug("Names the purpose of a model call made to grade an answer")
+JUDGE: Final = "judge"
 # log.debug("Names the operation of a model call")
 CHAT: Final = "chat"
 # log.debug("Names the operation of an embedding call")
