@@ -6,6 +6,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.7.2, Nov 10, 2026
 
+Pin: `5ccb57f38981cef0a3c32b7984bd8a97c2f1f8d9`
+
 Two small fixes: one AI operations needs before it counts a cost per answer, and one for the code
 standard.
 
