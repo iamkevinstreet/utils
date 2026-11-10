@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-11-09
-# Last modified on:  2026-11-09
+# Last modified on:  2026-11-10
 #
 # Every setting the loaders, the build and the DAGs read, at its
 # default. No secrets: those go in config/.env.
@@ -15,17 +15,20 @@
 # it. A test keeps this file equal to the defaults in code.
 
 [warehouse]
-destination = "duckdb"                    # duckdb | databricks
+destination = "duckdb"                    # duckdb | databricks | snowflake
 path = "data/generated/warehouse.duckdb"  # the DuckDB file dlt loads and dbt builds in
 state = "data/generated/dlt"              # dlt's pipeline state
 
 [dbt]
 project = "dbt"                           # the dbt project, which also holds profiles.yml
-target = "dev"                            # dev builds in DuckDB, prod in Databricks
+target = "dev"                            # dev is DuckDB, prod Databricks, snowflake Snowflake
 threads = 4                               # models dbt builds at once
 
 [databricks]
 catalog = "kds"                           # the Unity Catalog catalog every schema lives in
+
+[snowflake]
+database = "KDS"                          # the Snowflake database every schema lives in
 
 [files]
 encoding = "utf-8"                        # every file read or written

@@ -1,8 +1,8 @@
 # dbt
 
-One dbt project, built in DuckDB (`dev`, CI) or Databricks (`prod`). Run it through
-`python -m pipelines dbt <command>`, which points `profiles.yml` at the warehouse the loaders used;
-`make build` and `make docs` do.
+One dbt project, built in DuckDB (`dev`, CI), Databricks (`prod`) or Snowflake (`snowflake`). Run
+it through `python -m pipelines dbt <command>`, which points `profiles.yml` at the warehouse the
+loaders used; `make build` and `make docs` do.
 
 | Folder | Layer | Built as |
 | --- | --- | --- |
@@ -10,7 +10,7 @@ One dbt project, built in DuckDB (`dev`, CI) or Databricks (`prod`). Run it thro
 | `models/intermediate/` | The sources lined up to one grain, `int_<domain>__<what>` | Views in `intermediate` |
 | `models/<domain>/` | A published mart per domain: `dim_`, `fct_` and `rpt_` tables, each with an enforced contract, in the domain's group, public | Tables in `<domain>` |
 | `seeds/` | Reference tables, small and reviewed by hand | Tables in `reference` |
-| `macros/` | The schema names, a surrogate key both warehouses compute alike, and two generic tests: a unique combination of columns, and a value between two bounds | |
+| `macros/` | The schema names, a surrogate key every warehouse computes alike, and two generic tests: a unique combination of columns, and a value between two bounds | |
 | `tests/` | Singular tests: a query that returns the rows that break a rule | |
 
 The repository's code standard allows three folders below the root, so the published marts sit in

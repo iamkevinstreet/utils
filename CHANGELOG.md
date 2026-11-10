@@ -4,6 +4,28 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.8.0, Nov 10, 2026
+
+Snowflake, as a third warehouse beside DuckDB and Databricks, with no stored secret for a GitHub
+job.
+
+- **pipelines:** `snowflake` is a destination. `PipelineSettings` adds `snowflake_account`,
+  `snowflake_database` (`KDS`) and `snowflake_token`, refuses Snowflake without its account, and
+  takes an account pasted as its address as `ORGNAME-ACCOUNTNAME`. A refused destination now names
+  just the variables it lacks, Databricks' too. A GitHub job signs in as itself, through
+  Snowflake's workload identity federation: each load and each dbt run asks GitHub for a fresh OIDC
+  token made for the account's address (`github_token()`, `snowflake_audience()`,
+  `snowflake_token()`), so the job needs `permissions: id-token: write` and no password or key.
+  `SNOWFLAKE_TOKEN`, when set, is used instead, as for a run outside GitHub. `dbt_env()` passes the
+  `SNOWFLAKE_*` variables, the token on Snowflake only.
+- **Project template:** a `snowflake` dbt target, signed in the same way; a `snowflake` dependency
+  group (`dbt-snowflake` 1.12.5 and `dlt[snowflake]`, with Snowflake's connector held at 4.8.1, the
+  last release before its rewrite); `[snowflake] database` in `config/config.toml`; and the account
+  in `config/.env.example`. A new test keeps each dbt
+  target reading only the variables the pipelines command sets for its warehouse.
+- **All packages** move to 0.8.0 together, so a project moving to this release changes its `kds-*`
+  ranges to `>=0.8.0,<0.9`. 188 tests.
+
 ## v0.7.2, Nov 10, 2026
 
 Pin: `5ccb57f38981cef0a3c32b7984bd8a97c2f1f8d9`

@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-09
-Last modified on:  2026-11-09
+Last modified on:  2026-11-10
 
 Tests the shared pipeline parts offline: Databricks refused when half
 set up, the variables dbt reads, dbt's command line, a real dlt load
@@ -131,16 +131,16 @@ def test_databricks_needs_its_host_path_and_token(tmp_path: Path) -> None:
 
 # log.debug("Defines the test of the variables dbt reads")
 def test_dbt_reads_the_warehouse_and_only_what_is_set(tmp_path: Path) -> None:
-    """DuckDB's path always; Databricks' values only when set.
+    """DuckDB's path always; the others' values only when set.
 
     Args:
         tmp_path: The test's temporary folder.
     """
     # log.debug("Reads the variables for a DuckDB warehouse")
     env = dbt_env(_settings(tmp_path))
-    # log.debug("Checks the names and the path")
+    # log.debug("Checks the names and the path, and that no token was asked for")
     assert (set(env), env["WAREHOUSE_PATH"]) == (
-        {"WAREHOUSE_PATH", "DATABRICKS_CATALOG"},
+        {"WAREHOUSE_PATH", "DATABRICKS_CATALOG", "SNOWFLAKE_DATABASE"},
         str((tmp_path / "warehouse.duckdb").resolve()),
     )
 

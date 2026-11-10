@@ -14,16 +14,16 @@
 
 [project]
 name = "kds-pipelines"
-version = "0.7.2"
-description = "What every project's data layers run on: shared settings, dlt loads into DuckDB or Databricks, dbt runs, and the one pipelines command."
+version = "0.8.0"
+description = "What every project's data layers run on: shared settings, dlt loads into DuckDB, Databricks or Snowflake, dbt runs, and the one pipelines command."
 readme = "README.md"
 requires-python = ">=3.12"
 license = { text = "Apache-2.0" }
 authors = [{ name = "Kevin Street", email = "info@kevindstreet.com" }]
 dependencies = [
-  "kds-args>=0.7,<0.8",
-  "kds-settings>=0.7,<0.8",
-  "kds-logs>=0.7,<0.8",
+  "kds-args>=0.8,<0.9",
+  "kds-settings>=0.8,<0.9",
+  "kds-logs>=0.8,<0.9",
   "dlt>=1.32,<2",
   "pydantic>=2.8",
 ]

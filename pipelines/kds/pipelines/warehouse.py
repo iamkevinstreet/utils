@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-09
-Last modified on:  2026-11-09
+Last modified on:  2026-11-10
 
 Loads a dlt source into the warehouse the settings name: one DuckDB
 file on a laptop and in CI, Databricks in production. The source code
@@ -34,7 +34,8 @@ from dlt.common.pipeline import LoadInfo
 # Local
 from kds.args import required
 from kds.logs import get_logger, log_event
-from kds.pipelines.config import DUCKDB
+from kds.pipelines.config import DUCKDB, OIDC, SNOWFLAKE, WORKLOAD_IDENTITY
+from kds.pipelines.oidc import snowflake_token
 from kds.pipelines.settings import PipelineSettings
 
 ########################################################################
@@ -60,7 +61,7 @@ TELEMETRY: Final = "runtime.dlthub_telemetry"
 ########################################################################
 # log.debug("Defines the destination a load goes to")
 def destination(settings: PipelineSettings | None = None) -> Any:
-    """Returns dlt's DuckDB or Databricks destination.
+    """Returns dlt's DuckDB, Databricks or Snowflake destination.
 
     Args:
         settings: The destination and where it is. Required.
@@ -76,6 +77,18 @@ def destination(settings: PipelineSettings | None = None) -> Any:
         settings.warehouse_path.parent.mkdir(parents=True, exist_ok=True)
         # log.debug("Returns the DuckDB destination")
         return dlt.destinations.duckdb(str(settings.warehouse_path))
+    # log.debug("Signs in to Snowflake as the workload itself, when the settings say so")
+    if settings.warehouse_destination == SNOWFLAKE:
+        # log.debug("Returns the Snowflake destination, its service user found by the token")
+        return dlt.destinations.snowflake(
+            credentials={
+                "host": settings.snowflake_account,
+                "database": settings.snowflake_database,
+                "authenticator": WORKLOAD_IDENTITY,
+                "workload_identity_provider": OIDC,
+                "token": snowflake_token(settings),
+            }
+        )
     # log.debug("Takes the token, which the settings check guarantees")
     token = required(databricks_token=settings.databricks_token)
     # log.debug("Returns the Databricks destination")

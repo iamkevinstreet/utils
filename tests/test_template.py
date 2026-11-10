@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-09
-Last modified on:  2026-11-09
+Last modified on:  2026-11-10
 
 Tests the project template by rendering it as `copier copy` renders a
 new project, from copier.yml and template/ alone, then committing the
@@ -15,8 +15,9 @@ into a folder of an app's repository, which keeps the root's files.
 Each must meet the code standard, pass ruff with its own settings and
 pass its own tests, run in its own folder against this repository's
 packages, as its pins install them. Its pins must name the commit
-given and admit this release, and a bad answer must be refused before
-anything is written.
+given and admit this release, its dbt profile must read only what the
+pipelines command sets for each warehouse, and a bad answer must be
+refused before anything is written.
 """
 
 ########################################################################
@@ -29,6 +30,7 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -43,6 +45,7 @@ from packaging.specifiers import SpecifierSet
 
 # Local
 from kds.args import required
+from kds.pipelines import PipelineSettings, dbt_env
 from kds.standards.cli import main as standards
 
 ########################################################################
@@ -367,6 +370,42 @@ def test_the_project_pins_every_package_at_the_commit(project: Path) -> None:
     )
     # log.debug("Checks this release is in every range")
     assert all(release["version"] in spec for spec in ranges.values()), ranges
+
+
+# log.debug("Defines the test that dbt's profile reads only what the command sets")
+def test_the_dbt_profile_reads_only_what_the_command_sets() -> None:
+    """Each target reads only variables set for its warehouse."""
+    # log.debug("Reads the template's dbt profile")
+    text = (ROOT / "template" / "dbt" / "profiles.yml").read_text(encoding="utf-8")
+    # log.debug("Splits it at each target, a name indented four spaces")
+    parts = re.split(r"^    (\w+):\n", text, flags=re.MULTILINE)[1:]
+    # log.debug("Lists the variables each target reads")
+    reads = {
+        target: set(re.findall(r"env_var\('(\w+)'\)", body))
+        for target, body in zip(parts[::2], parts[1::2], strict=True)
+    }
+    # log.debug("Sets up each target's warehouse whole, with made-up values")
+    warehouses: dict[str, dict[str, Any]] = {
+        "dev": {},
+        "prod": {
+            "warehouse_destination": "databricks",
+            "databricks_host": "example.cloud.databricks.com",
+            "databricks_http_path": "/sql/1.0/warehouses/example",
+            "databricks_token": "made-up",
+        },
+        "snowflake": {
+            "warehouse_destination": "snowflake",
+            "snowflake_account": "ORGNAME-ACCOUNTNAME",
+            "snowflake_token": "made-up",
+        },
+    }
+    # log.debug("Lists the variables the command sets for each")
+    sets = {t: set(dbt_env(PipelineSettings(**values))) for t, values in warehouses.items()}
+    # log.debug("Checks the targets are the three, each reading only what is set for it")
+    assert (set(reads), {t: reads[t] - sets[t] for t in reads}) == (
+        set(warehouses),
+        {t: set() for t in warehouses},
+    )
 
 
 # log.debug("Defines the test that bad answers are refused")
