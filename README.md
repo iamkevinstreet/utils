@@ -7,7 +7,7 @@ small Python package that a project installs on its own, so every project takes 
 
 ## Status
 
-Release **v0.7.1**. Every package is in use by the projects below, or is about to be; 176 tests pass
+Release **v0.7.2**. Every package is in use by the projects below, or is about to be; 181 tests pass
 offline in CI, with strict mypy and no kds-standards findings. Every new project starts from the
 [project template](#starting-a-project). Tools are added as projects need them, and each package's
 README says what is next for it.
@@ -167,7 +167,7 @@ There is no service to run here, so there is no runbook; each project that runs 
 ## Testing
 
 ```sh
-make test     # 176 tests, offline, warnings as errors
+make test     # 181 tests, offline, warnings as errors
 make check    # ruff, strict mypy and kds-standards
 make audit    # pip-audit over every locked dependency
 ```

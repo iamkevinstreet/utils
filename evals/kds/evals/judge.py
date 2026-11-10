@@ -6,10 +6,12 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-14
-Last modified on:  2026-11-03
+Last modified on:  2026-11-10
 
 Grades answers that exact match cannot score, with a model as judge,
-and checks the judge against human grades.
+and checks the judge against human grades. Each grading runs in an
+evaluator span, its model calls marked as the judge's, so a trace tells
+them from the calls that made the answer.
 
 A judge is only as good as its agreement with a person: `calibrate`
 runs the judge over cases a person already graded and reports how
@@ -32,6 +34,7 @@ from pydantic import BaseModel, Field
 
 # Local
 from kds.args import required
+from kds.llm import spans
 from kds.llm.adapter import ModelAdapter
 
 ########################################################################
@@ -101,10 +104,12 @@ def judge(
     rubric = required(rubric=rubric)
     # log.debug("Fills the grading prompt")
     prompt = JUDGE_PROMPT.format(rubric=rubric, **case)
-    # log.debug("Asks the judge model for a verdict")
-    verdict, _ = adapter.complete_json(
-        prompt, Verdict, system=JUDGE_SYSTEM, model=adapter.settings.llm_judge_model
-    )
+    # log.debug("Grades in an evaluator span, so traces tell the judge's calls from the answer's")
+    with spans.evaluator("rubric"):
+        # log.debug("Asks the judge model for a verdict")
+        verdict, _ = adapter.complete_json(
+            prompt, Verdict, system=JUDGE_SYSTEM, model=adapter.settings.llm_judge_model
+        )
     # log.debug("Returns the verdict")
     return verdict
 

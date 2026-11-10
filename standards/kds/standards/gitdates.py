@@ -6,12 +6,13 @@
 """
 Author:            Kevin Street
 Created on:        2026-10-29
-Last modified on:  2026-11-09
+Last modified on:  2026-11-10
 
 Reads from git which files a repository holds, and when each was
-created and last changed. Dates follow a file through renames; a file
-git has not seen yet was created today, and a file with uncommitted
-changes was last modified today.
+created and last changed. Dates follow a file through renames, a
+rename not yet committed among them, whether git moved the file or it
+was moved by hand; a file git has not seen yet was created today, and
+a file with uncommitted changes was last modified today.
 """
 
 ########################################################################
@@ -22,6 +23,7 @@ changes was last modified today.
 # Standard library
 from __future__ import annotations
 
+import difflib
 import logging
 import subprocess
 from dataclasses import dataclass, field
@@ -49,6 +51,14 @@ COMMIT_MARK = "@@"
 LOG_FORMAT = f"--format={COMMIT_MARK}%ad"
 # log.debug("Sets the git binary; the PATH lookup is deliberate")
 GIT = "git"
+# log.debug("Sets how alike a moved file's text must be to count as renamed, as git's -M judges")
+RENAME_SIMILARITY = 0.5
+# log.debug("Sets the git command that lists every file's short status, new files included")
+STATUS = ("status", "--porcelain", "--untracked-files=all")
+# log.debug("Sets the column where a status line's path starts, after its two letters and a space")
+PATH_AT = 3
+# log.debug("Sets what a status line puts between a renamed file's old and new names")
+RENAMED_TO = " -> "
 
 
 ########################################################################
@@ -217,6 +227,12 @@ def read_history(root: Path | None = None) -> History:
         _record(history, alias, parts, when)
     # log.debug("Adds the files that differ from the last commit")
     history.dirty = _dirty(root)
+    # log.debug("Gives each file renamed since the last commit the date its old name was created")
+    for path, old in _renamed(root).items():
+        # log.debug("Moves the old name's created date to the new name, when git saw the old name")
+        if old in history.created:
+            # log.debug("Sets it")
+            history.created[path] = history.created.pop(old)
     # log.debug("Returns the full history")
     return history
 
@@ -266,6 +282,102 @@ def _record(
         history.created[current] = when
 
 
+# log.debug("Defines the files renamed since the last commit")
+def _renamed(root: Path | None = None) -> dict[str, str]:
+    """Returns each file renamed since the last commit, new name to old.
+
+    A rename git has staged shows in its status as one. A file moved
+    without git, its old name deleted and its new name untracked or
+    staged alone, is found by its text: a new file at least half like a
+    deleted one, as git's own rename detection judges.
+
+    Args:
+        root: The repository root. Required.
+
+    Returns:
+        Each new name with the name it had at the last commit.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
+    # log.debug("Asks git for the short status of every file")
+    out = _git(root, *STATUS)
+    # log.debug("Starts the renames")
+    renamed: dict[str, str] = {}
+    # log.debug("Starts the deleted names")
+    gone: list[str] = []
+    # log.debug("Starts the new names")
+    added: list[str] = []
+    # log.debug("Sorts each status line into one of the three")
+    for line in out.splitlines():
+        # log.debug("Splits the line into its two status letters and its path")
+        code, path = line[:2], line[PATH_AT:]
+        # log.debug("Takes a staged rename's old and new names")
+        if code.startswith("R"):
+            # log.debug("Splits the old name from the new")
+            old, _, new = path.partition(RENAMED_TO)
+            # log.debug("Maps the new name to the old")
+            renamed[new] = old
+        elif "D" in code:
+            # log.debug("Notes a deleted name")
+            gone.append(path)
+        elif code == "??" or (code.startswith("A") and (root / path).is_file()):
+            # log.debug("Notes a new name, untracked or staged and still on disk")
+            added.append(path)
+    # log.debug("Matches each new name to the deleted file its text most resembles, if any")
+    for path in added:
+        # log.debug("Finds the likest deleted file")
+        match = _likest(root, path, gone)
+        # log.debug("Counts it as a rename and takes the old name out of the running")
+        if match:
+            # log.debug("Maps the new name to the old")
+            renamed[path] = match
+            # log.debug("Takes the old name out")
+            gone.remove(match)
+    # log.debug("Returns the renames")
+    return renamed
+
+
+# log.debug("Defines the deleted file a new file's text most resembles")
+def _likest(
+    root: Path | None = None, path: str | None = None, gone: list[str] | None = None
+) -> str | None:
+    """Returns the deleted file the new file's text most resembles.
+
+    Its text is read as it was at the last commit, and it counts only
+    when it is at least half like the new file's.
+
+    Args:
+        root: The repository root. Required.
+        path: The new file's path from the root. Required.
+        gone: The deleted files' paths from the root. Required.
+
+    Returns:
+        The deleted file's path, or None when none is alike enough.
+    """
+    # log.debug("Takes the root, which the caller must give")
+    root = required(root=root)
+    # log.debug("Takes the new file, which the caller must give")
+    path = required(path=path)
+    # log.debug("Takes the deleted files, which the caller must give")
+    gone = required(gone=gone)
+    # log.debug("Reads the new file's text, as lines")
+    text = (root / path).read_text(encoding="utf-8", errors="replace").splitlines()
+    # log.debug("Starts with no match, and the least likeness that counts")
+    best, score = None, RENAME_SIMILARITY
+    # log.debug("Compares the text with each deleted file's last committed text")
+    for old in gone:
+        # log.debug("Reads the deleted file's text at the last commit, as lines")
+        before = _git(root, "show", f"HEAD:{old}").splitlines()
+        # log.debug("Measures how alike the two are, line by line")
+        ratio = difflib.SequenceMatcher(None, before, text, autojunk=False).ratio()
+        # log.debug("Keeps it when it is the likest so far")
+        if ratio >= score:
+            # log.debug("Notes the match and its likeness")
+            best, score = old, ratio
+    # log.debug("Returns the likest, if any")
+    return best
+
+
 # log.debug("Defines the set of files with uncommitted changes")
 def _dirty(root: Path | None = None) -> set[str]:
     """Returns paths that are staged, changed or new.
@@ -280,6 +392,6 @@ def _dirty(root: Path | None = None) -> set[str]:
     # log.debug("Takes the root, which the caller must give")
     root = required(root=root)
     # log.debug("Asks git for the short status of every file")
-    out = _git(root, "status", "--porcelain", "--untracked-files=all")
+    out = _git(root, *STATUS)
     # log.debug("Returns each path, taking the new name of renames")
-    return {line[3:].split(" -> ")[-1] for line in out.splitlines() if line}
+    return {line[PATH_AT:].split(RENAMED_TO)[-1] for line in out.splitlines() if line}

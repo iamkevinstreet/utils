@@ -48,3 +48,6 @@ run.summary  # also in results/extraction-v0.2-latest.md
   go.
 - Scores are averaged over the cases that ran; failures count in the failure rate, latency and cost.
 - A judged metric is reported beside the judge's agreement with human grades (`calibrate`).
+- The judge grades in an evaluator span, its model calls marked `kds.llm.purpose = "judge"`, so a
+  trace and the run's spans tell the cost and time of grading from those of the answer (see
+  [kds.llm's spans](../llm/#spans)).

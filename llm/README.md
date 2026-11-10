@@ -65,19 +65,24 @@ Once [kds.logs](../logs/#spans) has turned spans on, the adapter's calls are rec
 more to write. A project opens the other GenAI spans around its own work:
 
 ```python
-from kds.llm.spans import agent, documents, retrieval, tool, tool_result
+from kds.llm.spans import agent, documents, evaluator, retrieval, tool, tool_result
 
 with agent("intake", model=adapter.model):  # invoke_agent intake
     with tool("search_clients", call_id=call.id, arguments=call.arguments) as span:
         tool_result(span, found)  # execute_tool search_clients
 with retrieval(question, top_k=6, source="approved-sources") as span:
     documents(span, [(hit.id, hit.score) for hit in hits])  # each passage's id and score
+with evaluator("correctness"):  # evaluate correctness
+    verdict, _ = adapter.complete_json(prompt, Verdict)  # marked kds.llm.purpose = "judge"
 ```
 
 - Names follow the OpenTelemetry GenAI conventions, which are still at Development stability and
   now live in their own repository; these follow its commit `e6658f1` of Nov 6, 2026. Every name is
   in `config.py`, so a rename is one edit. Langfuse reads them: a chat span is a generation, a tool
-  call a tool, an agent's run an agent.
+  call a tool, an agent's run an agent, a grading an evaluator.
+- A model's grading of an answer runs in `evaluator()`, and every model call made inside it carries
+  `kds.llm.purpose = "judge"`, which the conventions do not name, so a case's cost and time split
+  between making the answer and grading it. `kds.evals.judge.judge()` grades inside one.
 - Prompts, answers, tool arguments and results, and search queries can hold personal data. They
   are recorded only with `[spans] content = true`, meant for generated or public data, and redacted
   like log lines even then.

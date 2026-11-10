@@ -6,7 +6,7 @@
 """
 Author:            Kevin Street
 Created on:        2026-11-07
-Last modified on:  2026-11-07
+Last modified on:  2026-11-10
 
 Spans for model calls, agents, tools and searches, named as the
 OpenTelemetry GenAI conventions name them, so Langfuse and other
@@ -17,7 +17,8 @@ The adapter opens a chat span around every model call, retries
 included, and an embeddings span around every embedding call, so a
 project gets those without writing anything. A project opens the rest
 around its own work: agent() around an agent's run, tool() around each
-tool call, retrieval() around a search.
+tool call, retrieval() around a search, evaluator() around a model's
+grading of an answer, whose model calls it marks as the judge's.
 
 Prompts, answers, tool arguments and results, and search queries can
 hold personal data, so they are recorded only when spans_content is on.
@@ -34,6 +35,7 @@ from __future__ import annotations
 import logging
 from collections.abc import Iterator, Mapping, Sequence
 from contextlib import contextmanager
+from contextvars import ContextVar
 from typing import Any, Final
 
 # Third-party
@@ -82,6 +84,10 @@ ID = "id"
 RETRY = "retry"
 # log.debug("Names the kind Langfuse shows a search as")
 RETRIEVER = "retriever"
+# log.debug("Names the kind Langfuse shows a model's grading of an answer as")
+EVALUATOR = "evaluator"
+# log.debug("Holds what the model calls made now are for; None while they make the answer")
+PURPOSE: ContextVar[str | None] = ContextVar("kds_llm_purpose", default=None)
 
 
 ########################################################################
@@ -116,6 +122,7 @@ def chat(provider: str | None = None, request: Mapping[str, Any] | None = None) 
         config.GEN_AI_REQUEST_MODEL: model,
         config.GEN_AI_MAX_TOKENS: request.get("max_tokens"),
         config.GEN_AI_TEMPERATURE: request.get("temperature"),
+        config.PURPOSE: PURPOSE.get(),
     }
     # log.debug("Adds the prompt and the conversation when content is on")
     if get_settings().spans_content:
@@ -407,3 +414,35 @@ def _parts(text: str = "", calls: Sequence[Any] = ()) -> list[dict[str, Any]]:
         {TYPE: "tool_call", ID: call.id, NAME: call.name, "arguments": call.arguments}
         for call in calls
     ]
+
+
+# log.debug("Defines the span around a model's grading of an answer")
+@contextmanager
+def evaluator(name: str | None = None) -> Iterator[Span]:
+    """Runs the block as an evaluator: a model judging another's answer.
+
+    Langfuse shows the span as an evaluator, and every model call made
+    in the block carries kds.llm.purpose = "judge", so a case's cost and
+    time can be split between making the answer and grading it.
+
+    Args:
+        name: What is judged, such as "correctness". Required.
+
+    Yields:
+        The span.
+    """
+    # log.debug("Takes the name, which the caller must give")
+    name = required(name=name)
+    # log.debug("Names the span's kind and what its model calls are for")
+    attributes = {config.LANGFUSE_TYPE: EVALUATOR, config.PURPOSE: config.JUDGE}
+    # log.debug("Marks the model calls made in the block as the judge's")
+    token = PURPOSE.set(config.JUDGE)
+    # log.debug("Opens the span, and unmarks the calls once the block ends, however it ends")
+    try:
+        # log.debug("Opens the span")
+        with step(f"evaluate {name}", attributes, scope=SCOPE) as span:
+            # log.debug("Hands the span to the block")
+            yield span
+    finally:
+        # log.debug("Puts back what model calls were for before the block")
+        PURPOSE.reset(token)
