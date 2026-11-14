@@ -4,6 +4,19 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## v0.8.1, Nov 14, 2026
+
+The project template moves to Snowflake's rewritten connector, now that both projects run on it.
+
+- **Project template:** the `snowflake` dependency group pins Snowflake's connector at 5.2.0, where
+  it was held at 4.8.1. Version 5 is Snowflake's rewrite of the connector on a Rust core; dbt's
+  Snowflake adapter has allowed it since 1.12.5, the version pinned here, and dlt sets no upper
+  bound. Both projects moved first: on Nov 14 the EEOC project's scheduled run and AI operations'
+  loaded and built on Snowflake on 5.2.0, every model, seed and test passing, in the time their
+  runs of the two days before took on 4.8.1. A project made from an earlier release moves by
+  changing that one pin and locking again.
+- **All packages** move to 0.8.1 together. 188 tests.
+
 ## v0.8.0, Nov 10, 2026
 
 Pin: `c6acc75155fb1a7350c6e8ccb09a57ce01bba40c`

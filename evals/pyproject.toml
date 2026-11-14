@@ -5,13 +5,13 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-10-14
-# Last modified on:  2026-11-10
+# Last modified on:  2026-11-14
 #
 # Packages kds-evals: cases, metrics, a runner and reports, a judge.
 
 [project]
 name = "kds-evals"
-version = "0.8.0"
+version = "0.8.1"
 description = "Evaluation cases, metrics, a runner that writes results tables, a model judge with calibration, run comparison, and a span per case."
 readme = "README.md"
 requires-python = ">=3.12"
