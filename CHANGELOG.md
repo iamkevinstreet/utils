@@ -6,6 +6,8 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.8.1, Nov 14, 2026
 
+Pin: `d9bd399b220fcff78631f1656090c4d511b0ea9a`
+
 The project template moves to Snowflake's rewritten connector, now that both projects run on it.
 
 - **Project template:** the `snowflake` dependency group pins Snowflake's connector at 5.2.0, where
