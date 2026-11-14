@@ -5,7 +5,7 @@
 ########################################################################
 # Author:            Kevin Street
 # Created on:        2026-11-09
-# Last modified on:  2026-11-10
+# Last modified on:  2026-11-14
 #
 # Packages kds-pipelines: the settings, loads, dbt runs and command a
 # project's data layers share. dlt is the one library it imports; dbt
@@ -14,7 +14,7 @@
 
 [project]
 name = "kds-pipelines"
-version = "0.8.0"
+version = "0.8.1"
 description = "What every project's data layers run on: shared settings, dlt loads into DuckDB, Databricks or Snowflake, dbt runs, and the one pipelines command."
 readme = "README.md"
 requires-python = ">=3.12"
