@@ -11,7 +11,7 @@ commit of their own: pin v0.3.0 or later.
 
 ## v0.8.0, Nov 10, 2026
 
-Pin: `c6acc75155fb1a7350c6e8ccb09a57ce01bba40c`
+Pin: `70d6dd894d6316c93d60de1764b6c63dff321035`
 
 Snowflake, as a third warehouse beside DuckDB and Databricks, with no stored secret for a GitHub
 job.
@@ -35,7 +35,7 @@ job.
 
 ## v0.7.2, Nov 10, 2026
 
-Pin: `5ccb57f38981cef0a3c32b7984bd8a97c2f1f8d9`
+Pin: `9259063ff5eeaaf0a1d6b2c9e11022a937ed6609`
 
 Two small fixes: one AI operations needs before it counts a cost per answer, and one for the code
 standard.
@@ -53,7 +53,7 @@ standard.
 
 ## v0.7.1, Nov 9, 2026
 
-Pin: `28d20c9c817795cb787023f20e4ab99af1b05957`
+Pin: `8613c8c38471e2d87b1946692cdf16b659c00e51`
 
 The template now fits an app's repository too, as the EEOC project needs.
 
@@ -70,7 +70,7 @@ The template now fits an app's repository too, as the EEOC project needs.
 
 ## v0.7.0, Nov 9, 2026
 
-Pin: `df52461aacee4b9fb1dee275b209eb73713905de`
+Pin: `970e7cd8073c11f2b942ad1f32174414092ace0d`
 
 The project template: every project now starts from the same files, and the data layers every
 project shares are a package of their own.
