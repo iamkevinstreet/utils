@@ -4,6 +4,11 @@ Each release names the commit projects pin; nothing installs from `main`. The v0
 folded into v0.3.0 when this repository's history was rewritten on Oct 29, 2026, so they have no
 commit of their own: pin v0.3.0 or later.
 
+## Unreleased
+
+- **Project template:** a new project's industry is one of the seven the site offers: Legal,
+  Healthcare, Manufacturing, Retail, Tech, Consulting or Any business.
+
 ## v0.8.0, Nov 10, 2026
 
 Pin: `c6acc75155fb1a7350c6e8ccb09a57ce01bba40c`
